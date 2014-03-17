@@ -1,0 +1,31 @@
+; No metric specified - using makespan
+
+; Plan found with metric 52.007
+; States evaluated so far: 51
+; States pruned based on pre-heuristic cost lower bound: 0
+; Time 0.07
+0.000: (move agent2 n1 rm1)  [1.000]
+0.000: (move agent1 n1 n2)  [10.000]
+1.000: (clean agent2 rm1)  [5.000]
+6.000: (move agent2 rm1 n1)  [1.000]
+7.001: (move agent2 n1 n2)  [10.000]
+10.001: (move agent1 n2 n3)  [10.000]
+17.002: (move agent2 n2 res-rm)  [1.000]
+18.002: (load agent2 res-rm)  [1.000]
+19.002: (move agent2 res-rm n2)  [1.000]
+20.002: (move agent1 n3 rm3)  [1.000]
+20.003: (move agent2 n2 n1)  [10.000]
+21.003: (clean agent1 rm3)  [5.000]
+26.003: (move agent1 rm3 n3)  [1.000]
+27.004: (move agent1 n3 n2)  [10.000]
+30.004: (move agent2 n1 rm1)  [1.000]
+31.004: (full-stock-unload agent2 rm1)  [1.000]
+37.005: (move agent1 n2 res-rm)  [1.000]
+38.005: (load agent1 res-rm)  [1.000]
+39.005: (move agent1 res-rm n2)  [1.000]
+40.006: (move agent1 n2 n3)  [10.000]
+50.007: (move agent1 n3 rm3)  [1.000]
+51.007: (full-stock-unload agent1 rm3)  [1.000]
+
+ * All goal deadlines now no later than 52.007
+

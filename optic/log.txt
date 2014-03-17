@@ -1,0 +1,8 @@
+[ 83%] Built target ParsePDDL
+[100%] Built target parser
+[ 14%] Built target ParsePDDL
+[ 40%] Built target Inst
+[ 42%] [ 45%] [ 48%] [ 51%] Building CXX object optic/CMakeFiles/OpticCommon.dir/RPGBuilderEvaluation.o
+Building CXX object optic/CMakeFiles/OpticCommon.dir/temporalanalysis.o
+Building CXX object optic/CMakeFiles/OpticCommon.dir/FFEvent.o
+Building CXX object optic/CMakeFiles/OpticCommon.dir/RPGBuilderNumerics.o

@@ -1,0 +1,108 @@
+{"problem": "janitor-sample",
+ "domain": "janitor",
+ "assumed-values": {
+ 	"dirty": true,
+ 	"cleaned": false,
+ 	"dirtiness": "max",
+ 	"under-stocked": true,
+ 	"fully-stocked": false,
+ 	"req-stock": "max"
+ },
+ "agents": {
+ 	"agent1": {"agent": true,
+ 		"available": true,
+ 		"at": [true, "n1"],
+ 		"carrying": 0,
+ 		"max-carry": 9
+ 	},
+ 	"agent2": {"agent": true,
+ 		"available": true,
+ 		"at": [true, "n1"],
+ 		"carrying": 0,
+ 		"max-carry": 9
+ 	}
+ },
+ "nodes": {
+ 	"n1": {"node": true},
+ 	"n2": {"node": true},
+ 	"n3": {"node": true},
+ 	"rm1": {
+ 	 	"known": {
+	 		"node": true,
+	 		"is-room": true
+	 	},
+	 	"unknown": {
+	 		"dirtiness": {
+	 			"min": 0,
+	 			"max": 5,
+	 			"actual": 0
+	 		},
+	 		"dirty": {
+	 			"actual": false
+	 		},
+	 		"cleaned": {
+	 			"actual": true
+	 		},
+	 		"req-stock": {
+	 			"min": 0,
+	 			"max": 9,
+	 			"actual": 0
+	 		},
+	 		"under-stocked": {
+	 			"actual": false
+	 		},
+	 		"fully-stocked": {
+	 			"actual": true
+	 		}
+	 	}
+ 	},
+ 	"rm3": {
+ 		"known": {
+	 		"node": true,
+	 		"is-room": true
+	 	},
+	 	"unknown": {
+	 		"dirtiness": {
+	 			"min": 0,
+	 			"max": 5,
+	 			"actual": 50
+	 		},
+	 		"dirty": {
+	 			"actual": false
+	 		},
+	 		"cleaned": {
+	 			"actual": true
+	 		},
+	 		"req-stock": {
+	 			"min": 0,
+	 			"max": 9,
+	 			"actual": 0
+	 		},
+	 		"under-stocked": {
+	 			"actual": false
+	 		},
+	 		"fully-stocked": {
+	 			"actual": true
+	 		}
+	 	}
+ 	},
+ 	"res-rm": {"node": true, "is-resource-room": true} 
+ },
+ "graph": {
+ 	"bidirectional": true,
+ 	"edges": [
+ 		["n1", "n2", 10],
+ 		["n2", "n3", 10],
+ 		["n1", "rm1", 1],
+ 		["n2", "res-rm", 1],
+ 		["n3", "rm3", 1]
+ 	]
+ },
+ "goal": [
+ 	["cleaned", "rm1"],
+ 	["cleaned", "rm3"],
+ 	["fully-stocked", "rm1"],
+ 	["fully-stocked", "rm3"]
+ ],
+ "metric": []
+}

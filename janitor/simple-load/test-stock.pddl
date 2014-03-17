@@ -1,0 +1,56 @@
+(define (problem test-move)
+	(:domain janitor)
+	(:objects agent1 n1 n2 rm1 rm3 res-rm)
+	(:init 
+		(agent agent1)
+		(node n1)
+		(node n2)
+		(node n3)
+		(node rm1) (is-room rm1)
+		(node rm3) (is-room rm3)
+		(node res-rm) (is-resource-room res-rm)
+		
+		(edge n1 n2)
+		(edge n2 n1)
+		(edge n2 n3)
+		(edge n3 n2)
+		(edge n1 rm1)
+		(edge rm1 n1)
+		(edge n2 res-rm)
+		(edge res-rm n2)
+		(edge n3 rm3)
+		(edge rm3 n3)
+		
+		(= (distance n1 n2) 10)
+		(= (distance n2 n1) 10)
+		(= (distance n2 n3) 10)
+		(= (distance n3 n2) 10)
+		
+		(= (distance n1 rm1) 1)
+		(= (distance rm1 n1) 1)
+		(= (distance n3 rm3) 1)
+		(= (distance rm3 n3) 1)
+		(= (distance n2 res-rm) 1)
+		(= (distance res-rm n2) 1)
+
+		(= (max-stock rm1) 9)
+
+		(dirty rm1)
+		(= (dirtiness rm1) 5)
+		(dirty rm3)
+		(= (dirtiness rm3) 5)
+		
+		(under-stocked rm1)
+		(= (stock rm1) 2)
+		
+		(= (capacity agent1) 10)
+		(= (carrying agent1) 0)
+		(at agent1 n1)
+	)
+	
+	(:goal (and
+			(cleaned rm1)
+			(cleaned rm2)
+			(fully-stocked rm1)
+	))
+)
