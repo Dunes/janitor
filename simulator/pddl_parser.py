@@ -37,8 +37,10 @@ def encode_problem_to_file(filename, model):
 		encode_problem(fh, model)
 
 def encode_problem(out, model):
+
+	has_metric = model.has_key("metric")
 	
-	_encode_preamble(out, model["problem"], model["domain"])
+	_encode_preamble(out, model["problem"], model["domain"], has_metric)
 
 	_encode_objects(out, model["agents"].keys() + model["nodes"].keys())
 
@@ -46,18 +48,22 @@ def encode_problem(out, model):
 
 	_encode_goal(out, model["goal"])
 
-#	_encode_metric(out)
+	if has_metric:
+		_encode_metric(out, model["metric"])
 
 	# postamble
 	out.write(")")
 
 
-def _encode_preamble(out, problem_name, domain_name):
+def _encode_preamble(out, problem_name, domain_name, requires_preferences):
 	out.write("(define (problem ")
 	out.write(problem_name)
 	out.write(") (:domain ")
 	out.write(domain_name)
-	out.write(")\n")
+	out.write(")")
+	if requires_preferences:
+		out.write(" (:requirements :preferences)")
+	out.write("\n")
 
 def _encode_objects(out, objects):
 	out.write("(:objects ")
@@ -110,7 +116,10 @@ def _unknown_value_getter(possible_values, object_name, assumed_values):
 def _encode_predicate(out, args):
 	out.write("(")
 	for arg in args:
-		out.write(arg)
+		if isinstance(arg, (list, tuple)):
+			_encode_predicate(out, arg)
+		else:
+			out.write(str(arg))
 		out.write(" ")
 	out.write(") ")
 
@@ -133,9 +142,19 @@ def _encode_graph(out, graph):
 
 def _encode_goal(out, goals):
 	out.write("(:goal (and ")
-	for goal in goals:
-		_encode_predicate(out, goal)
+	if isinstance(goals, list):
+		for goal in goals:
+			_encode_predicate(out, goal)		
+	else: # is dict
+		for goal in goals["hard-goals"]:
+			_encode_predicate(out, goal)
+		for preference in goals["preferences"]:
+			_encode_predicate(out, ["preference"] + preference)
 	out.write("))\n")
 	
-def _encode_metric(out):
-	raise Exception("not implemented yet")
+def _encode_metric(out, metric):
+	out.write("(:metric ")
+	out.write(metric["type"])
+	out.write(" ")
+	_encode_predicate(out, metric["predicate"])
+	out.write(")\n")

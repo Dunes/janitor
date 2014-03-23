@@ -6,7 +6,7 @@ from os.path import join as path_join
 working_directory = ".."
 
 tempfile.tempdir = path_join(working_directory, "temp_problems")
-planner_location = "./optic-clp"
+planner_location = "./optic-cplex"
 domain_file = "./janitor/janitor-domain.pddl"
 
 def get_plan(model):

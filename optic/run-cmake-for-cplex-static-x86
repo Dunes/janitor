@@ -1,27 +1,36 @@
 #!/bin/bash
 
-export CPLEX="$HOME/ilog/cplex121/lib/x86_debian4.0_4.1/static_pic/libcplex.a"
+#export CPLEX="$HOME/ilog/cplex121/lib/x86_debian4.0_4.1/static_pic/libcplex.a"
+#export CPLEX="/opt/IBM/ILOG/CPLEX_Studio126/cplex/lib/x86-64_osx/static_pic/libcplex.a"
+export CPLEX="/opt/ibm/ILOG/CPLEX_Studio126/cplex/lib/x86-64_linux/static_pic/libcplex.a"
 
 if [ ! -e "$CPLEX" ]; then
     echo "$CPLEX is not the libcplex.a library file"
     exit 1
 fi
 
-export ILOCPLEX="$HOME/ilog/cplex121/lib/x86_debian4.0_4.1/static_pic/libilocplex.a"
+#export ILOCPLEX="$HOME/ilog/cplex121/lib/x86_debian4.0_4.1/static_pic/libilocplex.a"
+#export ILOCPLEX="/opt/IBM/ILOG/CPLEX_Studio126/cplex/lib/x86-64_osx/static_pic/libilocplex.a"
+export ILOCPLEX="/opt/ibm/ILOG/CPLEX_Studio126/cplex/lib/x86-64_linux/static_pic/libilocplex.a"
+
 
 if [ ! -e "$ILOCPLEX" ]; then
     echo "$ILOCPLEX is not the libilocplex.a library file"
     exit 1
 fi
 
-export CONCERT="$HOME/ilog/concert29/lib/x86_debian4.0_4.1/static_pic/libconcert.a"
+#export CONCERT="$HOME/ilog/concert29/lib/x86_debian4.0_4.1/static_pic/libconcert.a"
+#export CONCERT="/opt/IBM/ILOG/CPLEX_Studio126/concert/lib/x86-64_osx/static_pic/libconcert.a"
+export CONCERT="/opt/ibm/ILOG/CPLEX_Studio126/concert/lib/x86-64_linux/static_pic/libconcert.a"
 
 if [ ! -e "$CONCERT" ]; then
     echo "$CONCERT is not the libconcert.a library file"
     exit 1
 fi
 
-export CPLEX_INCLUDES="$HOME/ilog/cplex121/include"
+#export CPLEX_INCLUDES="$HOME/ilog/cplex121/include"
+#export CPLEX_INCLUDES="/opt/IBM/ILOG/CPLEX_Studio126/cplex/include"
+export CPLEX_INCLUDES="/opt/ibm/ILOG/CPLEX_Studio126/cplex/include"
 
 if [ ! -e "$CPLEX_INCLUDES/ilcplex/ilocplex.h" ]; then
     echo "$CPLEX_INCLUDES does not point to a path containing ilcplex/ilocplex.h"
@@ -29,7 +38,9 @@ if [ ! -e "$CPLEX_INCLUDES/ilcplex/ilocplex.h" ]; then
 fi
 
 
-export CONCERT_INCLUDES="$HOME/ilog/concert29/include"
+#export CONCERT_INCLUDES="$HOME/ilog/concert29/include"
+#export CONCERT_INCLUDES="/opt/IBM/ILOG/CPLEX_Studio126/concert/include"
+export CONCERT_INCLUDES="/opt/ibm/ILOG/CPLEX_Studio126/concert/include"
 
 if [ ! -e "$CONCERT_INCLUDES/ilconcert/iloenv.h" ]; then
     echo "$CONCERT_INCLUDES does not point to a path containing ilconcert/iloenv.h"
