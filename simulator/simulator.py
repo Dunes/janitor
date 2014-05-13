@@ -1,35 +1,72 @@
 #! /usr/bin/env python
 
-import planner
+import argparse
+
+from planner import Planner
 import problem_parser
 
 from collections import Iterable
 from itertools import chain
 
-from sys import argv
+from action import Clean, Move
 
-def run_simulation(problem_file="janitor-sample.json"):
+from math import isinf
+
+def run_simulation(problem_file, planning_time="first"):
+
+	planner = Planner(planning_time)
+
+	time_planning = 0
+	plan_start_time = 0
+	simulation_time = 0
 
 	planner_called = 0
 
-	print problem_file
+
 	model = problem_parser.decode(problem_file)
 	new_knowledge = True
 	execution = []
+	execute_actions_before = 0
+	
+	time_waiting_for_actions_to_finish = 0
+	time_waiting_for_planner_to_finish = 0
 	
 	while new_knowledge:
-	
-		plan = planner.get_plan(model)
+
+		plan, time_taken = planner.get_plan_and_time_taken(model)
+		
+		time_delta = simulation_time - (time_taken + execute_actions_before)
+		if time_delta > 0:
+			time_waiting_for_actions_to_finish += time_delta
+		else:
+			time_waiting_for_planner_to_finish += -time_delta
+		print "time_delta", time_delta
+		
+		simulation_time += max(simulation_time, execute_actions_before + time_taken)
+		
+		time_planning += time_taken
+		print "new plan"
+		
 		planner_called += 1
 		new_knowledge = False
 	
+		execute_actions_before = float("infinity")
+		
+		# adjust for planner starting at t = 0
+		for action in plan: 
+			action.start_time += simulation_time
+		
 		for action in plan:
-			print "applying:", action
-			new_knowledge = action.apply(model)
-			execution.append(action)
-			if new_knowledge:
-				print "found new information: replanning"
+			if action.start_time >= execute_actions_before:
 				break
+			print "applying:", action
+			new_knowledge_this_action = action.apply(model)
+			execution.append(action)
+			simulation_time = max(simulation_time, action.end_time)
+			if new_knowledge_this_action and not new_knowledge:
+				print "found new information: replanning"
+				execute_actions_before = action.end_time
+				new_knowledge = True
 		
 	print "simulation finished"
 
@@ -41,10 +78,15 @@ def run_simulation(problem_file="janitor-sample.json"):
 	
 	print "Planner called:", planner_called
 	print "Actual execution:\n", execution
-	return goal_achieved
+	print "Total time taken:", simulation_time
+	print "Time spent planning:", time_planning
+	print "time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish
+	print "time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish
 
 def is_goal_in_model(goal, model):
-	goal = list(tuple(g) for g in goal)
+	hard_goals = goal["hard-goals"]
+	hard_goals = list(tuple(g) for g in hard_goals)
+	goal = hard_goals
 	it = ((obj_name, value.get("known", value)) for obj_name, value in chain(model["agents"].iteritems(), model["nodes"].iteritems()))
 	for obj_name, values in it:
 		for pred_name, args in values.iteritems():
@@ -63,8 +105,16 @@ def substitute_obj_name(obj_name, args):
 	else:
 		return (obj_name if args is True else args,)
 
+def parser():
+	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
+	p.add_argument("problem_file", default="janitor-preferences-sample.json", nargs="?")
+	p.add_argument("--planning_time", "-t", type=float, default='nan')
+	return p
+
+def print_args(problem_file, planning_time):
+	print problem_file, planning_time
+
 if __name__ == "__main__":
-	if len(argv) > 1:
-		run_simulation(argv[1])
-	else:
-		run_simulation()
+	args = parser().parse_args()
+	print args
+	run_simulation(**args.__dict__)

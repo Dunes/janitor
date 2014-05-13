@@ -6,6 +6,10 @@ class Action(object):
 		self.start_time = start_time
 		self.duration = duration
 	
+	@property
+	def end_time(self):
+		return self.start_time + self.duration
+	
 	def __repr__(self):
 		
 		return "{}({})".format(self.__class__.__name__,

@@ -13,24 +13,33 @@ _action_map = {
 }
 
 def _is_not_starting_action(line):
-	return not line.startswith("0.000: ")	
+	return not line.startswith("0.000: ")
 
-def decode_plan_from_optic(data_input):
+def _is_not_plan_cost(line):
+	return not line.startswith("; Cost: ")	
+
+def decode_plan_from_optic(data_input, report_incomplete_plan=True):
 	#read until first action
-	return decode_plan(dropwhile(_is_not_starting_action, data_input))
+	return decode_plan(dropwhile(_is_not_starting_action, data_input), report_incomplete_plan)
 	
 
-def decode_plan(data_input):
+def decode_plan(data_input, report_incomplete_plan=True):
 	
+	line = None
 	for line in data_input:
 		if line == "\n":
 			break
+		if line[-1] != "\n":
+			raise IncompletePlanException("action not terminated properly")
 		items = line.split(" ")
 		start_time = float(items[0][:-1])
 		end_time = float(items[-1][1:-2])
 		action_name = items[1].strip("()")
 		arguments = tuple(i.strip("()") for i in items[2:-2])
-		yield _action_map[action_name](start_time, end_time, arguments)
+		action =  _action_map[action_name](start_time, end_time, arguments)
+		yield action
+	if report_incomplete_plan and line != "\n":
+		raise IncompletePlanException("possible missing action")
 
 def encode_problem_to_file(filename, model):
 	with (open(filename, "w") if isinstance(filename, str) else filename) as fh:
@@ -49,7 +58,7 @@ def encode_problem(out, model):
 	_encode_goal(out, model["goal"])
 
 	if has_metric:
-		_encode_metric(out, model["metric"])
+		_encode_metric(out, model["metric"])	
 
 	# postamble
 	out.write(")")
@@ -158,3 +167,6 @@ def _encode_metric(out, metric):
 	out.write(" ")
 	_encode_predicate(out, metric["predicate"])
 	out.write(")\n")
+	
+class IncompletePlanException(Exception):
+	pass
