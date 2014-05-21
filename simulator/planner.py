@@ -1,10 +1,11 @@
 from subprocess import Popen, PIPE
-from pddl_parser import decode_plan_from_optic, IncompletePlanException, encode_problem_to_file
+from pddl_parser import decode_plan_from_optic, encode_problem_to_file
 import tempfile
 from os.path import join as path_join
 from threading import Timer
 from time import time
 from math import isnan
+from planning_exceptions import NoPlanException, IncompletePlanException
 
 class Planner(object):
 	
@@ -38,6 +39,8 @@ class Planner(object):
 				except IncompletePlanException:
 					break
 
+		if not plan:
+			raise NoPlanException()
 		return plan
 	
 	def get_plan_and_time_taken(self, model):

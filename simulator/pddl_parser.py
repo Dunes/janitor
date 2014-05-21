@@ -3,6 +3,8 @@ from numbers import Number
 from itertools import dropwhile
 import action
 
+from planning_exceptions import IncompletePlanException
+
 _action_map = {
 	"move": action.Move,
 	"clean": action.Clean,
@@ -167,6 +169,3 @@ def _encode_metric(out, metric):
 	out.write(" ")
 	_encode_predicate(out, metric["predicate"])
 	out.write(")\n")
-	
-class IncompletePlanException(Exception):
-	pass

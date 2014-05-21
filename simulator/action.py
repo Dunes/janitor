@@ -1,11 +1,27 @@
+from collections import namedtuple
+from planning_exceptions import ExecutionError
 
+ExecutionState = namedtuple("ExecutionState", "pre_start executing finished")("pre_start", "executing", "finished")
 
 class Action(object):
 	
 	def __init__(self, start_time, duration):
 		self.start_time = start_time
 		self.duration = duration
+		self.execution_state = ExecutionState.pre_start
 	
+	def start(self):
+		if self.execution_state != ExecutionState.pre_start:
+			raise ExecutionError("invalid state")
+		self.execution_state = ExecutionState.executing
+	
+	def finish(self):
+		print "finishing:", self
+		if self.execution_state != ExecutionState.executing:
+			raise ExecutionError("invalid state")
+		self.execution_state = ExecutionState.finished
+		
+
 	@property
 	def end_time(self):
 		return self.start_time + self.duration
@@ -17,7 +33,6 @@ class Action(object):
 		)
 
 class Move(Action):
-	
 	def __init__(self, start_time, duration, (agent, start_node, end_node)):
 		super(Move, self).__init__(start_time, duration)
 		self.agent = agent
@@ -25,11 +40,20 @@ class Move(Action):
 		self.end_node = end_node
 	
 	def apply(self, model):
-	
+		if model["agents"][self.agent]["at"][1] != self.start_node:
+			raise Exception("agent did not start in expected room")
 		model["agents"][self.agent]["at"][1] = self.end_node
 	
+class Observe(Action):
+	
+	def __init__(self, start_time, agent, node):
+		super(Observe, self).__init__(start_time, 0)
+		self.agent = agent
+		self.node = node
+	
+	def apply(self, model):
 		# check if new knowledge
-		rm_obj = model["nodes"][self.end_node]
+		rm_obj = model["nodes"][self.node]
 		unknown = rm_obj.get("unknown")
 		
 		if unknown:
@@ -62,7 +86,7 @@ class Clean(Action):
 		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
 		return False
-		
+	
 
 class ExtraClean(Clean):
 

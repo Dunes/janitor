@@ -52,7 +52,8 @@ def parser():
 	p.add_argument("--output","-o", required=True)
 	p.add_argument("--size", "-s", required=True, action=PointAction, help="the size of the map grid, specified as x,y")
 	p.add_argument("--dirtiness","-d", required=True, action=ActualMinMaxAction)
-	p.add_argument("--required_stock","-rs", required=True, action=ActualMinMaxAction)
+	p.add_argument("--extra-dirty-rooms","-ed", required=False, nargs="*", action=PointAction)
+	p.add_argument("--required-stock","-rs", required=True, action=ActualMinMaxAction)
 	p.add_argument("--assume-clean", default=False)
 	p.add_argument("--assume-stocked", default=False)
 	p.add_argument("--resource-rooms", "-rr", nargs="+", action=PointAction, required=True)
@@ -68,7 +69,7 @@ def parser():
 	p.add_argument("--domain","-dn", required=True)
 	return p
 
-def create_problem(output, size, dirtiness, required_stock, assume_clean, assume_stocked, resource_rooms, edge_length, violation_weight, agents, agent_start, carry_capacity, problem_name, domain):
+def create_problem(output, size, dirtiness, required_stock, assume_clean, assume_stocked, resource_rooms, edge_length, violation_weight, agents, agent_start, carry_capacity, problem_name, domain, extra_dirty_rooms):
 	assume_dirty = not assume_clean
 	problem = {
 		"problem": problem_name,
@@ -83,8 +84,8 @@ def create_problem(output, size, dirtiness, required_stock, assume_clean, assume
 		 }
 	}
 	
-	problem["nodes"] = create_nodes(size, resource_rooms, dirtiness, required_stock)
-	problem["graph"], grid = create_graph(size, resource_rooms, edge_length)
+	problem["nodes"] = create_nodes(size, resource_rooms, extra_dirty_rooms, dirtiness, required_stock)
+	problem["graph"], grid = create_graph(size, resource_rooms, extra_dirty_rooms, edge_length)
 	problem["agents"] = create_agents(agents, carry_capacity, grid[agent_start.x][agent_start.y])
 	problem["goal"] = create_goal(size, resource_rooms)
 	problem["metric"] = create_metric(violation_weight, size, resource_rooms)
@@ -96,28 +97,39 @@ def create_problem(output, size, dirtiness, required_stock, assume_clean, assume
 	with open(output, "w") as f:
 		dump(problem, f)
 
-def create_nodes(size, resource_rooms, dirtiness, req_stock):
+def create_nodes(size, resource_rooms, extra_dirty_rooms, dirtiness, req_stock):
 	num_resource_rooms = len(resource_rooms)
-	total_rooms = size.x * size.y - num_resource_rooms
+	num_extra_dirty_rooms = len(extra_dirty_rooms)
+	total_normal_rooms = size.x * size.y - num_resource_rooms - num_extra_dirty_rooms
 	
-	res_rooms = (
+	if set(resource_rooms).intersection(extra_dirty_rooms):
+		raise Exception("rooms cannot be both resource rooms and extra dirty: "+str(set(resource_rooms).intersection(extra_dirty_rooms)))
+	
+	resource_rms = (
 		("res-rm"+str(i), {"node": True, "is-resource-room": True}) 
 			for i in range(1, num_resource_rooms+1)
 	)
 	
-	room = create_room(dirtiness, req_stock)
+	extra_dirty_room = create_room(dirtiness, req_stock, extra_dirty=True)
 	
-	rooms = (
-		("rm"+str(i), deepcopy(room)) for i in range(1, total_rooms + 1)
+	extra_dirty_rms = (
+		("rm-ed"+str(i), deepcopy(room)) for i in range(1, num_extra_dirty_rooms + 1)
 	)
 	
-	return dict(chain(res_rooms, rooms))
+	room = create_room(dirtiness, req_stock, extra_dirty=False)
+	
+	rooms = (
+		("rm"+str(i), deepcopy(room)) for i in range(1, total_normal_rooms + 1)
+	)
+	
+	return dict(chain(resource_rms, rooms, extra_dirty_rms))
 
 
-def create_graph(size, resource_rooms, edge_length):
+def create_graph(size, resource_rooms, extra_dirty_rooms, edge_length):
 	num_resource_rooms = len(resource_rooms)
 	total_rooms = size.x * size.y - num_resource_rooms
 	res_room_num = 1
+	extra_dirty_room_num = 1
 	room_num = 1
 	
 	grid = []
@@ -127,6 +139,9 @@ def create_graph(size, resource_rooms, edge_length):
 			 if (x,y) in resource_rooms:
 			 	column.append("res-rm"+str(res_room_num))
 			 	res_room_num += 1
+			 elif (x,y) in extra_dirty_rooms:
+			 	column.append("rm-ed"+str(extra_dirty_room_num))
+			 	extra_dirty_room_num += 1
 			 else:
 			 	column.append("rm"+str(room_num))
 			 	room_num += 1
@@ -144,10 +159,10 @@ def create_graph(size, resource_rooms, edge_length):
 			if y + 1 < size.y:
 				edges.append([room, grid[x][y+1],edge_length])			
 	
-	return {
+	return ({
 		"bidirectional": False,
 		"edges": edges
-	}, grid
+	}, grid)
 	
 def create_agents(agents, carry_capacity, room):
 	agent = create_agent(carry_capacity, room)
@@ -164,35 +179,38 @@ def create_agent(carry_capacity, room):
  		"max-carry": carry_capacity.max
  	}
 	
-def create_goal(size, resource_rooms):
-	num_rooms = (size.x * size.y) - len(resource_rooms)
+def create_goal(size, resource_rooms, extra_dirty_rooms):
+	num_rooms = (size.x * size.y) - len(resource_rooms) - len(extra_dirty_rooms)
+	room_ids = chain(
+		("rm"+str(i) for i in range(1, num_rooms+1)),
+		("rm-ed"+str(i) for i in range(1, len(extra_dirty_rooms)+1))
+	)
 	return {
 		"hard-goals": [
-			["cleaned", "rm"+str(i)] 
-				for i in range(1, num_rooms+1)
-		],
-		"preferences": [
-			["stocked-rm"+str(i), ["fully-stocked", "rm"+str(i)]]
-				for i in range(1, num_rooms+1)
+			["cleaned", rm_id] for rm_id in room_ids
 		]
 	}
 	
 def create_metric(violation_weight, size, resource_rooms):
 	num_rooms = (size.x * size.y) - len(resource_rooms)
 	return {"type": "minimize",
-	 	"predicate": ["+", ["total-time"]] + [
-		 	["*", violation_weight, ["is-violated", "stocked-rm"+str(i)]]
-		 		for i in range(1, num_rooms+1)
-		]
+		"predicate": ["total-time"]
+#	 	"predicate": ["+", ["total-time"]] + [
+#		 	["*", violation_weight, ["is-violated", "stocked-rm"+str(i)]]
+#		 		for i in range(1, num_rooms+1)
+#		]
  	}
 
-def create_room(dirtiness, req_stock):
+def create_room(dirtiness, req_stock, extra_dirty):
 	return {
 		"known": {
 	 		"node": True,
 	 		"is-room": True
 	 	},
 	 	"unknown": {
+	 		"extra-dirty": {
+	 			"actual": extra_dirty 
+	 		},
 	 		"dirtiness": {
 	 			"min": dirtiness.min,
 	 			"max": dirtiness.max,
