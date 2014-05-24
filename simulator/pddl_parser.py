@@ -97,7 +97,7 @@ def _encode_init_helper(out, items, assumed_values):
 		else :
 			_encode_init_values(out, object_name, object_values["known"])
 			_encode_init_values(out, object_name, object_values["unknown"], assumed_values, _unknown_value_getter)
-		
+			
 def _encode_init_values(out, object_name, object_values, assumed_values=None, value_getter=(lambda x, _0, _1: x)):
 	for value_name, possible_values in object_values.iteritems():
 		value = value_getter(possible_values, value_name, assumed_values)
@@ -159,8 +159,9 @@ def _encode_goal(out, goals):
 	else: # is dict
 		for goal in goals["hard-goals"]:
 			_encode_predicate(out, goal)
-		for preference in goals["preferences"]:
-			_encode_predicate(out, ["preference"] + preference)
+		if goals.has_key("preferences"):
+			for preference in goals["preferences"]:
+				_encode_predicate(out, ["preference"] + preference)
 	out.write("))\n")
 	
 def _encode_metric(out, metric):

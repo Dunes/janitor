@@ -17,6 +17,7 @@
 		(fully-stocked ?rm)
 		(dirty ?rm)
 		(extra-dirty ?rm)
+		(not-extra-dirty ?rm)
 		(cleaned ?rm) ; clean is a keyword
 		
 		
@@ -51,7 +52,8 @@
 						(over all (at ?a ?rm))
 						(at start (agent ?a))
 						(at start (available ?a))
-						(at start (is-room ?rm)))
+						(at start (is-room ?rm))
+						(at start (not-extra-dirty ?rm)))
 		:effect (and (at start (not (dirty ?rm)))
 						(at start (not (available ?a)))
 						(at end (cleaned ?rm))

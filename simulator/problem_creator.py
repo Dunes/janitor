@@ -5,7 +5,7 @@ from collections import namedtuple
 from json import dump
 from copy import deepcopy
 from itertools import chain
-from action import Move
+from action import Observe
 
 
 class Point(namedtuple("Point","x y")):
@@ -80,19 +80,22 @@ def create_problem(output, size, dirtiness, required_stock, assume_clean, assume
 		 	"dirtiness": ("max" if assume_dirty else 0),
 		 	"under-stocked": not assume_stocked,
 		 	"fully-stocked": assume_stocked,
-		 	"req-stock": "max"
+		 	"req-stock": "max",
+		 	"extra-dirty": False,
+		 	"not-extra-dirty": True,
 		 }
 	}
 	
 	problem["nodes"] = create_nodes(size, resource_rooms, extra_dirty_rooms, dirtiness, required_stock)
 	problem["graph"], grid = create_graph(size, resource_rooms, extra_dirty_rooms, edge_length)
 	problem["agents"] = create_agents(agents, carry_capacity, grid[agent_start.x][agent_start.y])
-	problem["goal"] = create_goal(size, resource_rooms)
+	problem["goal"] = create_goal(size, resource_rooms, extra_dirty_rooms)
 	problem["metric"] = create_metric(violation_weight, size, resource_rooms)
 	
+	# start problem such that agents have observed starting location
 	for agent_name, agent in problem["agents"].items():
 		rm = agent["at"][1]
-		Move(None, None, (agent_name, rm, rm)).apply(problem)
+		Observe(None, agent_name, rm).apply(problem)
 	
 	with open(output, "w") as f:
 		dump(problem, f)
@@ -113,7 +116,7 @@ def create_nodes(size, resource_rooms, extra_dirty_rooms, dirtiness, req_stock):
 	extra_dirty_room = create_room(dirtiness, req_stock, extra_dirty=True)
 	
 	extra_dirty_rms = (
-		("rm-ed"+str(i), deepcopy(room)) for i in range(1, num_extra_dirty_rooms + 1)
+		("rm-ed"+str(i), deepcopy(extra_dirty_room)) for i in range(1, num_extra_dirty_rooms + 1)
 	)
 	
 	room = create_room(dirtiness, req_stock, extra_dirty=False)
@@ -209,7 +212,10 @@ def create_room(dirtiness, req_stock, extra_dirty):
 	 	},
 	 	"unknown": {
 	 		"extra-dirty": {
-	 			"actual": extra_dirty 
+	 			"actual": extra_dirty
+	 		},
+	 		"not-extra-dirty": {
+	 			"actual": not extra_dirty
 	 		},
 	 		"dirtiness": {
 	 			"min": dirtiness.min,

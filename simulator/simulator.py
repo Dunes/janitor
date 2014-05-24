@@ -11,18 +11,18 @@ from Queue import PriorityQueue
 from math import isinf
 from itertools import chain
 
-from action import Clean, Move, ExecutionState, Observe
+from action import Clean, Move, ExecutionState, Observe, Plan
 from planning_exceptions import NoPlanException
 
 
-def run_simulation(model, planning_time="first"):
+def run_simulation(model, planning_time, wait_for_observations):
 
 	planner = Planner(planning_time)
 
 	# variables to run simulation
 	simulation_time = 0
 	new_knowledge = True
-	observation_time = 0
+	observation_time = None
 	
 	# variables used to record simulation
 	planner_called = 0
@@ -36,9 +36,16 @@ def run_simulation(model, planning_time="first"):
 	
 	while new_knowledge and not is_goal_in_model(model["goal"], model):
 		
+		if wait_for_observations:
+			observe_environment(model)
+			if observation_time is not None:
+				time_waiting_for_actions_to_finish += simulation_time - observation_time
+			observation_time = simulation_time
+		
 		plan, time_taken = planner.get_plan_and_time_taken(model)
 		time_planning += time_taken
 		planner_called += 1
+		executed.append(Plan((observation_time if observation_time is not None else simulation_time), time_taken))
 
 		planning_finished = time_taken + (observation_time if observation_time is not None else simulation_time)
 		if simulation_time > planning_finished:
@@ -64,12 +71,11 @@ def run_simulation(model, planning_time="first"):
 
 	print "Goal was:", model["goal"]
 	print "Final state:\n", model
+	print "Actual executed:\n", executed
 	
 	goal_achieved = is_goal_in_model(model["goal"], model)
 	print "Goal achieved:", goal_achieved
-	
 	print "Planner called:", planner_called
-	print "Actual executed:\n", executed
 	print "Total time taken:", simulation_time
 	print "Time spent planning:", time_planning
 	print "time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish
@@ -120,8 +126,10 @@ def run_plan(model, plan, simulation_time, deadline):
 				observation_time = time
 				break
 
-	is_executing = (lambda action: action.execution_state == ExecutionState.executing or 
-		(action.end_time == time and action.execution_state != ExecutionState.finished))
+	is_executing = (lambda action: (action.execution_state == ExecutionState.executing and action.start_time != time) or 
+		(action.end_time == time and action.execution_state != ExecutionState.finished)) 
+	# second test captures Observe scheduled for time
+	
 	# finish actions that are still executing
 	actions_still_executing = (action for (time, action) in execution_queue.queue if is_executing(action))
 	actions_still_executing = sorted(actions_still_executing, key=attrgetter("end_time"))
@@ -133,6 +141,7 @@ def run_plan(model, plan, simulation_time, deadline):
 		executed.append(action)
 	simulation_time = executed[-1].end_time
 	
+	executed = [action for action in executed if type(action) is not Observe]
 	return new_knowledge, executed, simulation_time, observation_time
 
 def is_goal_in_model(goal, model):
@@ -160,11 +169,13 @@ def substitute_obj_name(obj_name, args):
 def parser():
 	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
 	p.add_argument("problem_file", default="janitor-preferences-sample.json", nargs="?")
-	p.add_argument("--planning_time", "-t", type=float, default='nan')
+	p.add_argument("--planning_time", "-t", type=float, default="nan")
+	p.add_argument("--wait-for-observations", "-w", action="store_true", default=False)
+	p.add_argument("--do-not-wait-for-observations", "-W", action="store_false", dest="wait_for_observations")
 	return p
 
 if __name__ == "__main__":
 	args = parser().parse_args()
 	print args
 	model = problem_parser.decode(args.problem_file)
-	run_simulation(model, args.planning_time)
+	run_simulation(model, args.planning_time, args.wait_for_observations)

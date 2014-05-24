@@ -29,8 +29,13 @@ class Action(object):
 	def __repr__(self):
 		
 		return "{}({})".format(self.__class__.__name__,
-			", ".join("{}={!r}".format(k,v) for k,v in self.__dict__.iteritems())
+			", ".join("{}={!r}".format(k,v) for k,v in self.__dict__.iteritems() if k != "execution_state")
 		)
+
+class Plan(Action):
+	def __init__(self, start_time, duration):
+		super(Plan, self).__init__(start_time, duration)
+		self.agent = "planner"
 
 class Move(Action):
 	def __init__(self, start_time, duration, (agent, start_node, end_node)):
@@ -41,7 +46,7 @@ class Move(Action):
 	
 	def apply(self, model):
 		if model["agents"][self.agent]["at"][1] != self.start_node:
-			raise Exception("agent did not start in expected room")
+			raise ExecutionError("agent did not start in expected room")
 		model["agents"][self.agent]["at"][1] = self.end_node
 	
 class Observe(Action):
@@ -81,18 +86,31 @@ class Clean(Action):
 		self.room = room
 		
 	def apply(self, model):
-		rm_obj = model["nodes"][self.room]["known"]	
+		rm_obj = model["nodes"][self.room]["known"]
+		if rm_obj["extra-dirty"]:
+			raise ExecutionError("cannot clean an extra-dirty room with Clean action")
+		del rm_obj["not-extra-dirty"]
 		del rm_obj["dirtiness"]
 		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
 		return False
 	
 
-class ExtraClean(Clean):
+class ExtraClean(Action):
 
 	def __init__(self, start_time, duration, (agent0, agent1, room)):
-		super(ExtraClean, self).__init__(start_time, duration, (agent0, room))
+		super(ExtraClean, self).__init__(start_time, duration)
+		self.room = room
+		self.agent0 = agent0
 		self.agent1 = agent1
+		
+	def apply(self, model):
+		rm_obj = model["nodes"][self.room]["known"]
+		del rm_obj["extra-dirty"]
+		del rm_obj["dirtiness"]
+		del rm_obj["dirty"]
+		rm_obj["cleaned"] = True
+		return False
 	
 class Load(Action):
 
