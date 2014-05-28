@@ -7,6 +7,7 @@ from copy import deepcopy
 from itertools import chain
 from action import Observe
 
+from random import uniform as rand
 
 class Point(namedtuple("Point","x y")):
 	pass
@@ -113,16 +114,16 @@ def create_nodes(size, resource_rooms, extra_dirty_rooms, dirtiness, req_stock):
 			for i in range(1, num_resource_rooms+1)
 	)
 	
-	extra_dirty_room = create_room(dirtiness, req_stock, extra_dirty=True)
+#	extra_dirty_room = create_room(dirtiness, req_stock, extra_dirty=True)
 	
 	extra_dirty_rms = (
-		("rm-ed"+str(i), deepcopy(extra_dirty_room)) for i in range(1, num_extra_dirty_rooms + 1)
+		("rm-ed"+str(i), create_room(dirtiness, req_stock, extra_dirty=True)) for i in range(1, num_extra_dirty_rooms + 1)
 	)
 	
-	room = create_room(dirtiness, req_stock, extra_dirty=False)
+#	room = create_room(dirtiness, req_stock, extra_dirty=False)
 	
 	rooms = (
-		("rm"+str(i), deepcopy(room)) for i in range(1, total_normal_rooms + 1)
+		("rm"+str(i), create_room(dirtiness, req_stock, extra_dirty=False)) for i in range(1, total_normal_rooms + 1)
 	)
 	
 	return dict(chain(resource_rms, rooms, extra_dirty_rms))
@@ -220,7 +221,7 @@ def create_room(dirtiness, req_stock, extra_dirty):
 	 		"dirtiness": {
 	 			"min": dirtiness.min,
 	 			"max": dirtiness.max,
-	 			"actual": dirtiness.actual
+	 			"actual": (dirtiness.actual if dirtiness.actual != "random" else rand(dirtiness.min, dirtiness.max))
 	 		},
 	 		"dirty": {
 	 			"actual": dirtiness.actual > 0

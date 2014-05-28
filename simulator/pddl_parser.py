@@ -51,7 +51,8 @@ def encode_problem(out, model):
 
 	has_metric = model.has_key("metric")
 	
-	_encode_preamble(out, model["problem"], model["domain"], has_metric)
+	#_encode_preamble(out, model["problem"], model["domain"], has_metric)
+	_encode_preamble(out, "problem-name", model["domain"], has_metric)
 
 	_encode_objects(out, model["agents"].keys() + model["nodes"].keys())
 

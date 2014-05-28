@@ -4,6 +4,7 @@ import argparse
 
 from planner import Planner
 import problem_parser
+from logger import Logger
 
 from operator import attrgetter
 from collections import Iterable
@@ -15,7 +16,7 @@ from action import Clean, Move, ExecutionState, Observe, Plan
 from planning_exceptions import NoPlanException
 
 
-def run_simulation(model, planning_time, wait_for_observations):
+def run_simulation(model, logger, planning_time, wait_for_observations):
 
 	planner = Planner(planning_time)
 
@@ -36,13 +37,15 @@ def run_simulation(model, planning_time, wait_for_observations):
 	
 	while new_knowledge and not is_goal_in_model(model["goal"], model):
 		
-		if wait_for_observations:
-			observe_environment(model)
-			if observation_time is not None:
-				time_waiting_for_actions_to_finish += simulation_time - observation_time
-			observation_time = simulation_time
+		if wait_for_observations and observation_time:
+			observers = observe_environment(model)
+			if observers:
+				time = get_latest_observation_time(observers, executed)
+				time_waiting_for_actions_to_finish += time - observation_time
+				observation_time = time
 		
 		plan, time_taken = planner.get_plan_and_time_taken(model)
+		logger.log_plan(plan)
 		time_planning += time_taken
 		planner_called += 1
 		executed.append(Plan((observation_time if observation_time is not None else simulation_time), time_taken))
@@ -56,11 +59,13 @@ def run_simulation(model, planning_time, wait_for_observations):
 		print "planning_finished", planning_finished
 		
 		simulation_time = max(simulation_time, planning_finished)
+		observation_time = None
 		
 		print "new plan"
 		# observe environment and check for changes since planning, before executing plan
-		new_knowledge = observe_environment(model)
-		if not new_knowledge:
+		observers = observe_environment(model)
+		new_knowledge = bool(observers)
+		if not observers:
 			plan = adjust_plan(plan, simulation_time)
 			_result = run_plan(model, plan, simulation_time, float("infinity"))
 			new_knowledge, executed_actions, simulation_time, observation_time = _result
@@ -69,9 +74,7 @@ def run_simulation(model, planning_time, wait_for_observations):
 	
 	print "simulation finished"
 
-	print "Goal was:", model["goal"]
-	print "Final state:\n", model
-	print "Actual executed:\n", executed
+#	print "Actual executed:\n", executed
 	
 	goal_achieved = is_goal_in_model(model["goal"], model)
 	print "Goal achieved:", goal_achieved
@@ -80,14 +83,35 @@ def run_simulation(model, planning_time, wait_for_observations):
 	print "Time spent planning:", time_planning
 	print "time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish
 	print "time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish
+	
+	
+	logger.log_property("goal_achieved", goal_achieved)
+	logger.log_property("planner_called", planner_called)
+	logger.log_property("end_simulation_time", simulation_time)
+	logger.log_property("total_time_planning", time_planning)
+	logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
+	logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
+	logger.log_property("execution", str(executed))
+	
+
+def get_latest_observation_time(observers, executed):
+	for action in sorted(executed, key=attrgetter("end_time"), reverse=True):
+		if type(action) is Move and action.agent in observers and observers[action.agent] == action.end_node:
+			return action.end_time
+	return None
+			
+	
 
 def observe_environment(model):
 	new_knowledge = False
+	observers = {}
 	actions = [Observe(None, agent_name, agent["at"][1])
 			for agent_name, agent in model["agents"].items()]
 	for action in actions:
-		new_knowlege = action.apply(model) or new_knowledge
-	return new_knowledge
+		if action.apply(model):
+			new_knowledge = True
+			observers[action.agent] = action.node
+	return observers
 
 def adjust_plan(plan, start_time):
 	plan = list(_adjust_plan_helper(plan))
@@ -169,7 +193,7 @@ def substitute_obj_name(obj_name, args):
 def parser():
 	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
 	p.add_argument("problem_file", default="janitor-preferences-sample.json", nargs="?")
-	p.add_argument("--planning_time", "-t", type=float, default="nan")
+	p.add_argument("--planning-time", "-t", type=float, default="nan")
 	p.add_argument("--wait-for-observations", "-w", action="store_true", default=False)
 	p.add_argument("--do-not-wait-for-observations", "-W", action="store_false", dest="wait_for_observations")
 	return p
@@ -178,4 +202,8 @@ if __name__ == "__main__":
 	args = parser().parse_args()
 	print args
 	model = problem_parser.decode(args.problem_file)
-	run_simulation(model, args.planning_time, args.wait_for_observations)
+	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time, args.wait_for_observations)
+	print "log:", log_file_name
+	with Logger(log_file_name) as logger:
+		run_simulation(model, logger, args.planning_time, args.wait_for_observations)
+	
