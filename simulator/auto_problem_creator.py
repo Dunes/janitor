@@ -21,14 +21,16 @@ def generate_random_locations(size, percentage_extra_dirty, exclude=()):
 def run():
 	size_types = (
 		Point(3,3),
-#		Point(5,5),
+		Point(4,4),
+		Point(5,5),
+		Point(6,6),
 		Point(7,7), 
 #		Point(10,10),
 	)
 	dirtiness_types = (
-		ActualMinMax("random", 0, 40),
-		ActualMinMax("random", 0, 60),
-		ActualMinMax("random", 0, 80),
+		ActualMinMax("random", 20, 40),
+		ActualMinMax("random", 30, 60),
+		ActualMinMax("random", 40, 80),
 	)
 	edge_length_types = (20,)
 	agents_types = (3,5,7,)
