@@ -12,9 +12,9 @@ class Logger(object):
 		name, ext = splitext(log_file_name)
 		return name + "-plans" + ext
 	
-	def __init__(self, log_file_name, working_directory="./logs"):
+	def __init__(self, log_file_name, working_directory="./logs", plans_subdir="plans"):
 		self.log_file_name = join(working_directory, log_file_name)
-		self.plan_log_file_name = join(working_directory, self.get_plan_log_file_name(log_file_name))
+		self.plan_log_file_name = join(working_directory, plans_subdir, self.get_plan_log_file_name(log_file_name))
 		self.log = None 
 		self.plan_log = None
 	
