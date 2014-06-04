@@ -6,7 +6,7 @@ from os.path import join
 def generate_problem_name(size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty):
 	keys = dict(locals())
 	format_string = "auto-size({size.x},{size.y})-dirt({dirtiness.actual},{dirtiness.min},{dirtiness.max})-" \
-		"edge({edge_length})-agents({agents})-start({starting_location})-extra-dirt({percentage_extra_dirty:.0%})"
+		"edge({edge_length})-agents({agents})-start({starting_location})-extra_dirt({percentage_extra_dirty:.0%})"
 	return format_string.format(**keys)
 
 def get_centre(size):
@@ -19,12 +19,17 @@ def generate_random_locations(size, percentage_extra_dirty, exclude=()):
 	
 
 def run():
+
+	repeats = 10
+
 	size_types = (
-		Point(3,3),
-		Point(4,4),
-		Point(5,5),
-		Point(6,6),
-		Point(7,7), 
+#		Point(3,3),
+#		Point(4,4),
+		Point(1,16),
+		Point(2,8),
+#		Point(5,5),
+#		Point(6,6),
+#		Point(7,7), 
 #		Point(10,10),
 	)
 	dirtiness_types = (
@@ -47,7 +52,7 @@ def run():
 	problem_name = "generated"
 	domain = "janitor"
 
-	problem_dir = "problems"
+	problem_dir = "problems/rect-16"
 
 	for data in product(size_types, dirtiness_types, edge_length_types, 
 				agents_types, starting_location_types, percentage_extra_dirty_types):
@@ -55,15 +60,17 @@ def run():
 		size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty = data
 	
 		problem_name = generate_problem_name(*data)
-		output = join(problem_dir, problem_name + ".json")
 	
 		agent_start = get_centre(size) if starting_location == "centre" else starting_location
 		resource_rooms = (agent_start,)
 		extra_dirty_rooms = generate_random_locations(size, percentage_extra_dirty, exclude=resource_rooms)
 	
-		create_problem(output, size, dirtiness, required_stock, assume_clean, 
-			assume_stocked, resource_rooms, edge_length, violation_weight, agents, 
-			agent_start, carry_capacity, problem_name, domain, extra_dirty_rooms)
+		for i in range(repeats):
+			output = join(problem_dir, problem_name + "-id({}).json".format(i))
+			
+			create_problem(output, size, dirtiness, required_stock, assume_clean, 
+				assume_stocked, resource_rooms, edge_length, violation_weight, agents, 
+				agent_start, carry_capacity, problem_name, domain, extra_dirty_rooms)
 
 if __name__ == "__main__":
 	run()

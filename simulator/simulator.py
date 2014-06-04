@@ -196,6 +196,7 @@ def parser():
 	p.add_argument("--planning-time", "-t", type=float, default="nan")
 	p.add_argument("--wait-for-observations", "-w", action="store_true", default=False)
 	p.add_argument("--do-not-wait-for-observations", "-W", action="store_false", dest="wait_for_observations")
+	p.add_argument("--log-directory", "-l", default="logs")
 	return p
 
 if __name__ == "__main__":
@@ -204,6 +205,6 @@ if __name__ == "__main__":
 	model = problem_parser.decode(args.problem_file)
 	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time, args.wait_for_observations)
 	print "log:", log_file_name
-	with Logger(log_file_name) as logger:
+	with Logger(log_file_name, args.log_directory) as logger:
 		run_simulation(model, logger, args.planning_time, args.wait_for_observations)
 	
