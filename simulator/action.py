@@ -3,6 +3,8 @@ from planning_exceptions import ExecutionError
 
 ExecutionState = namedtuple("ExecutionState", "pre_start executing finished")("pre_start", "executing", "finished")
 
+_no_match = object()
+
 class Action(object):
 	
 	def __init__(self, start_time, duration):
@@ -62,18 +64,22 @@ class Observe(Action):
 		unknown = rm_obj.get("unknown")
 		
 		if unknown:
-			rm_obj["known"].update((k,v["actual"]) for k, v in unknown.iteritems())
+			rm_obj["known"].update((k,self._get_actual_value(v)) for k, v in unknown.iteritems())
 			result = self._check_new_knowledge(unknown, model["assumed-values"])
 			unknown.clear()
 			return result
 		
 		return False
 	
+	@classmethod
+	def _get_actual_value(cls, value):
+		actual = value["actual"] # sometimes procduces a key refering to another value in `value'
+		return actual if actual not in value else value[actual]
+	
 	def _check_new_knowledge(self, unknown_values, assumed_values):
 		for key, unknown_value in unknown_values.iteritems():
-			assumed_value_key = assumed_values[key]
-			assumed_value = unknown_value.get(assumed_value_key, assumed_value_key)
-			if not assumed_value == unknown_value["actual"]:
+			assumed_value = assumed_values[key]
+			if unknown_value["actual"] not in (assumed_value, unknown_value.get(assumed_value, _no_match)):
 				return True
 		return False
 		
@@ -87,9 +93,6 @@ class Clean(Action):
 		
 	def apply(self, model):
 		rm_obj = model["nodes"][self.room]["known"]
-		if rm_obj["extra-dirty"]:
-			raise ExecutionError("cannot clean an extra-dirty room with Clean action")
-		del rm_obj["not-extra-dirty"]
 		del rm_obj["dirtiness"]
 		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
@@ -110,42 +113,4 @@ class ExtraClean(Action):
 		del rm_obj["dirtiness"]
 		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
-		return False
-	
-class Load(Action):
-
-	def __init__(self, start_time, duration, (agent, room)):
-		super(Load, self).__init__(start_time, duration)
-		self.agent = agent
-		self.room = room
-	
-	def apply(self, model):
-		agent_obj = model["agents"][self.agent]
-		agent_obj["has-stock"] = True
-		agent_obj["carrying"] = agent_obj["max-carry"]
-		
-		return False
-	
-class Unload(Action):
-
-	def __init__(self, start_time, end_time, (agent, room)):
-		super(Unload, self).__init__(start_time, end_time)
-		self.agent = agent
-		self.room = room
-		
-	def apply(self, model):
-		rm_obj = model["nodes"][self.room]["known"]
-		agent_obj = model["agents"][self.agent]
-		stock_moved = min(agent_obj["carrying"], rm_obj["req-stock"])	
-		
-		agent_obj["carrying"] -= stock_moved
-		rm_obj["req-stock"] -= stock_moved
-		
-		if not agent_obj["carrying"]:
-			agent_obj["has-stock"] = False
-		
-		if not rm_obj["req-stock"]:
-			rm_obj["under-stocked"] = False
-			rm_obj["fully-stocked"] = True
-		
 		return False

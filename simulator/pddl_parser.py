@@ -9,9 +9,6 @@ _action_map = {
 	"move": action.Move,
 	"clean": action.Clean,
 	"extra-clean": action.ExtraClean,
-	"load": action.Load,
-	"partial-stock-unload": action.Unload,
-	"full-stock-unload": action.Unload,
 }
 
 def _is_not_starting_action(line):

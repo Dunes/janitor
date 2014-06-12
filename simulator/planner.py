@@ -30,7 +30,8 @@ class Planner(object):
 		else:
 			args = self.planner_location, self.domain_file, problem_file
 			p = Popen(args, stdout=PIPE, cwd=self.working_directory)				
-			Timer(self.planning_time, p.terminate).start()
+			timer = Timer(self.planning_time, p.terminate)
+			timer.start()
 		
 			plan = None
 			while True:
@@ -38,6 +39,7 @@ class Planner(object):
 					plan = list(decode_plan_from_optic(p.stdout, report_incomplete_plan=True))
 				except IncompletePlanException:
 					break
+			timer.cancel()
 
 		if not plan:
 			raise NoPlanException()

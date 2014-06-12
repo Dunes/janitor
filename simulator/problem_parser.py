@@ -5,6 +5,6 @@ def decode(filename):
 		obj = json.load(fh)	
 	return obj
 
-def encode(filename):
+def encode(filename, obj):
 	with open(filename, mode="w") as fh:
-		obj = json.dump(fh)	
+		json.dump(obj, fh)

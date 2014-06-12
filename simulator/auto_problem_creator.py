@@ -25,8 +25,8 @@ def run():
 	size_types = (
 #		Point(3,3),
 #		Point(4,4),
-		Point(1,16),
-		Point(2,8),
+#		Point(1,16),
+#		Point(2,8),
 #		Point(5,5),
 #		Point(6,6),
 #		Point(7,7), 
@@ -39,20 +39,16 @@ def run():
 	)
 	edge_length_types = (20,)
 	agents_types = (3,5,7,)
-	starting_location_types = ("centre",) # resource_rooms and agent_start
+	starting_location_types = ("centre",) # empty_rooms and agent_start
 	percentage_extra_dirty_types = (0.2,)
 
 
 	output = "generated"
-	required_stock = ActualMinMax(0,0,0)
 	assume_clean = False
-	assume_stocked = True
-	violation_weight = "unused"
-	carry_capacity = ActualMinMax(0,0,0)
 	problem_name = "generated"
 	domain = "janitor"
 
-	problem_dir = "problems/rect-16"
+	problem_dir = "problems/test"
 
 	for data in product(size_types, dirtiness_types, edge_length_types, 
 				agents_types, starting_location_types, percentage_extra_dirty_types):
@@ -62,15 +58,15 @@ def run():
 		problem_name = generate_problem_name(*data)
 	
 		agent_start = get_centre(size) if starting_location == "centre" else starting_location
-		resource_rooms = (agent_start,)
-		extra_dirty_rooms = generate_random_locations(size, percentage_extra_dirty, exclude=resource_rooms)
+		empty_rooms = (agent_start,)
+		extra_dirty_rooms = generate_random_locations(size, percentage_extra_dirty, exclude=empty_rooms)
 	
 		for i in range(repeats):
 			output = join(problem_dir, problem_name + "-id({}).json".format(i))
 			
-			create_problem(output, size, dirtiness, required_stock, assume_clean, 
-				assume_stocked, resource_rooms, edge_length, violation_weight, agents, 
-				agent_start, carry_capacity, problem_name, domain, extra_dirty_rooms)
+			create_problem(output, size, dirtiness, assume_clean,
+				empty_rooms, edge_length, agents,
+				agent_start, problem_name, domain, extra_dirty_rooms)
 
 if __name__ == "__main__":
 	run()
