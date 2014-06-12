@@ -9,7 +9,7 @@
 		(node n3)
 		(node rm1) (is-room rm1)
 		(node rm3) (is-room rm3)
-		(node res-rm) (is-resource-room res-rm)
+		(node res-rm)
 		
 		(edge n1 n2)
 		(edge n2 n1)
@@ -39,24 +39,15 @@
 		(dirty rm3)
 		(= (dirtiness rm3) 5)
 		
-		(under-stocked rm1)
-		(= (req-stock rm1) 9)
-		(under-stocked rm3)
-		(= (req-stock rm3) 9)
-		
-		(= (carrying agent1) 0)
-		(= (max-carry agent1) 9)
 		(available agent1)
 		(at agent1 n1)
 		
-		(= (carrying agent2) 0)
-		(= (max-carry agent2) 9)
 		(available agent2)
 		(at agent2 n1)
 	)
 	
 	(:goal (and
-			(cleaned rm1) (fully-stocked rm1)
-			(cleaned rm3) (fully-stocked rm3)
+			(cleaned rm1)
+			(cleaned rm3)
 	))
 )
