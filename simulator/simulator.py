@@ -16,7 +16,7 @@ from itertools import chain
 from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean
 from planning_exceptions import NoPlanException, StateException, ExecutionError
 
-ExecutionResult = namedtuple("ExecutionResult", "executed_actions observation_time observation_whilst_planning")
+ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time")
 
 def run_simulation(model, logger, planning_time):
 
@@ -69,8 +69,8 @@ def run_simulation(model, logger, planning_time):
 		plan = adjust_plan(plan, simulation_time)
 		result = run_plan(model, plan, planning_time)
 		
-		observation_time = result.observation_time
-		simulation_time = result.observation_whilst_planning if result.observation_whilst_planning else observation_time
+		observation_time = result.planning_start
+		simulation_time = result.simulation_time
 		new_knowledge = bool(observation_time)
 		executed.extend(result.executed_actions)
 
@@ -130,21 +130,32 @@ def run_plan(model, plan, execution_extension):
 	execution_queue = PriorityQueue()
 	for action in plan:
 		execution_queue.put((action.start_time, action.execution_state, action))
-		
+	
+	# execute main plan
 	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=True, deadline=float("infinity"))
 	observation_time, executed = _result
 	
 	if execution_queue.empty():
-		return ExecutionResult(executed, observation_time, None)
-		
+		return ExecutionResult(executed, observation_time, max(a.end_time for a in executed))
+	
+	# execute actions during replan phase
 	deadline = observation_time + execution_extension
-	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline)
+	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline,
+			execute_partial_actions=execute_partial_actions)
 	observation_whilst_planning, additional_executed = _result
+	
+	# attempt to partially execute actions in mid-execution
+	mid_executing_actions = list(action for _t, state, action in execution_queue.queue if state == ExecutionState.executing)
+	mid_executing_actions = execute_partial_actions(mid_executing_actions, model, deadline)
+	additional_executed.extend(mid_executing_actions)
+	
+	planning_start = observation_whilst_planning or observation_time
+	simulation_time = max(a.end_time for a in additional_executed)
 
-	return ExecutionResult(executed + additional_executed, observation_time, observation_whilst_planning)
+	return ExecutionResult(executed + additional_executed, planning_start, simulation_time)
 	
 
-def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadline):
+def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadline, execute_partial_actions=False):
 	simulation_time = None
 	executed = []
 	stalled = set()
@@ -180,6 +191,11 @@ def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadlin
 	
 	return simulation_time, executed
 
+def execute_partial_actions(mid_execution_actions, model, deadline):	
+	genr = (action.partially_apply(model, deadline)
+		for action in mid_execution_actions)
+	
+	return [a for a in genr if a]
 
 def is_goal_in_model(goal, model):
 	hard_goals = goal["hard-goals"]

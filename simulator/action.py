@@ -44,6 +44,9 @@ class Action(object):
 	@property
 	def end_time(self):
 		return self.start_time + self.duration
+		
+	def partially_apply(self, model, deadline):
+		pass
 	
 	def __str__(self):
 		return self._format(False)
@@ -56,7 +59,7 @@ class Action(object):
 		else:
 			return "{}={!r}".format(key, value)
 	
-	_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "execution_state"
+	_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "partial", "execution_state"
 	
 	def _format(self, _repr):
 		try:
@@ -144,6 +147,13 @@ class Clean(Action):
 		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
 		return False
+		
+	def partially_apply(self, model, deadline):
+		self.is_applicable(model) or _error_when_debug()
+		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
+		action = Clean(self.start_time, deadline-self.start_time, (self.agent, self.room))
+		action.partial = True
+		return action
 	
 
 class ExtraClean(Action):
