@@ -6,3 +6,6 @@ class NoPlanException(Exception):
 
 class IncompletePlanException(Exception):
 	pass
+	
+class StateException(Exception):
+	pass

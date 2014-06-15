@@ -1,0 +1,75 @@
+{"domain": "janitor", 
+ "problem": "test",
+ "metric": {"predicate": ["total-time"], "type": "minimize"},
+ "goal": {
+ 	"hard-goals": [
+ 		["cleaned", "rm"],
+ 		["cleaned", "rm-extra-dirty"]
+ 	]
+ }, 
+ "assumed-values": {
+ 	"dirtiness": "max", 
+ 	"dirty": true, 
+ 	"cleaned": false, 
+ 	"extra-dirty": false
+ },
+ "nodes": {
+
+ 	"empty-rm": {
+		"node": true, 
+		"is-room": true
+ 	},
+
+ 	"rm": {
+ 		"known": {
+ 			"node": true, 
+ 			"is-room": true
+ 		}, 
+ 		"unknown": {
+ 			"dirty": {"actual": true},
+ 			"extra-dirty": {"actual": false}, 
+ 			"dirtiness": {
+ 				"max": 20.0, 
+ 				"actual": 15.0, 
+ 				"min": 0.0
+ 			},
+ 			"cleaned": {"actual": false}
+ 		}
+ 	},
+ 	
+ 	"rm-extra-dirty": {
+ 		"known": {
+ 			"node": true, 
+ 			"is-room": true
+ 		}, 
+ 		"unknown": {
+ 			"dirty": {"actual": false},
+ 			"extra-dirty": {"actual": true}, 
+ 			"dirtiness": {
+ 				"max": 5.0, 
+ 				"actual": 5.0, 
+ 				"min": 0.0
+ 			},
+ 			"cleaned": {"actual": false}
+ 		}
+ 	}
+ },
+ "graph": {"bidirectional": true, 
+ 	"edges": [
+ 		["empty-rm", "rm", 20], 
+ 		["empty-rm", "rm-extra-dirty", 20]
+ 	]
+ },  
+ "agents": {
+ 	"alice": {
+ 		"available": true,
+ 		"at": [true, "empty-rm"], 
+ 		"agent": true
+ 	}, 	
+ 	"bob": {
+ 		"available": true,
+ 		"at": [true, "empty-rm"], 
+ 		"agent": true
+ 	}
+ } 
+}

@@ -1,24 +1,28 @@
 #! /usr/bin/env python
 
 import argparse
+from math import isnan
 
 from planner import Planner
 import problem_parser
 from logger import Logger
 
 from operator import attrgetter
-from collections import Iterable
+from collections import Iterable, namedtuple
 from Queue import PriorityQueue
 from math import isinf
 from itertools import chain
 
-from action import Clean, Move, ExecutionState, Observe, Plan
-from planning_exceptions import NoPlanException
+from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean
+from planning_exceptions import NoPlanException, StateException, ExecutionError
 
+ExecutionResult = namedtuple("ExecutionResult", "executed_actions observation_time observation_whilst_planning")
 
-def run_simulation(model, logger, planning_time, wait_for_observations):
+def run_simulation(model, logger, planning_time):
 
 	planner = Planner(planning_time)
+	if isnan(planning_time):
+		planning_time = 0
 
 	# variables to run simulation
 	simulation_time = 0
@@ -36,13 +40,6 @@ def run_simulation(model, logger, planning_time, wait_for_observations):
 	observe_environment(model)
 	
 	while new_knowledge and not is_goal_in_model(model["goal"], model):
-		
-		if wait_for_observations and observation_time:
-			observers = observe_environment(model)
-			if observers:
-				time = get_latest_observation_time(observers, executed)
-				time_waiting_for_actions_to_finish += time - observation_time
-				observation_time = time
 		
 		plan, time_taken = planner.get_plan_and_time_taken(model)
 		logger.log_plan(plan)
@@ -64,17 +61,20 @@ def run_simulation(model, logger, planning_time, wait_for_observations):
 		print "new plan"
 		# observe environment and check for changes since planning, before executing plan
 		observers = observe_environment(model)
-		new_knowledge = bool(observers)
-		if not observers:
-			plan = adjust_plan(plan, simulation_time)
-			_result = run_plan(model, plan, simulation_time, float("infinity"))
-			new_knowledge, executed_actions, simulation_time, observation_time = _result
+		if observers:
+			# plan invalid due to observations whilst planning, replan
+			new_knowledge = True
+			continue
 		
-			executed.extend(executed_actions)
-	
-	print "simulation finished"
+		plan = adjust_plan(plan, simulation_time)
+		result = run_plan(model, plan, planning_time)
+		
+		observation_time = result.observation_time
+		simulation_time = result.observation_whilst_planning if result.observation_whilst_planning else observation_time
+		new_knowledge = bool(observation_time)
+		executed.extend(result.executed_actions)
 
-#	print "Actual executed:\n", executed
+	print "simulation finished"
 	
 	goal_achieved = is_goal_in_model(model["goal"], model)
 	print "Goal achieved:", goal_achieved
@@ -84,34 +84,33 @@ def run_simulation(model, logger, planning_time, wait_for_observations):
 	print "time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish
 	print "time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish
 	
-	
 	logger.log_property("goal_achieved", goal_achieved)
 	logger.log_property("planner_called", planner_called)
 	logger.log_property("end_simulation_time", simulation_time)
 	logger.log_property("total_time_planning", time_planning)
 	logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
 	logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
-	logger.log_property("execution", str(executed))
-	
+	logger.log_property("execution", str([action for action in executed if type(action) is not Observe]))
+
+def agents(action):
+	if type(action) is ExtraClean:
+		return set((action.agent0, action.agent1))
+	return set((action.agent,))
 
 def get_latest_observation_time(observers, executed):
 	for action in sorted(executed, key=attrgetter("end_time"), reverse=True):
 		if type(action) is Move and action.agent in observers and observers[action.agent] == action.end_node:
 			return action.end_time
 	return None
-			
-	
 
 def observe_environment(model):
-	new_knowledge = False
-	observers = {}
+	# create Observe action for each agent
 	actions = [Observe(None, agent_name, agent["at"][1])
-			for agent_name, agent in model["agents"].items()]
-	for action in actions:
-		if action.apply(model):
-			new_knowledge = True
-			observers[action.agent] = action.node
-	return observers
+			for agent_name, agent in model["agents"].items()] # could be generator rather than list
+	# apply observation and collect those agents that observed something new
+	return dict(
+		(action.agent, action.node) for action in actions if action.apply(model)
+	)
 
 def adjust_plan(plan, start_time):
 	plan = list(_adjust_plan_helper(plan))
@@ -126,47 +125,61 @@ def _adjust_plan_helper(plan):
 		if type(action) is Move:
 			yield Observe(action.end_time, action.agent, action.end_node)
 
-def run_plan(model, plan, simulation_time, deadline):
+def run_plan(model, plan, execution_extension):
 	
-	new_knowledge = False
-	observation_time = None
-	executed = []
 	execution_queue = PriorityQueue()
 	for action in plan:
-		execution_queue.put((action.start_time, action))
+		execution_queue.put((action.start_time, action.execution_state, action))
+		
+	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=True, deadline=float("infinity"))
+	observation_time, executed = _result
 	
+	if execution_queue.empty():
+		return ExecutionResult(executed, observation_time, None)
+		
+	deadline = observation_time + execution_extension
+	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline)
+	observation_whilst_planning, additional_executed = _result
+
+	return ExecutionResult(executed + additional_executed, observation_time, observation_whilst_planning)
+	
+
+def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadline):
+	simulation_time = None
+	executed = []
+	stalled = set()
+
 	while not execution_queue.empty():
-		time, action = execution_queue.get()
-		if time < deadline:
-			simulation_time = time
-		if action.execution_state == ExecutionState.pre_start:
-			action.start()
-			execution_queue.put((action.end_time, action))
-		elif action.execution_state == ExecutionState.executing:
+		time, state, action = execution_queue.get()
+		if time > deadline:
+			execution_queue.put((time, state, action))
+			break
+		if agents(action).intersection(stalled):
+			continue
+			
+		simulation_time = time
+		if action.execution_state == ExecutionState.executing:
 			action.finish()
 			new_knowledge = action.apply(model)
 			executed.append(action)
-			if new_knowledge:
-				observation_time = time
-				break
+			if break_on_new_knowledge and new_knowledge:
+				# allow other concurrently finishing actions to finish rather than immediate break
+				deadline = time
+		elif not action.is_applicable(model):
+			# order is such that action gets rejected before it starts, but is not rechecked after it has been started
+			if break_on_new_knowledge:
+				print action
+				import pdb; pdb.set_trace()
+				raise ExecutionError("action expects model to be in different state")
+			stalled.update(agents(action))
+		elif action.execution_state == ExecutionState.pre_start:
+			action.start()
+			execution_queue.put((action.end_time, action.execution_state, action))
+		else:
+			raise ExecutionError("action in unknown state")
+	
+	return simulation_time, executed
 
-	is_executing = (lambda action: (action.execution_state == ExecutionState.executing and action.start_time != time) or 
-		(action.end_time == time and action.execution_state != ExecutionState.finished)) 
-	# second test captures Observe scheduled for time
-	
-	# finish actions that are still executing
-	actions_still_executing = (action for (time, action) in execution_queue.queue if is_executing(action))
-	actions_still_executing = sorted(actions_still_executing, key=attrgetter("end_time"))
-	for action in actions_still_executing:
-		if action.execution_state == ExecutionState.pre_start:
-			action.start() # for observe actions that should execute, but weren't started in the main loop
-		action.finish()
-		action.apply(model)
-		executed.append(action)
-	simulation_time = executed[-1].end_time
-	
-	executed = [action for action in executed if type(action) is not Observe]
-	return new_knowledge, executed, simulation_time, observation_time
 
 def is_goal_in_model(goal, model):
 	hard_goals = goal["hard-goals"]
@@ -194,8 +207,6 @@ def parser():
 	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
 	p.add_argument("problem_file", default="janitor-preferences-sample.json", nargs="?")
 	p.add_argument("--planning-time", "-t", type=float, default="nan")
-	p.add_argument("--wait-for-observations", "-w", action="store_true", default=False)
-	p.add_argument("--do-not-wait-for-observations", "-W", action="store_false", dest="wait_for_observations")
 	p.add_argument("--log-directory", "-l", default="logs")
 	return p
 
@@ -203,8 +214,8 @@ if __name__ == "__main__":
 	args = parser().parse_args()
 	print args
 	model = problem_parser.decode(args.problem_file)
-	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time, args.wait_for_observations)
+	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time)
 	print "log:", log_file_name
 	with Logger(log_file_name, args.log_directory) as logger:
-		run_simulation(model, logger, args.planning_time, args.wait_for_observations)
+		run_simulation(model, logger, args.planning_time)
 	

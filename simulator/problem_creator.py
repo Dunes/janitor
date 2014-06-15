@@ -212,4 +212,4 @@ def create_room(dirtiness, extra_dirty):
 if __name__ == "__main__":
 	args = parser().parse_args()
 	print args
-	create_problem(**args.__dict__)
+	create_problem(**vars(args))

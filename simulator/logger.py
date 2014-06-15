@@ -5,9 +5,8 @@ from errno import EEXIST
 class Logger(object):
 
 	@classmethod
-	def get_log_file_name(cls, problem_name, planning_time, wait_for_observations):
-		wait = "wait" if wait_for_observations else "no_wait"
-		return splitext(basename(problem_name))[0]+("-planning_time({})-{}.log").format(planning_time, wait)
+	def get_log_file_name(cls, problem_name, planning_time):
+		return splitext(basename(problem_name))[0]+("-planning_time({}).log").format(planning_time)
 
 	@classmethod
 	def get_plan_log_file_name(cls, log_file_name):

@@ -1,7 +1,25 @@
 from collections import namedtuple
 from planning_exceptions import ExecutionError
+from total_ordering import total_ordering
+from operator import attrgetter
 
-ExecutionState = namedtuple("ExecutionState", "pre_start executing finished")("pre_start", "executing", "finished")
+debug = True
+def _error_when_debug():
+	if debug:
+		raise ExecutionError("tried to apply action in an invalid state")
+
+@total_ordering(attrgetter("ordinal"))
+class ExecutionState(object):
+	def __init__(self, desc, ordinal):
+		self.desc = desc
+		self.ordinal = ordinal
+	def __str__(self):
+		return self.desc
+	__repr__ = __str__
+
+ExecutionState = namedtuple("_ExecutionState", "pre_start executing finished")(
+	*(ExecutionState(desc,-ordinal) for ordinal, desc in enumerate(("pre_start", "executing", "finished")))
+)
 
 _no_match = object()
 
@@ -23,16 +41,32 @@ class Action(object):
 			raise ExecutionError("invalid state")
 		self.execution_state = ExecutionState.finished
 		
-
 	@property
 	def end_time(self):
 		return self.start_time + self.duration
 	
+	def __str__(self):
+		return self._format(False)
 	def __repr__(self):
-		
-		return "{}({})".format(self.__class__.__name__,
-			", ".join("{}={!r}".format(k,v) for k,v in self.__dict__.iteritems() if k != "execution_state")
-		)
+		return self._format(True)
+	
+	def _format_pair(self, key, value, _repr):
+		if not _repr and type(value) is float and int(value) != value:
+			return "{}={:.2f}".format(key, value)
+		else:
+			return "{}={!r}".format(key, value)
+	
+	_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "execution_state"
+	
+	def _format(self, _repr):
+		try:
+			return "{}({})".format(self.__class__.__name__,
+				", ".join(self._format_pair(k,getattr(self,k),_repr) for k in 
+					sorted(vars(self).keys(), key=self._key_order.index) if k != "execution_state")
+			)
+		except:
+			import pdb; pdb.set_trace()
+			raise
 
 class Plan(Action):
 	def __init__(self, start_time, duration):
@@ -45,10 +79,12 @@ class Move(Action):
 		self.agent = agent
 		self.start_node = start_node
 		self.end_node = end_node
+
+	def is_applicable(self, model):
+		return model["agents"][self.agent]["at"][1] == self.start_node
 	
 	def apply(self, model):
-		if model["agents"][self.agent]["at"][1] != self.start_node:
-			raise ExecutionError("agent did not start in expected room")
+		self.is_applicable(model) or _error_when_debug()
 		model["agents"][self.agent]["at"][1] = self.end_node
 	
 class Observe(Action):
@@ -57,8 +93,12 @@ class Observe(Action):
 		super(Observe, self).__init__(start_time, 0)
 		self.agent = agent
 		self.node = node
+
+	def is_applicable(self, model):
+		return model["agents"][self.agent]["at"][1] == self.node
 	
 	def apply(self, model):
+		self.is_applicable(model) or _error_when_debug()
 		# check if new knowledge
 		rm_obj = model["nodes"][self.node]
 		unknown = rm_obj.get("unknown")
@@ -91,7 +131,14 @@ class Clean(Action):
 		self.agent = agent
 		self.room = room
 		
+	def is_applicable(self, model):
+		return (
+			model["agents"][self.agent]["at"][1] == self.room
+			and not model["nodes"][self.room]["known"].get("extra-dirty", True)
+		)
+		
 	def apply(self, model):
+		self.is_applicable(model) or _error_when_debug()
 		rm_obj = model["nodes"][self.room]["known"]
 		del rm_obj["dirtiness"]
 		del rm_obj["dirty"]
@@ -107,10 +154,17 @@ class ExtraClean(Action):
 		self.agent0 = agent0
 		self.agent1 = agent1
 		
+	def is_applicable(self, model):
+		return (
+			model["agents"][self.agent0]["at"][1] == self.room
+			and model["agents"][self.agent1]["at"][1] == self.room
+			and not model["nodes"][self.room]["known"].get("dirty", True)
+		)
+				
 	def apply(self, model):
+		self.is_applicable(model) or _error_when_debug()
 		rm_obj = model["nodes"][self.room]["known"]
 		del rm_obj["extra-dirty"]
 		del rm_obj["dirtiness"]
-		del rm_obj["dirty"]
 		rm_obj["cleaned"] = True
 		return False
