@@ -12,7 +12,10 @@ function parseData() {
 		"Clean": "#FFA500",
 		"ExtraClean": "#006400",
 		"Plan": "#0000FF",
-		"Other": "#000000"
+		"Other": "#000000",
+		"Partial Clean":  "#ffc04d",
+		"Partial ExtraClean": "#4d934d",
+		"Partial Move": "#ae4d4d"
 	};
 	
 	var data = $("#input-data").val().trim();
@@ -20,6 +23,8 @@ function parseData() {
 	data = data.replace(/[\[\]]/g, "");
 	data = data.split(/\), ?|\)/);
 	var actions = [];
+	var partial = [];
+	
 	var colours = {};
 	for (var index in data) {
 		var action = data[index];
@@ -70,7 +75,7 @@ function createChartElementData(components, chart_colours, colours) {
 
 	var result = [
 		dict["agent"],
-		actionLabel(components[0], dict, chart_colours, colours), // action name
+		actionLabel(components[0], dict, chart_colours, colours, Boolean(dict["partial"])), // action name
 		parseFloat(dict["start_time"]) * 1000,
 		(parseFloat(dict["start_time"]) + parseFloat(dict["duration"])) * 1000
 	];
@@ -79,7 +84,7 @@ function createChartElementData(components, chart_colours, colours) {
 
 
 
-function actionLabel(name, components, chart_colours, colours) {
+function actionLabel(name, components, chart_colours, colours, partial) {
 	var label = name;
 	
 	if (name === "Move") {
@@ -88,6 +93,10 @@ function actionLabel(name, components, chart_colours, colours) {
 		label = name + " " + components["room"];
 	}
 	
+	if (partial) {
+		name = "Partial " + name;
+		label = "Partial " + label;
+	}
 
 	var colour = chart_colours[name];
 	if (!colour) {
