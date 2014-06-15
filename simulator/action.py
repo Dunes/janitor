@@ -23,6 +23,7 @@ ExecutionState = namedtuple("_ExecutionState", "pre_start executing finished")(
 
 _no_match = object()
 
+@total_ordering(lambda action: 1 if type(action).__name__ == "Observe" else 0)
 class Action(object):
 	
 	def __init__(self, start_time, duration):
@@ -43,7 +44,7 @@ class Action(object):
 		
 	@property
 	def end_time(self):
-		return self.start_time + self.duration
+		return round(self.start_time + self.duration, 6)
 		
 	def partially_apply(self, model, deadline):
 		pass
@@ -89,6 +90,23 @@ class Move(Action):
 	def apply(self, model):
 		self.is_applicable(model) or _error_when_debug()
 		model["agents"][self.agent]["at"][1] = self.end_node
+		
+	def partially_apply(self, model, deadline):
+		self.is_applicable(model) or _error_when_debug()
+		# create temp node
+		temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
+		model["nodes"][temp_node_name] = {"node": True}
+		# set up edges -- only allow movement out of node
+		distance_moved = deadline - self.start_time
+		distance_remaining = self.end_time - deadline
+		model["graph"]["edges"].append([temp_node_name, self.start_node, distance_moved])
+		model["graph"]["edges"].append([temp_node_name, self.end_node, distance_remaining])		
+		# move agent to temp node
+		model["agents"][self.agent]["at"][1] = temp_node_name
+		# create partial action representing move
+		action = Move(self.start_time, distance_moved, (self.agent, self.start_node, temp_node_name))
+		action.partial = True
+		return action
 	
 class Observe(Action):
 	
@@ -178,3 +196,10 @@ class ExtraClean(Action):
 		del rm_obj["dirtiness"]
 		rm_obj["cleaned"] = True
 		return False
+	
+	def partially_apply(self, model, deadline):
+		self.is_applicable(model) or _error_when_debug()
+		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
+		action = ExtraClean(self.start_time, deadline-self.start_time, (self.agent0, self.agent1, self.room))
+		action.partial = True
+		return action

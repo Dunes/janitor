@@ -111,16 +111,21 @@ def observe_environment(model):
 	return dict(
 		(action.agent, action.node) for action in actions if action.apply(model)
 	)
+	
+def remove_temp_nodes(model):
+	if any(state["at"][1].startswith("temp") for agent, state in model["agents"].iteritems()):
+		raise StateException("agent left in temp node by planner:"+str(model["agents"]))
+	
+	model["nodes"] = dict((k,v) for k,v in model["nodes"].iteritems() if not k.startswith("temp"))
+	model["graph"]["edges"] = [edge for edge in model["graph"]["edges"] if not edge[0].startswith("temp")]
 
 def adjust_plan(plan, start_time):
-	plan = list(_adjust_plan_helper(plan))
+	return list(_adjust_plan_helper(plan, start_time))
+
+def _adjust_plan_helper(plan, start_time):
 	for action in plan:
 		# adjust for OPTIC starting at t = 0
-		action.start_time += start_time
-	return plan
-
-def _adjust_plan_helper(plan):
-	for action in plan:
+		action.start_time = round(action.start_time + start_time, 6)
 		yield action
 		if type(action) is Move:
 			yield Observe(action.end_time, action.agent, action.end_node)
@@ -145,6 +150,7 @@ def run_plan(model, plan, execution_extension):
 	observation_whilst_planning, additional_executed = _result
 	
 	# attempt to partially execute actions in mid-execution
+	remove_temp_nodes(model)
 	mid_executing_actions = list(action for _t, state, action in execution_queue.queue if state == ExecutionState.executing)
 	mid_executing_actions = execute_partial_actions(mid_executing_actions, model, deadline)
 	additional_executed.extend(mid_executing_actions)
@@ -195,7 +201,10 @@ def execute_partial_actions(mid_execution_actions, model, deadline):
 	genr = (action.partially_apply(model, deadline)
 		for action in mid_execution_actions)
 	
-	return [a for a in genr if a]
+	result = [a for a in genr if a]
+	for a in result:
+		print "partial:", a
+	return result
 
 def is_goal_in_model(goal, model):
 	hard_goals = goal["hard-goals"]
