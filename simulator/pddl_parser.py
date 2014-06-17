@@ -1,8 +1,8 @@
 from collections import Iterable
 from numbers import Number
 from itertools import dropwhile
+from decimal import Decimal
 import action
-
 from planning_exceptions import IncompletePlanException
 
 _action_map = {
@@ -31,11 +31,11 @@ def decode_plan(data_input, report_incomplete_plan=True):
 		if line[-1] != "\n":
 			raise IncompletePlanException("action not terminated properly")
 		items = line.split(" ")
-		start_time = float(items[0][:-1])
-		end_time = float(items[-1][1:-2])
+		start_time = Decimal(items[0][:-1])
+		duration = Decimal(items[-1][1:-2])
 		action_name = items[1].strip("()")
 		arguments = tuple(i.strip("()") for i in items[2:-2])
-		action =  _action_map[action_name](start_time, end_time, *arguments)
+		action =  _action_map[action_name](start_time, duration, *arguments)
 		yield action
 	if report_incomplete_plan and line != "\n":
 		raise IncompletePlanException("possible missing action")

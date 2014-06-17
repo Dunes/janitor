@@ -193,7 +193,7 @@ def create_room(dirtiness, extra_dirty):
 	 	},
 	 	"unknown": {
 	 		"extra-dirty": {
-	 			"actual": extra_dirty
+	 			"actual": extra_dirty and dirtiness.actual > 0
 	 		},
 	 		"dirtiness": {
 	 			"min": dirtiness.min,
@@ -201,7 +201,7 @@ def create_room(dirtiness, extra_dirty):
 	 			"actual": (dirtiness.actual if dirtiness.actual != "random" else rand(dirtiness.min, dirtiness.max))
 	 		},
 	 		"dirty": {
-	 			"actual": dirtiness.actual > 0
+	 			"actual": not extra_dirty and dirtiness.actual > 0
 	 		},
 	 		"cleaned": {
 	 			"actual": dirtiness.actual == 0

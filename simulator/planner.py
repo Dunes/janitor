@@ -6,6 +6,7 @@ from threading import Timer
 from time import time
 from math import isnan
 from planning_exceptions import NoPlanException, IncompletePlanException
+from accuracy import quantize
 
 class Planner(object):
 	
@@ -49,7 +50,7 @@ class Planner(object):
 		start = time()
 		plan = self.get_plan(model)
 		end = time()
-		return plan, end - start
+		return plan, quantize(end - start)
 	
 	def create_problem_file(self, model):
 		fh = tempfile.NamedTemporaryFile(mode="w", prefix="problem-", suffix=".pddl", delete=False)

@@ -25,7 +25,7 @@ time_opt="30"
 log_dir="logs"
 error_log_file="unsolved-problems.txt"
 
-args=`getopt -q t:e:l: $*`
+args=`getopt t:e:l: $*`
 if [[ $? -ne 0 ]]
 then
 	usage
@@ -56,6 +56,7 @@ do
 	esac
 	shift
 done
+
 
 input="$1"
 if [[ ! "$input" ]]

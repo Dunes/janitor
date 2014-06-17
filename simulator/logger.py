@@ -29,13 +29,13 @@ class Logger(object):
 		        pass
 		    else: raise
 	
-	def log_property(self, name, value):
+	def log_property(self, name, value, stringify=str):
 		if not self.log:
 			self.log = open(self.log_file_name, "w")
 			self.log.write("{\n")
 		self.log.write(repr(str(name)))
 		self.log.write(": ")
-		self.log.write(repr(value))
+		self.log.write(stringify(value))
 		self.log.write(",\n")
 	
 	def log_plan(self, plan):
