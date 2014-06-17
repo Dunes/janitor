@@ -23,7 +23,7 @@ ExecutionState = namedtuple("_ExecutionState", "pre_start executing finished")(
 
 _no_match = object()
 
-@total_ordering(lambda action: 1 if type(action).__name__ == "Observe" else 0)
+@total_ordering("_key")
 class Action(object):
 	
 	def __init__(self, start_time, duration):
@@ -47,8 +47,12 @@ class Action(object):
 		return round(self.start_time + self.duration, 6)
 		
 	def partially_apply(self, model, deadline):
-		pass
+		raise ExecutionError("cannot partially apply {}".format(self))
 	
+	def _key(self):
+		"used to order all other types of action before Observe"
+		return type(self) is Observe
+
 	def __str__(self):
 		return self._format(False)
 	def __repr__(self):
@@ -60,13 +64,13 @@ class Action(object):
 		else:
 			return "{}={!r}".format(key, value)
 	
-	_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "partial", "execution_state"
+	_format_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "partial", "execution_state"
 	
 	def _format(self, _repr):
 		try:
 			return "{}({})".format(self.__class__.__name__,
 				", ".join(self._format_pair(k,getattr(self,k),_repr) for k in 
-					sorted(vars(self).keys(), key=self._key_order.index) if k != "execution_state")
+					sorted(vars(self).keys(), key=self._format_key_order.index) if k != "execution_state")
 			)
 		except:
 			import pdb; pdb.set_trace()
@@ -78,7 +82,7 @@ class Plan(Action):
 		self.agent = "planner"
 
 class Move(Action):
-	def __init__(self, start_time, duration, (agent, start_node, end_node)):
+	def __init__(self, start_time, duration, agent, start_node, end_node):
 		super(Move, self).__init__(start_time, duration)
 		self.agent = agent
 		self.start_node = start_node
@@ -104,7 +108,7 @@ class Move(Action):
 		# move agent to temp node
 		model["agents"][self.agent]["at"][1] = temp_node_name
 		# create partial action representing move
-		action = Move(self.start_time, distance_moved, (self.agent, self.start_node, temp_node_name))
+		action = Move(self.start_time, distance_moved, self.agent, self.start_node, temp_node_name)
 		action.partial = True
 		return action
 	
@@ -147,7 +151,7 @@ class Observe(Action):
 		
 class Clean(Action):
 
-	def __init__(self, start_time, duration, (agent, room)):
+	def __init__(self, start_time, duration, agent, room):
 		super(Clean, self).__init__(start_time, duration)
 		self.agent = agent
 		self.room = room
@@ -169,14 +173,14 @@ class Clean(Action):
 	def partially_apply(self, model, deadline):
 		self.is_applicable(model) or _error_when_debug()
 		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
-		action = Clean(self.start_time, deadline-self.start_time, (self.agent, self.room))
+		action = Clean(self.start_time, deadline-self.start_time, self.agent, self.room)
 		action.partial = True
 		return action
 	
 
 class ExtraClean(Action):
 
-	def __init__(self, start_time, duration, (agent0, agent1, room)):
+	def __init__(self, start_time, duration, agent0, agent1, room):
 		super(ExtraClean, self).__init__(start_time, duration)
 		self.room = room
 		self.agent0 = agent0
@@ -200,6 +204,6 @@ class ExtraClean(Action):
 	def partially_apply(self, model, deadline):
 		self.is_applicable(model) or _error_when_debug()
 		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
-		action = ExtraClean(self.start_time, deadline-self.start_time, (self.agent0, self.agent1, self.room))
+		action = ExtraClean(self.start_time, deadline-self.start_time, self.agent0, self.agent1, self.room)
 		action.partial = True
 		return action

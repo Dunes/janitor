@@ -35,7 +35,7 @@ def decode_plan(data_input, report_incomplete_plan=True):
 		end_time = float(items[-1][1:-2])
 		action_name = items[1].strip("()")
 		arguments = tuple(i.strip("()") for i in items[2:-2])
-		action =  _action_map[action_name](start_time, end_time, arguments)
+		action =  _action_map[action_name](start_time, end_time, *arguments)
 		yield action
 	if report_incomplete_plan and line != "\n":
 		raise IncompletePlanException("possible missing action")
