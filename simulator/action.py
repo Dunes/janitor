@@ -106,6 +106,32 @@ class Move(Action):
 	def partially_apply(self, model, deadline):
 		self.is_applicable(model) or _error_when_debug()
 		# create temp node
+		continued_partial_move = self.start_node.startswith("temp")
+		if continued_partial_move:
+			action = self.modify_temp_node(model, deadline)
+		else:
+			action = self.create_temp_node(model, deadline)
+		return action
+		
+	def modify_temp_node(self, model, deadline):
+		temp_node_name = self.start_node
+		
+		back_edge, forward_edge = (edge for edge in model["graph"]["edges"] if edge[0] == temp_node_name)
+		
+		if forward_edge[1] == self.end_node:
+			distance_moved = deadline - self.start_time
+		elif back_edge[1] == self.end_node:
+			distance_moved = self.start_time - deadline
+		
+		back_edge[2] += distance_moved
+		forward_edge[2] -= distance_moved
+
+		# create partial action representing move
+		action = Move(self.start_time, distance_moved, self.agent, temp_node_name, self.end_node)
+		action.partial = True
+		return action
+		
+	def create_temp_node(self, model, deadline):
 		temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
 		model["nodes"][temp_node_name] = {"node": True}
 		# set up edges -- only allow movement out of node
