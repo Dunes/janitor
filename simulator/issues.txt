@@ -8,3 +8,5 @@
 * split ExtraCleans in timeline
 * try to split simulator and executor
 * unit tests
+* convert print statements to logging
+* remove debug from action -- make permanent
