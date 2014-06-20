@@ -3,6 +3,7 @@ from planning_exceptions import ExecutionError
 from operator import attrgetter
 from decimal import Decimal
 from functools import total_ordering
+from accuracy import quantize
 
 
 debug = True
@@ -32,10 +33,12 @@ class Action(object):
 
 	_ordinal = 2
 	
-	def __init__(self, start_time, duration):
+	def __init__(self, start_time, duration, partial=None):
 		self.start_time = start_time
 		self.duration = duration
 		self.execution_state = ExecutionState.pre_start
+		if partial is not None:
+			self.partial = partial
 		
 	def __lt__(self, other):
 		return self._ordinal < other._ordinal
@@ -74,7 +77,7 @@ class Action(object):
 	def _format(self, _repr):
 		try:
 			return "{}({})".format(self.__class__.__name__,
-				", ".join(self._format_pair(k,getattr(self,k),_repr) for k in 
+				", ".join(self._format_pair(k, getattr(self, k), _repr) for k in 
 					sorted(vars(self).keys(), key=self._format_key_order.index) if k != "execution_state")
 			)
 		except Exception as e:
@@ -90,8 +93,8 @@ class Move(Action):
 
 	_ordinal = 0
 
-	def __init__(self, start_time, duration, agent, start_node, end_node):
-		super(Move, self).__init__(start_time, duration)
+	def __init__(self, start_time, duration, agent, start_node, end_node, partial=None):
+		super(Move, self).__init__(start_time, duration, partial)
 		self.agent = agent
 		self.start_node = start_node
 		self.end_node = end_node
@@ -165,7 +168,7 @@ class Observe(Action):
 		unknown = rm_obj.get("unknown")
 		
 		if unknown:
-			rm_obj["known"].update((k,self._get_actual_value(v)) for k, v in unknown.iteritems())
+			rm_obj["known"].update((k, self._get_actual_value(v)) for k, v in unknown.iteritems())
 			result = self._check_new_knowledge(unknown, model["assumed-values"])
 			unknown.clear()
 			return result
@@ -187,8 +190,8 @@ class Observe(Action):
 		
 class Clean(Action):
 
-	def __init__(self, start_time, duration, agent, room):
-		super(Clean, self).__init__(start_time, duration)
+	def __init__(self, start_time, duration, agent, room, partial=None):
+		super(Clean, self).__init__(start_time, duration, partial)
 		self.agent = agent
 		self.room = room
 		
@@ -216,8 +219,8 @@ class Clean(Action):
 
 class ExtraClean(Action):
 
-	def __init__(self, start_time, duration, agent0, agent1, room):
-		super(ExtraClean, self).__init__(start_time, duration)
+	def __init__(self, start_time, duration, agent0, agent1, room, partial=None):
+		super(ExtraClean, self).__init__(start_time, duration, partial)
 		self.room = room
 		self.agent0 = agent0
 		self.agent1 = agent1

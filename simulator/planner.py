@@ -31,7 +31,7 @@ class Planner(object):
 		else:
 			args = self.planner_location, self.domain_file, problem_file
 			p = Popen(args, stdout=PIPE, cwd=self.working_directory)				
-			timer = Timer(self.planning_time, p.terminate)
+			timer = Timer(float(self.planning_time), p.terminate)
 			timer.start()
 		
 			plan = None
