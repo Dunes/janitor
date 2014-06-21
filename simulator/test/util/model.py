@@ -20,10 +20,20 @@ class ModelBuilder(object):
         self._add_to(agent, agent_value, "agents")
         return self
 
-    def with_node(self, node, is_room=True, **kwargs):
-        node_value = self._default_node
-        if is_room is not None: node_value["is-room"] = is_room
-        node_value.update(kwargs)
+    def with_node(self, node, value=None, not_room=None, **kwargs):
+        if value is not None:
+            node_value = value
+        elif not_room:
+            node_value = self._default_node
+            node_value.update(kwargs)
+        else:
+            node_value = kwargs
+            if "unknown" not in node_value:
+                node_value["unknown"] = {}
+            if "known" not in node_value:
+                node_value["known"] = self._default_node
+            node_value["known"]["is-room"] = True
+
         self._add_to(node, node_value, "nodes")
         return self
 
@@ -31,6 +41,10 @@ class ModelBuilder(object):
         self.with_node(from_node, None)
         self.with_node(to_node, None)
         self.model["graph"]["edges"].append([from_node, to_node, distance])
+        return self
+
+    def with_assumed_values(self, values=None):
+        self.model["assumed-values"] = values
         return self
 
     @property

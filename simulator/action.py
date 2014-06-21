@@ -75,14 +75,10 @@ class Action(object):
 	_format_key_order = "agent", "agent0", "agent1", "start_time", "duration", "node", "room", "start_node", "end_node", "partial", "execution_state"
 
 	def _format(self, _repr):
-		try:
-			return "{}({})".format(self.__class__.__name__,
-				", ".join(self._format_pair(k, getattr(self, k), _repr) for k in
-					sorted(vars(self).keys(), key=self._format_key_order.index) if k != "execution_state")
-			)
-		except Exception as e:
-			import pdb; pdb.set_trace()
-			raise e
+		return "{}({})".format(self.__class__.__name__,
+			", ".join(self._format_pair(k, getattr(self, k), _repr) for k in
+				sorted(vars(self).keys(), key=self._format_key_order.index) if k != "execution_state")
+		)
 
 class Plan(Action):
 	def __init__(self, start_time, duration):
@@ -168,7 +164,7 @@ class Observe(Action):
 		unknown = rm_obj.get("unknown")
 
 		if unknown:
-			rm_obj["known"].update((k, self._get_actual_value(v)) for k, v in unknown.iteritems())
+			rm_obj["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
 			result = self._check_new_knowledge(unknown, model["assumed-values"])
 			unknown.clear()
 			return result
@@ -181,7 +177,7 @@ class Observe(Action):
 		return actual if actual not in value else value[actual]
 
 	def _check_new_knowledge(self, unknown_values, assumed_values):
-		for key, unknown_value in unknown_values.iteritems():
+		for key, unknown_value in unknown_values.items():
 			assumed_value = assumed_values[key]
 			if unknown_value["actual"] not in (assumed_value, unknown_value.get(assumed_value, _no_match)):
 				return True
