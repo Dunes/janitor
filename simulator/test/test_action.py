@@ -4,6 +4,7 @@ Created on 20 Jun 2014
 @author: jack
 '''
 import unittest
+from unittest.mock import Mock
 import random
 
 import action
@@ -172,9 +173,35 @@ class MoveTest(unittest.TestCase):
         self.match(model).with_distance(to_end - movement).from_("temp_node").to("end_node")
 
 
-    @skip("requires mocking to test")
-    def test_partially_apply(self):
-        pass
+    def test_partially_apply_selects_create(self):
+        expected = object()
+        deadline = object()
+        self.move.is_applicable = Mock(return_value=True)
+        self.move.create_temp_node = Mock(return_value=expected)
+        model = ModelBuilder().with_node("node").model
+
+        actual = self.move.partially_apply(model, deadline)
+
+        self.move.is_applicable.assert_called_once_with(model)
+        self.move.create_temp_node.assert_called_once_with(model, deadline)
+        self.assertEqual(expected, actual)
+
+
+    def test_partially_apply_selects_modify(self):
+        expected = object()
+        deadline = Mock()
+        model = Mock()
+        self.move.start_node = "temp_node"
+        self.move.is_applicable = Mock(return_value=True)
+        self.move.modify_temp_node = Mock(return_value=expected)
+        self.move.create_temp_node = Mock()
+
+        actual = self.move.partially_apply(model, deadline)
+
+        self.move.is_applicable.assert_called_once_with(model)
+        self.move.modify_temp_node.assert_called_once_with(model, deadline)
+        self.assertEqual(expected, actual)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
