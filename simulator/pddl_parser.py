@@ -46,7 +46,7 @@ def encode_problem_to_file(filename, model):
 
 def encode_problem(out, model):
 
-	has_metric = model.has_key("metric")
+	has_metric = "metric" in model
 
 	_encode_preamble(out, "problem-name", model["domain"], has_metric)
 
@@ -89,7 +89,7 @@ def _encode_init(out, agents, nodes, graph, assumed_values):
 
 def _encode_init_helper(out, items, assumed_values):
 	for object_name, object_values in items.iteritems():
-		if not object_values.has_key("known"):
+		if not "known" in object_values:
 			_encode_init_values(out, object_name, object_values)
 		else :
 			_encode_init_values(out, object_name, object_values["known"])
@@ -113,10 +113,10 @@ def _encode_init_values(out, object_name, object_values, assumed_values=None, va
 				_encode_predicate(out, pred_values)
 
 def _unknown_value_getter(possible_values, object_name, assumed_values):
-	if possible_values.has_key("assumed"):
+	if "assumed" in possible_values:
 		return possible_values["assumed"]
 	value = assumed_values[object_name]
-	if possible_values.has_key(value):
+	if value in possible_values:
 		return possible_values[value]
 	else:
 		return value
@@ -156,7 +156,7 @@ def _encode_goal(out, goals):
 	else: # is dict
 		for goal in goals["hard-goals"]:
 			_encode_predicate(out, goal)
-		if goals.has_key("preferences"):
+		if "preferences" in goals:
 			for preference in goals["preferences"]:
 				_encode_predicate(out, ["preference"] + preference)
 	out.write("))\n")
