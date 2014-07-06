@@ -24,7 +24,7 @@ def run():
 
 	size_types = (
 #		Point(3,3),
-#		Point(4,4),
+		Point(4,4),
 #		Point(1,16),
 #		Point(2,8),
 #		Point(5,5),
@@ -42,13 +42,12 @@ def run():
 	starting_location_types = ("centre",) # empty_rooms and agent_start
 	percentage_extra_dirty_types = (0.2,)
 
-
 	output = "generated"
 	assume_clean = False
 	problem_name = "generated"
 	domain = "janitor"
 
-	problem_dir = "problems/test"
+	problem_dir = "problems/no-stock-4x4"
 
 	for data in product(size_types, dirtiness_types, edge_length_types, 
 				agents_types, starting_location_types, percentage_extra_dirty_types):
