@@ -1,12 +1,16 @@
-* need to make sure temp nodes are removed correctly -- done?
 * run many experiments
 * add stalled action to check agents are correctly executing
 * working with first  greedy plan tends to be better than spending an extended time planning (eg 30s).
-* make sure timeline is giving correct colours to actions
 * avoid partial actions with zero duration
 * add failed plan action
 * split ExtraCleans in timeline
 * try to split simulator and executor
-* unit tests
 * convert print statements to logging
 * remove debug from action -- make permanent
+
+
+done
+----
+* need to make sure temp nodes are removed correctly
+* make sure timeline is giving correct colours to actions
+* unit tests
