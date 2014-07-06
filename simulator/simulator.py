@@ -157,7 +157,13 @@ def run_plan(model, plan, execution_extension):
 	observation_whilst_planning, additional_executed = _result[:2] # ignore simulation time. why?
 
 	# attempt to partially execute actions in mid-execution
-	mid_executing_actions = list(action for _t, state, action in execution_queue.queue if state == ExecutionState.executing)
+	mid_executing_actions = list(action for _t, state, action in execution_queue.queue
+			if state == ExecutionState.executing and action.start_time < deadline)
+
+	# mid execution action with zero duration is a bug
+	assert not any(action for _t, state, action in execution_queue.queue
+			if state == ExecutionState.executing and action.duration == 0)
+
 	half_executed_actions = execute_partial_actions(mid_executing_actions, model, deadline)
 	remove_unused_temp_nodes(model)
 

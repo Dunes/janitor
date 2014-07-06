@@ -255,7 +255,7 @@ class TestExecutePartialActions(unittest.TestCase):
     def test_calls_partially_apply(self):
         # given
         move = Mock(Move)
-        model = Mock()
+        model = Mock(name="model")
         deadline = 0
 
         # when
@@ -267,7 +267,7 @@ class TestExecutePartialActions(unittest.TestCase):
     def test_returns_partial_actions(self):
         # given
         move = Mock(Move)
-        model = Mock()
+        model = Mock(name="model")
         deadline = 0
         expected = [move.partially_apply()]
 
@@ -288,7 +288,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1.execution_state = ExecutionState.executing
         action2 = Mock(self.action_template)
         deadline = 10
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((deadline, ExecutionState.executing, action1))
         execution_queue.put((deadline+1, ExecutionState.executing, action2))
@@ -312,7 +312,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1 = Mock(self.action_template)
         action1.agent = agent_name
         deadline = 10
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((deadline, ExecutionState.executing, action1))
 
@@ -332,7 +332,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1.execution_state = ExecutionState.executing
         deadline = 10
         end_time = 5
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((end_time, ExecutionState.executing, action1))
 
@@ -360,7 +360,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action2.__lt__.return_value = False # comes after Move mock
 
         deadline = 10
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((deadline, ExecutionState.executing, action1))
         execution_queue.put((deadline, ExecutionState.executing, action2))
@@ -385,7 +385,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1.agent = agent_name
         action1.is_applicable.return_value = False
         deadline = 0
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((deadline, ExecutionState.executing, action1))
 
@@ -407,7 +407,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1.is_applicable.return_value = False
         end_time = 0
         deadline = 10
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((end_time, ExecutionState.executing, action1))
 
@@ -425,7 +425,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action1.is_applicable.return_value = True
         action1.execution_state = ExecutionState.finished
         deadline = 0
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((deadline, ExecutionState.finished, action1))
 
@@ -448,7 +448,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         action_to_start.is_applicable = Mock(return_val=True)
         action_to_start.apply = Mock()
 
-        model = Mock()
+        model = Mock(name="model")
         execution_queue = PriorityQueue()
         execution_queue.put((start_time, ExecutionState.pre_start, action_to_start))
 
@@ -489,7 +489,7 @@ class TestRunPlan(unittest.TestCase):
         action2 = Mock(end_time=end_time)
         action3 = Mock(end_time=end_time)
         plan = [action1, action2, action3]
-        model = Mock()
+        model = Mock(name="model")
         self.execute_action_queue.return_value = (Mock("observation_time"),
                                                   plan, Mock("stalled"))
 
@@ -513,7 +513,7 @@ class TestRunPlan(unittest.TestCase):
         action2 = Mock(end_time=end_time)
         action3 = Mock(end_time=end_time-1)
         plan = [action1, action2, action3]
-        model = Mock()
+        model = Mock(name="model")
         observation_time = Mock()
         self.execute_action_queue.return_value = (observation_time, plan, Mock("stalled"))
 
@@ -541,7 +541,7 @@ class TestRunPlan(unittest.TestCase):
             (observation_whilst_planning, executed_second_pass, None)
         ]
         self.execute_partial_actions.return_value = []
-        model = Mock()
+        model = Mock(name="model")
         execution_extension = 100
         plan = executed_first_pass + executed_second_pass
 
@@ -573,7 +573,7 @@ class TestRunPlan(unittest.TestCase):
             (None, executed_second_pass, None)
         ]
         self.execute_partial_actions.return_value = []
-        model = Mock()
+        model = Mock(name="model")
         execution_extension = 100
         plan = executed_first_pass + executed_second_pass
 
@@ -588,7 +588,7 @@ class TestRunPlan(unittest.TestCase):
     def test_partially_execute_actions_that_are_started(self):
         # given
         end_time = 20
-        mid_execution_action = Mock(name="mid_execution", end_time=end_time)
+        mid_execution_action = Mock(name="mid_execution", end_time=end_time, start_time=end_time-1)
         pre_start_action = Mock(name="not_started")
         execution_state = [
             (None, ExecutionState.executing, mid_execution_action),
@@ -602,7 +602,7 @@ class TestRunPlan(unittest.TestCase):
             (None, [], None)
         ]
         self.execute_partial_actions.return_value = [mid_execution_action]
-        model = Mock()
+        model = Mock(name="model")
         execution_extension = 100
         plan = [mid_execution_action, pre_start_action]
 
@@ -614,8 +614,56 @@ class TestRunPlan(unittest.TestCase):
         assert_that(actual.planning_start, equal_to(observation_time))
         assert_that(actual.simulation_time, equal_to(end_time))
 
-        self.execute_partial_actions.called_once_with([mid_execution_action],
+        self.execute_partial_actions.assert_called_once_with([mid_execution_action],
                 model, observation_time+execution_extension)
+
+    def test_does_not_partially_execute_actions_that_start_on_deadline(self):
+        # given
+        observation_time = 0
+        execution_extension = 10
+        deadline = observation_time + execution_extension
+        mid_execution_action = Mock(name="mid_execution",
+                start_time=deadline-1, end_time=deadline+1)
+        just_starting_action = Mock(name="just_started",
+                start_time=deadline, end_time=deadline+1)
+        execution_state = [
+            (observation_time, ExecutionState.executing, mid_execution_action),
+            (None, ExecutionState.executing, just_starting_action)
+        ]
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = tuple(execution_state)
+        self.execute_action_queue.side_effect = [
+            (observation_time, [], Mock()),
+            (None, [], None)
+        ]
+        self.execute_partial_actions.return_value = [mid_execution_action]
+        model = Mock(name="model")
+        plan = [mid_execution_action, just_starting_action]
+
+        # when
+        simulator.run_plan(model, plan, execution_extension)
+
+        # then
+        self.execute_partial_actions.assert_called_once_with([mid_execution_action],
+                model, deadline)
+
+    def test_error_if_mid_excution_action_with_zero_duration(self):
+        # given
+        mid_execution_action = Mock(name="mid_execution", start_time=0, duration=0)
+        execution_state = [(None, ExecutionState.executing, mid_execution_action)]
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = tuple(execution_state)
+        self.execute_action_queue.side_effect = [
+            (0, [], Mock()),
+            (None, [], None)
+        ]
+        model = Mock(name="model")
+        execution_extension = 100
+        plan = [mid_execution_action]
+
+        # when
+        with self.assertRaises(AssertionError):
+            simulator.run_plan(model, plan, execution_extension)
 
     def test_remove_unused_temp_nodes_after_plan_execution(self):
         # given
@@ -623,7 +671,7 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().queue = []
         self.execute_action_queue.return_value = 0, [Mock(end_time=0)], None
         self.execute_partial_actions.return_value = []
-        model = Mock()
+        model = Mock(name="model")
 
         # when
         simulator.run_plan(model, [], 0)
