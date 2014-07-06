@@ -87,13 +87,6 @@ function createChartElementData(components, chart_colours, colours) {
                 secondsToMillis(dict.start_time) + secondsToMillis(dict.duration)
             ]);
     }
-//
-//     var result = [
-//         dict.agent,
-//         actionLabel(components[0], dict, chart_colours, colours, Boolean(dict.partial)), // action name
-//         secondsToMillis(dict.start_time),
-//         secondsToMillis(dict.start_time) + secondsToMillis(dict.duration)
-//     ];
     return result;
 }
 
