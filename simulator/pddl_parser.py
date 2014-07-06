@@ -1,6 +1,6 @@
 from collections import Iterable
 from numbers import Number
-from itertools import dropwhile
+from itertools import dropwhile, chain
 from decimal import Decimal
 import action
 from planning_exceptions import IncompletePlanException
@@ -50,7 +50,7 @@ def encode_problem(out, model):
 
 	_encode_preamble(out, "problem-name", model["domain"], has_metric)
 
-	_encode_objects(out, model["agents"].keys() + model["nodes"].keys())
+	_encode_objects(out, chain(model["agents"].keys(), model["nodes"].keys()))
 
 	_encode_init(out, model["agents"], model["nodes"], model["graph"], model["assumed-values"])
 
@@ -88,7 +88,7 @@ def _encode_init(out, agents, nodes, graph, assumed_values):
 	out.write(") ")
 
 def _encode_init_helper(out, items, assumed_values):
-	for object_name, object_values in items.iteritems():
+	for object_name, object_values in items.items():
 		if not "known" in object_values:
 			_encode_init_values(out, object_name, object_values)
 		else :
@@ -96,7 +96,7 @@ def _encode_init_helper(out, items, assumed_values):
 			_encode_init_values(out, object_name, object_values["unknown"], assumed_values, _unknown_value_getter)
 
 def _encode_init_values(out, object_name, object_values, assumed_values=None, value_getter=(lambda x, _0, _1: x)):
-	for value_name, possible_values in object_values.iteritems():
+	for value_name, possible_values in object_values.items():
 		value = value_getter(possible_values, value_name, assumed_values)
 		if value is False:
 			pass

@@ -97,7 +97,7 @@ def run_simulation(model, logger, planning_time):
 	logger.log_property("execution", executed_str)
 
 	print("remaining temp nodes:",
-		[(name, node) for name, node in model["nodes"].iteritems() if name.startswith("temp")])
+		[(name, node) for name, node in model["nodes"].items() if name.startswith("temp")])
 
 def agents(action):
 	if type(action) is ExtraClean:
