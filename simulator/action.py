@@ -1,9 +1,7 @@
 from collections import namedtuple
 from planning_exceptions import ExecutionError
-from operator import attrgetter
 from decimal import Decimal
 from functools import total_ordering
-from accuracy import quantize
 
 
 debug = True
@@ -49,7 +47,7 @@ class Action(object):
 		self.execution_state = ExecutionState.executing
 
 	def finish(self):
-		print("finishing:", self)
+		print("finishing:", str(self))
 		if self.execution_state != ExecutionState.executing:
 			raise ExecutionError("invalid state")
 		self.execution_state = ExecutionState.finished

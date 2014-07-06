@@ -2,5 +2,5 @@ from decimal import Decimal
 
 precision = Decimal("0.000")
 
-def quantize(float_):
-	return Decimal.from_float(float_).quantize(precision)
+def quantize(value):
+	return Decimal.from_float(value).quantize(precision)

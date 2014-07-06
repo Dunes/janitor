@@ -11,7 +11,7 @@ from random import uniform as rand
 
 class Point(namedtuple("Point","x y")):
 	pass
-	
+
 class ActualMinMax(namedtuple("ActualMinMax","actual min max")):
 	pass
 
@@ -20,22 +20,22 @@ class TupleAction(argparse.Action):
 	def __init__(self, maintype, subtype, **kwargs):
 		super(TupleAction, self).__init__(**kwargs)
 		self.maintype = maintype
-		self.subtype = subtype		
-	
+		self.subtype = subtype
+
 	def create(self, values):
 		if isinstance(values, str):
 			v = self.create_item(values)
 		else:
 			v = tuple(self.create_item(i) for i in values)
 		return v
-	
+
 	def create_item(self, values):
 		return self.maintype(*(self.subtype(i) for i in values.split(",")))
 
 class ActualMinMaxAction(TupleAction):
 	def __init__(self, **kwargs):
 		super(ActualMinMaxAction, self).__init__(ActualMinMax, float, **kwargs)
-	
+
 	def __call__(self, parser, namespace, values, option_string=None):
 		v = self.create(values)
 		setattr(namespace, self.dest, v)
@@ -57,10 +57,10 @@ def parser():
 	p.add_argument("--assume-clean", default=False)
 	p.add_argument("--empty-rooms", "-er", nargs="+", action=PointAction, required=True)
 	p.add_argument("--edge-length","-el", default=10, type=int)
-	
+
 	p.add_argument("--agents", "-a", required=True, type=int)
 	p.add_argument("--agent-start","-as", required=True, action=PointAction)
-	
+
 	p.add_argument("--problem-name","-pn", required=True)
 	p.add_argument("--domain","-dn", required=True)
 	return p
@@ -77,18 +77,18 @@ def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_leng
 		 	"extra-dirty": False,
 		 }
 	}
-	
+
 	problem["nodes"] = create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness)
 	problem["graph"], grid = create_graph(size, empty_rooms, extra_dirty_rooms, edge_length)
 	problem["agents"] = create_agents(agents, grid[agent_start.x][agent_start.y])
 	problem["goal"] = create_goal(size, empty_rooms, extra_dirty_rooms)
 	problem["metric"] = create_metric()
-	
+
 	# start problem such that agents have observed starting location
 	for agent_name, agent in problem["agents"].items():
 		rm = agent["at"][1]
 		Observe(None, agent_name, rm).apply(problem)
-	
+
 	with open(output, "w") as f:
 		dump(problem, f)
 
@@ -96,48 +96,46 @@ def create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness):
 	num_empty_rooms = len(empty_rooms)
 	num_extra_dirty_rooms = len(extra_dirty_rooms)
 	total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms
-	
+
 	if set(empty_rooms).intersection(extra_dirty_rooms):
 		raise ValueError("rooms cannot be both empty rooms and extra dirty: "+str(set(empty_rooms).intersection(extra_dirty_rooms)))
-	
+
 	empty_rms = (
-		("empty-rm"+str(i), {"node": True}) 
+		("empty-rm"+str(i), {"node": True})
 			for i in range(1, num_empty_rooms+1)
 	)
-	
+
 	extra_dirty_rms = (
 		("rm-ed"+str(i), create_room(dirtiness, extra_dirty=True)) for i in range(1, num_extra_dirty_rooms + 1)
 	)
-	
+
 	rooms = (
 		("rm"+str(i), create_room(dirtiness, extra_dirty=False)) for i in range(1, total_normal_rooms + 1)
 	)
-	
+
 	return dict(chain(empty_rms, rooms, extra_dirty_rms))
 
 
 def create_graph(size, empty_rooms, extra_dirty_rooms, edge_length):
-	num_empty_rooms = len(empty_rooms)
-	total_rooms = size.x * size.y - num_empty_rooms
 	empty_room_num = 1
 	extra_dirty_room_num = 1
 	room_num = 1
-	
+
 	grid = []
 	for x in range(size.x):
 		column = []
 		for y in range(size.y):
-			 if (x,y) in empty_rooms:
-			 	column.append("empty-rm"+str(empty_room_num))
-			 	empty_room_num += 1
-			 elif (x,y) in extra_dirty_rooms:
-			 	column.append("rm-ed"+str(extra_dirty_room_num))
-			 	extra_dirty_room_num += 1
-			 else:
-			 	column.append("rm"+str(room_num))
-			 	room_num += 1
+			if (x,y) in empty_rooms:
+				column.append("empty-rm"+str(empty_room_num))
+				empty_room_num += 1
+			elif (x,y) in extra_dirty_rooms:
+				column.append("rm-ed"+str(extra_dirty_room_num))
+				extra_dirty_room_num += 1
+			else:
+				column.append("rm"+str(room_num))
+				room_num += 1
 		grid.append(column)
-		
+
 	edges = []
 	for x, column in enumerate(grid):
 		for y, room in enumerate(column):
@@ -148,26 +146,26 @@ def create_graph(size, empty_rooms, extra_dirty_rooms, edge_length):
 			if y - 1 >= 0:
 				edges.append([room, grid[x][y-1],edge_length])
 			if y + 1 < size.y:
-				edges.append([room, grid[x][y+1],edge_length])			
-	
+				edges.append([room, grid[x][y+1],edge_length])
+
 	return ({
 		"bidirectional": False,
 		"edges": edges
 	}, grid)
-	
+
 def create_agents(agents, room):
 	agent = create_agent(room)
- 	return dict(
+	return dict(
  		("agent"+str(i), deepcopy(agent))
  			for i in range(1, agents+1)
- 	)	
+ 	)
 
 def create_agent(room):
 	return {"agent": True,
  		"available": True,
  		"at": [True, room]
  	}
-	
+
 def create_goal(size, empty_rooms, extra_dirty_rooms):
 	num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms)
 	room_ids = chain(
@@ -179,7 +177,7 @@ def create_goal(size, empty_rooms, extra_dirty_rooms):
 			["cleaned", rm_id] for rm_id in room_ids
 		]
 	}
-	
+
 def create_metric():
 	return {"type": "minimize",
 		"predicate": ["total-time"]
@@ -211,5 +209,5 @@ def create_room(dirtiness, extra_dirty):
 
 if __name__ == "__main__":
 	args = parser().parse_args()
-	print args
+	print(args)
 	create_problem(**vars(args))

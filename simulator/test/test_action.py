@@ -12,8 +12,10 @@ from action import ExecutionState, ExecutionError
 
 from decimal import Decimal
 
-from util.model import ModelBuilder
+from util.builder import ModelBuilder
 from util.matcher import ModelMatcher, MoveMatcher, CleanMatcher, ExtraCleanMatcher
+
+
 class ExecutionStateTest(unittest.TestCase):
 
     def test_ordering(self):

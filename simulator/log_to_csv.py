@@ -8,56 +8,56 @@ from os import listdir
 from re import split
 from operator import mul
 from itertools import groupby
-from functools import partial
+from functools import partial, reduce
 
 independent_vars = (
-'goal_achieved', 
-'planning_time', 
-'size', 
-'total_nodes', 
-'start', 
-'agents', 
-'edge', 
-'wait', 
-'dirt_type', 
-'dirt_min', 
-'dirt_max', 
+'goal_achieved',
+'planning_time',
+'size',
+'total_nodes',
+'start',
+'agents',
+'edge',
+'wait',
+'dirt_type',
+'dirt_min',
+'dirt_max',
 'extra_dirt',
 "id",
 )
 
 dependent_vars = (
-'planner_called', 
-'end_simulation_time', 
-'total_time_planning', 
-'time_waiting_for_actions_to_finish', 
-'time_waiting_for_planner_to_finish', 
+'planner_called',
+'end_simulation_time',
+'total_time_planning',
+'time_waiting_for_actions_to_finish',
+'time_waiting_for_planner_to_finish',
 )
 
 
 def run(out_file, input_dir):
-	
+
 	raw_data = sorted((
 		get_data(join(input_dir, name))
 		for name in (x for x in listdir(input_dir) if x.endswith(".log"))
 	), key=data_key)
-	
+
 	aggregated_data = (
 		indy_vars + aggregate_data(group)
 			for (_key, indy_vars), group in groupby(raw_data, partial(data_key, include_id=False))
 	)
-	
+
 	with open(out_file, "w") as f:
 		out = DictWriter(f, independent_vars + dependent_vars)
 		out.writeheader()
 		out.writerows(raw_data)
 	del out
-	
+
 	with open("-aggregate".join(splitext(out_file)), "w") as f:
 		out = writer(f)
 		out.writerow(independent_vars[:-1] + ("count",) + dependent_vars)
 		out.writerows(aggregated_data)
-		
+
 
 def data_key(data, include_id=True):
 	base_key = (
@@ -89,9 +89,9 @@ def get_data(name):
 
 
 	del data["execution"]
-	
+
 	name_data = split("[\(\)]", basename(name)[5:-4])
-	
+
 	for label, value in zip(name_data[::2], name_data[1::2]):
 		label = label.strip("-")
 		if label == "extra_dirt":
@@ -99,7 +99,7 @@ def get_data(name):
 			data[label] = value
 		elif label == "size":
 			data[label] = value
-			data["total_nodes"] = reduce(mul, eval(value))
+			data["total_nodes"] = reduce(mul, eval(value)) # TODO: replace with product
 		elif label == "dirt":
 			dirt_type, dirt_min, dirt_max = value.split(",")
 			data["dirt_type"] = dirt_type
@@ -107,7 +107,7 @@ def get_data(name):
 			data["dirt_max"] = float(dirt_max)
 		else:
 			data[label] = value
-	
+
 	data["wait"] = (name_data[-1] == "-wait")
 	return data
 
