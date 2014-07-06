@@ -14,7 +14,7 @@ class LoggerTest(unittest.TestCase):
 
 
     def setUp(self):
-        self.patch = patch("logger.Logger.__init__", return_value=None)
+        self.patch = patch.object(Logger, "__init__", return_value=None) # @UndefinedVariable
         self.patch.start()
 
 
@@ -145,7 +145,8 @@ class LoggerTest(unittest.TestCase):
 
 class LoggerInitTest(unittest.TestCase):
 
-    @patch.multiple("logger.Logger", _create_if_not_exists=DEFAULT, get_plan_log_file_name=DEFAULT)
+    @patch.object(Logger, "get_plan_log_file_name")
+    @patch.object(Logger, "_create_if_not_exists")
     def test_init(self, _create_if_not_exists, get_plan_log_file_name):
         working_directory = "working_directory"
         plans_subdir = "plans_subdir"
