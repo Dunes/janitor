@@ -1,22 +1,24 @@
+<!DOCTYPE html>
 <html>
-<head>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
-       'version':'1','packages':['timeline']}]}"></script>
-<script type="text/javascript" src="chart.js"></script>
-</head>
-<body>
-<div id="example3.1" style="width: 1000px; height: 400px;"></div>
-<div>
-	<form onsubmit="createChart(); return false;">
-		<list>
-			<li><textarea id="input-data">
-[Plan(duration=5.018415927886963, start_time=0, agent='planner'), Move(end_node='rm3', start_time=5.018415927886963, agent='agent1', start_node='res-rm1', duration=10.0), Move(end_node='rm1', start_time=5.018415927886963, agent='agent2', start_node='res-rm1', duration=10.0), Move(end_node='rm3', start_time=5.018415927886963, agent='agent3', start_node='res-rm1', duration=10.0), Plan(duration=5.015085935592651, start_time=15.018415927886963, agent='planner'), Move(end_node='rm6', start_time=20.033501863479614, agent='agent3', start_node='rm3', duration=10.0), Clean(duration=15.0, start_time=20.033501863479614, room='rm3', agent='agent1'), Clean(duration=15.0, start_time=20.033501863479614, room='rm1', agent='agent2'), Plan(duration=5.011214017868042, start_time=30.033501863479614, agent='planner'), Move(end_node='rm4', start_time=35.044715881347656, agent='agent1', start_node='rm3', duration=10.0), Move(end_node='rm2', start_time=35.044715881347656, agent='agent2', start_node='rm1', duration=10.0), Clean(duration=15.0, start_time=35.044715881347656, room='rm6', agent='agent3'), Plan(duration=5.014296054840088, start_time=45.044715881347656, agent='planner'), Move(end_node='rm7', start_time=50.059011936187744, agent='agent3', start_node='rm6', duration=10.0), Clean(duration=15.0, start_time=50.059011936187744, room='rm2', agent='agent2'), Clean(duration=15.0, start_time=50.059011936187744, room='rm4', agent='agent1'), Plan(duration=5.015128135681152, start_time=60.059011936187744, agent='planner'), Move(end_node='rm5', start_time=65.0741400718689, agent='agent1', start_node='rm4', duration=10.0), Move(end_node='rm5', start_time=65.0741400718689, agent='agent2', start_node='rm2', duration=10.0), Clean(duration=15.0, start_time=65.0741400718689, room='rm7', agent='agent3'), Plan(duration=5.011574983596802, start_time=75.0741400718689, agent='planner'), Move(end_node='rm-ed1', start_time=80.0857150554657, agent='agent3', start_node='rm7', duration=10.0), Clean(duration=15.0, start_time=80.0857150554657, room='rm5', agent='agent1'), Plan(duration=5.01285982131958, start_time=90.0857150554657, agent='planner'), Move(end_node='rm-ed1', start_time=95.09857487678528, agent='agent2', start_node='rm5', duration=10.0), ExtraClean(room='rm-ed1', start_time=105.09957487678528, agent1='agent2', agent0='agent3', duration=15.0)]
-	
-			</textarea></li>
-			<li><input type="submit" value="Submit"></li>
-		</list>
-	</form>
-</div>
-</body>
+    <head>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
+            'version':'1','packages':['timeline']}]}"></script>
+        <script type="text/javascript" src="chart.js"></script>
+    </head>
+    <body>
+        <div id="example3.1" style="width: 1000px; height: 400px;"></div>
+        <div>
+            <form onsubmit="createChart($, google); return false;">
+                <list>
+                    <li>
+                        <textarea id="input-data">
+                        [Plan(duration=5.018415927886963, start_time=0, agent='planner'), Move(end_node='rm3', start_time=5.018415927886963, agent='agent1', start_node='res-rm1', duration=10.0), Move(end_node='rm1', start_time=5.018415927886963, agent='agent2', start_node='res-rm1', duration=10.0), Move(end_node='rm3', start_time=5.018415927886963, agent='agent3', start_node='res-rm1', duration=10.0), Plan(duration=5.015085935592651, start_time=15.018415927886963, agent='planner'), Move(end_node='rm6', start_time=20.033501863479614, agent='agent3', start_node='rm3', duration=10.0), Clean(duration=15.0, start_time=20.033501863479614, room='rm3', agent='agent1'), Clean(duration=15.0, start_time=20.033501863479614, room='rm1', agent='agent2'), Plan(duration=5.011214017868042, start_time=30.033501863479614, agent='planner'), Move(end_node='rm4', start_time=35.044715881347656, agent='agent1', start_node='rm3', duration=10.0), Move(end_node='rm2', start_time=35.044715881347656, agent='agent2', start_node='rm1', duration=10.0), Clean(duration=15.0, start_time=35.044715881347656, room='rm6', agent='agent3'), Plan(duration=5.014296054840088, start_time=45.044715881347656, agent='planner'), Move(end_node='rm7', start_time=50.059011936187744, agent='agent3', start_node='rm6', duration=10.0), Clean(duration=15.0, start_time=50.059011936187744, room='rm2', agent='agent2'), Clean(duration=15.0, start_time=50.059011936187744, room='rm4', agent='agent1'), Plan(duration=5.015128135681152, start_time=60.059011936187744, agent='planner'), Move(end_node='rm5', start_time=65.0741400718689, agent='agent1', start_node='rm4', duration=10.0), Move(end_node='rm5', start_time=65.0741400718689, agent='agent2', start_node='rm2', duration=10.0), Clean(duration=15.0, start_time=65.0741400718689, room='rm7', agent='agent3'), Plan(duration=5.011574983596802, start_time=75.0741400718689, agent='planner'), Move(end_node='rm-ed1', start_time=80.0857150554657, agent='agent3', start_node='rm7', duration=10.0), Clean(duration=15.0, start_time=80.0857150554657, room='rm5', agent='agent1'), Plan(duration=5.01285982131958, start_time=90.0857150554657, agent='planner'), Move(end_node='rm-ed1', start_time=95.09857487678528, agent='agent2', start_node='rm5', duration=10.0), ExtraClean(room='rm-ed1', start_time=105.09957487678528, agent1='agent2', agent0='agent3', duration=15.0)]
+                        </textarea>
+                    </li>
+                    <li><input type="submit" value="Submit"></li>
+                </list>
+            </form>
+        </div>
+    </body>
 </html>
