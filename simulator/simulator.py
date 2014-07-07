@@ -66,7 +66,7 @@ def run_simulation(model, logger, planning_time):
 		if observers:
 			# plan invalid due to observations whilst planning, replan
 			print("plan inconsistent with state, replanning")
-			new_knowledge = True
+			executed[-1].partial = True
 			continue
 
 		plan = adjust_plan(plan, simulation_time)
