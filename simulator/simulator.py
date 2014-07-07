@@ -17,7 +17,7 @@ from decimal import Decimal
 from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean
 from planning_exceptions import NoPlanException, StateException, ExecutionError
 
-ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time")
+ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time aborted_plan")
 
 def run_simulation(model, logger, planning_time):
 
@@ -75,7 +75,10 @@ def run_simulation(model, logger, planning_time):
 		observation_time = result.planning_start
 		simulation_time = result.simulation_time
 		new_knowledge = bool(observation_time)
-		executed.extend(result.executed_actions)
+		newly_executed_actions = result.executed_actions
+		if result.aborted_plan:
+			newly_executed_actions = sorted(newly_executed_actions + [result.aborted_plan], key=attrgetter("end_time"))
+		executed.extend(newly_executed_actions)
 
 
 	print("simulation finished")
@@ -149,7 +152,7 @@ def run_plan(model, plan, execution_extension):
 	observation_time, executed, stalled = _result
 
 	if execution_queue.empty():
-		return ExecutionResult(executed, observation_time, max(a.end_time for a in executed))
+		return ExecutionResult(executed, observation_time, max(a.end_time for a in executed), None)
 
 	# execute actions during replan phase
 	deadline = observation_time + execution_extension
@@ -158,10 +161,10 @@ def run_plan(model, plan, execution_extension):
 	observation_whilst_planning, additional_executed = _result[:2] # ignore simulation time. why?
 
 	# if second observation (whilst planning) add failed plan
+	partial_plan = None
 	if observation_whilst_planning:
 		partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
 		partial_plan.partial = True
-		executed.append(partial_plan)
 
 	# attempt to partially execute actions in mid-execution
 	mid_executing_actions = list(action for _t, state, action in execution_queue.queue
@@ -178,7 +181,7 @@ def run_plan(model, plan, execution_extension):
 	planning_start = observation_whilst_planning or observation_time
 	simulation_time = max(a.end_time for a in executed)
 
-	return ExecutionResult(executed, planning_start, simulation_time)
+	return ExecutionResult(executed, planning_start, simulation_time, partial_plan)
 
 
 def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadline, execute_partial_actions=False, stalled=None):

@@ -1,12 +1,10 @@
 * run many experiments
 * add stalled action to check agents are correctly executing
 * working with first  greedy plan tends to be better than spending an extended time planning (eg 30s).
-* avoid partial actions with zero duration
-* add failed plan action
-* split ExtraCleans in timeline
 * try to split simulator and executor
 * convert print statements to logging
 * remove debug from action -- make permanent
+* make javascript libraries available offline (google and jquery)
 
 
 done
@@ -14,3 +12,6 @@ done
 * need to make sure temp nodes are removed correctly
 * make sure timeline is giving correct colours to actions
 * unit tests
+* avoid partial actions with zero duration
+* split ExtraCleans in timeline
+* add failed plan action

@@ -701,7 +701,7 @@ class TestRunPlan(unittest.TestCase):
         # then
         expected_partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
         expected_partial_plan.partial = True
-        assert_that(actual.executed_actions, has_item(equal_to(expected_partial_plan)))
+        assert_that(actual.aborted_plan, equal_to(expected_partial_plan))
 
 class TestRunSimulation(unittest.TestCase):
     pass
