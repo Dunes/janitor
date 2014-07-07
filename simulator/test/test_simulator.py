@@ -10,11 +10,12 @@ from hamcrest import assert_that, contains, is_not, empty, is_, has_length
 from util.matchers.actionmatcher import equal_to  # @UnresolvedImport
 
 import simulator
-from action import Move, ExtraClean, Action, Observe, ExecutionState, Clean
+from action import Move, ExtraClean, Action, Observe, ExecutionState, Clean, Plan
 from util.builder import ActionBuilder, ModelBuilder
 from util.accuracy import quantize
 from queue import PriorityQueue
 from planning_exceptions import ExecutionError
+from hamcrest.library.collection.issequence_containing import has_item
 
 class TestAgents(unittest.TestCase):
 
@@ -678,6 +679,29 @@ class TestRunPlan(unittest.TestCase):
 
         # then
         self.remove_unused_temp_nodes.assert_called_once_with(model)
+
+    def test_partial_plan_added_if_observation_whilst_planning(self):
+        # given
+        observation_time = 0
+        observation_whilst_planning = 10
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [Mock(name="action", end_time=0)], Mock("stalled-set")),
+            (observation_whilst_planning, [], None)
+        ]
+        self.execute_partial_actions.return_value = []
+        model = Mock(name="model")
+        plan = []
+        execution_extension = 100
+
+        # when
+        actual = simulator.run_plan(model, plan, execution_extension)
+
+        # then
+        expected_partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
+        expected_partial_plan.partial = True
+        assert_that(actual.executed_actions, has_item(equal_to(expected_partial_plan)))
 
 class TestRunSimulation(unittest.TestCase):
     pass
