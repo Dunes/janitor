@@ -19,7 +19,8 @@ function parseData($) {
         "Other": "#000000",
         "Partial Clean": "#ffc04d",
         "Partial ExtraClean": "#4d934d",
-        "Partial Move": "#ae4d4d"
+        "Partial Move": "#ae4d4d",
+        "Partial Plan": "#8282ff",
     };
 
     var data = $("#input-data").val().trim();
