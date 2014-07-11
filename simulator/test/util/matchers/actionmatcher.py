@@ -72,13 +72,20 @@ def match_plan(expected, actual):
         and expected.start_time == actual.start_time
         and expected.duration == actual.duration)
 
+def match_stalled(expected, actual):
+    return (same_partial(expected, actual)
+        and expected.agent == actual.agent
+        and expected.start_time == actual.start_time
+        and expected.duration == actual.duration)
+
 matchers = {
     action.Action: match_action,
     action.Move: match_move,
     action.Clean: match_clean,
     action.ExtraClean: match_extra_clean,
     action.Observe: match_observe,
-    action.Plan: match_plan
+    action.Plan: match_plan,
+    action.Stalled: match_stalled
 }
 
 

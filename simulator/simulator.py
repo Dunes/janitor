@@ -6,15 +6,15 @@ from math import isnan
 from planner import Planner
 import problem_parser
 from logger import Logger
+import logging
 
 from operator import attrgetter
 from collections import Iterable, namedtuple
 from queue import PriorityQueue
-from math import isinf
 from itertools import chain
 from decimal import Decimal
 
-from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean
+from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import NoPlanException, StateException, ExecutionError
 
 ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time aborted_plan")
@@ -158,13 +158,17 @@ def run_plan(model, plan, execution_extension):
 	deadline = observation_time + execution_extension
 	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline,
 			execute_partial_actions=execute_partial_actions, stalled=stalled)
-	observation_whilst_planning, additional_executed = _result[:2] # ignore simulation time. why?
+	observation_whilst_planning, additional_executed, stalled = _result
 
 	# if second observation (whilst planning) add failed plan
 	partial_plan = None
 	if observation_whilst_planning:
 		partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
 		partial_plan.partial = True
+
+	# add stalled actions
+	stalled_actions = list(Stalled(stalled_time, deadline-stalled_time, agent_name)
+			for agent_name, stalled_time in stalled.items())
 
 	# attempt to partially execute actions in mid-execution
 	mid_executing_actions = list(action for _t, state, action in execution_queue.queue
@@ -177,7 +181,7 @@ def run_plan(model, plan, execution_extension):
 	half_executed_actions = execute_partial_actions(mid_executing_actions, model, deadline)
 	remove_unused_temp_nodes(model)
 
-	executed = executed + additional_executed + half_executed_actions
+	executed = executed + additional_executed + half_executed_actions + stalled_actions
 	planning_start = observation_whilst_planning or observation_time
 	simulation_time = max(a.end_time for a in executed)
 
@@ -188,7 +192,7 @@ def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadlin
 	simulation_time = None
 	executed = []
 	if stalled is None:
-		stalled = set()
+		stalled = {}
 
 	while not execution_queue.empty():
 		time, state, action = execution_queue.get()
@@ -213,7 +217,7 @@ def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadlin
 				# however, may be processing actions starting at deadline, so allow these to stall and not report error
 				#import pdb; pdb.set_trace()
 				raise ExecutionError("action expects model to be in different state -- {}".format(action))
-			stalled.update(agents(action))
+			stalled.update((agent, action.start_time) for agent in agents(action))
 		elif action.execution_state == ExecutionState.pre_start:
 			action.start()
 			execution_queue.put((action.end_time, action.execution_state, action))
@@ -255,12 +259,14 @@ def substitute_obj_name(obj_name, args):
 
 def parser():
 	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
-	p.add_argument("problem_file", default="janitor-preferences-sample.json", nargs="?")
+	p.add_argument("problem_file")
 	p.add_argument("--planning-time", "-t", type=Decimal, default="nan")
 	p.add_argument("--log-directory", "-l", default="logs")
 	return p
 
 if __name__ == "__main__":
+	#log = logger.StyleAdapter(logging.getLogger("simulator"))
+	#logging.basicConfig(format='{name} {asctime} [{levelname}] {message}', datefmt='%H:%M:%S', style="{", level=logging.INFO)
 	args = parser().parse_args()
 	print(args)
 	model = problem_parser.decode(args.problem_file)

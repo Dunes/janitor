@@ -83,6 +83,11 @@ class Plan(Action):
 		super(Plan, self).__init__(start_time, duration)
 		self.agent = "planner"
 
+class Stalled(Action):
+	def __init__(self, start_time, duration, agent):
+		super(Stalled, self).__init__(start_time, duration)
+		self.agent = agent
+
 class Move(Action):
 
 	_ordinal = 0

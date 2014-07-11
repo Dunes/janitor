@@ -6,11 +6,11 @@ Created on 26 Jun 2014
 import unittest
 from unittest.mock import MagicMock, Mock, patch, call
 
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length
+from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_entry
 from util.matchers.actionmatcher import equal_to  # @UnresolvedImport
 
 import simulator
-from action import Move, ExtraClean, Action, Observe, ExecutionState, Clean, Plan
+from action import Move, ExtraClean, Action, Observe, ExecutionState, Clean, Plan, Stalled
 from util.builder import ActionBuilder, ModelBuilder
 from util.accuracy import quantize
 from queue import PriorityQueue
@@ -301,7 +301,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         # then
         assert_that(simulation_time, equal_to(deadline))
         assert_that(executed, contains(equal_to(action1)))
-        assert_that(stalled, equal_to(set()))
+        assert_that(stalled, equal_to({}))
 
         action1.apply.assert_called_once_with(model)
         assert_that(is_not(action2.called))
@@ -344,7 +344,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         # then
         assert_that(simulation_time, equal_to(end_time))
         assert_that(executed, contains(equal_to(action1)))
-        assert_that(stalled, equal_to(set()))
+        assert_that(stalled, equal_to({}))
         assert_that(execution_queue.empty())
 
         action1.apply.assert_called_once_with(model)
@@ -373,7 +373,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         # then
         assert_that(simulation_time, equal_to(deadline))
         assert_that(executed, contains(equal_to(action1), equal_to(action2)))
-        assert_that(stalled, equal_to(set()))
+        assert_that(stalled, equal_to({}))
 
         action1.apply.assert_called_once_with(model)
         action2.apply.assert_called_once_with(model)
@@ -382,8 +382,8 @@ class TestExecuteActionQueue(unittest.TestCase):
     def test_stalls_agent_when_action_not_applicable(self):
         # given
         agent_name = "agent"
-        action1 = Mock(self.action_template)
-        action1.agent = agent_name
+        stalled_time = -1
+        action1 = Mock(self.action_template, agent=agent_name, start_time=stalled_time)
         action1.is_applicable.return_value = False
         deadline = 0
         model = Mock(name="model")
@@ -399,6 +399,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         assert_that(executed, is_(empty()))
         assert_that(is_not(action1.apply.called))
         assert_that(stalled, contains(agent_name))
+        assert_that(stalled, equal_to({agent_name: stalled_time}))
 
     def test_raises_error_when_stalled_agent_found_but_should_break_on_new_knowledge(self):
         # given
@@ -534,12 +535,12 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = []
         end_time = 20
-        observation_time, executed_first_pass, stalled = 0, [Mock(end_time=end_time-1)], Mock()
+        observation_time, executed_first_pass = 0, [Mock(end_time=end_time-1)]
         observation_whilst_planning = 10
         executed_second_pass = [Mock(end_time=end_time)]
         self.execute_action_queue.side_effect = [
-            (observation_time, executed_first_pass, stalled),
-            (observation_whilst_planning, executed_second_pass, None)
+            (observation_time, executed_first_pass, {}),
+            (observation_whilst_planning, executed_second_pass, {})
         ]
         self.execute_partial_actions.return_value = []
         model = Mock(name="model")
@@ -556,7 +557,7 @@ class TestRunPlan(unittest.TestCase):
                     deadline=float("infinity")),
             call.execute_action_queue(model, self.PriorityQueue(), break_on_new_knowledge=False,
                     deadline=observation_time+execution_extension,
-                    execute_partial_actions=self.execute_partial_actions, stalled=stalled)
+                    execute_partial_actions=self.execute_partial_actions, stalled={})
         ])
         assert_that(actual.executed_actions, equal_to(plan))
         assert_that(actual.planning_start, equal_to(observation_whilst_planning))
@@ -567,11 +568,11 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = []
         end_time = 20
-        observation_time, executed_first_pass, stalled = 0, [Mock(end_time=end_time-1)], Mock()
+        observation_time, executed_first_pass = 0, [Mock(end_time=end_time-1)]
         executed_second_pass = [Mock(end_time=end_time)]
         self.execute_action_queue.side_effect = [
-            (observation_time, executed_first_pass, stalled),
-            (None, executed_second_pass, None)
+            (observation_time, executed_first_pass, {}),
+            (None, executed_second_pass, {})
         ]
         self.execute_partial_actions.return_value = []
         model = Mock(name="model")
@@ -599,8 +600,8 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().queue = tuple(execution_state)
         observation_time = 0
         self.execute_action_queue.side_effect = [
-            (observation_time, [], Mock()),
-            (None, [], None)
+            (observation_time, [], {}),
+            (None, [], {})
         ]
         self.execute_partial_actions.return_value = [mid_execution_action]
         model = Mock(name="model")
@@ -634,8 +635,8 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = tuple(execution_state)
         self.execute_action_queue.side_effect = [
-            (observation_time, [], Mock()),
-            (None, [], None)
+            (observation_time, [], {}),
+            (None, [], {})
         ]
         self.execute_partial_actions.return_value = [mid_execution_action]
         model = Mock(name="model")
@@ -655,8 +656,8 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = tuple(execution_state)
         self.execute_action_queue.side_effect = [
-            (0, [], Mock()),
-            (None, [], None)
+            (0, [], {}),
+            (None, [], {})
         ]
         model = Mock(name="model")
         execution_extension = 100
@@ -670,7 +671,7 @@ class TestRunPlan(unittest.TestCase):
         # given
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = []
-        self.execute_action_queue.return_value = 0, [Mock(end_time=0)], None
+        self.execute_action_queue.return_value = 0, [Mock(end_time=0)], {}
         self.execute_partial_actions.return_value = []
         model = Mock(name="model")
 
@@ -687,8 +688,8 @@ class TestRunPlan(unittest.TestCase):
         self.PriorityQueue().empty.return_value = False
         self.PriorityQueue().queue = []
         self.execute_action_queue.side_effect = [
-            (observation_time, [Mock(name="action", end_time=0)], Mock("stalled-set")),
-            (observation_whilst_planning, [], None)
+            (observation_time, [Mock(name="action", end_time=0)], {}),
+            (observation_whilst_planning, [], {})
         ]
         self.execute_partial_actions.return_value = []
         model = Mock(name="model")
@@ -702,6 +703,81 @@ class TestRunPlan(unittest.TestCase):
         expected_partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
         expected_partial_plan.partial = True
         assert_that(actual.aborted_plan, equal_to(expected_partial_plan))
+
+    def test_add_stalled_actions_when_agent_stalled_in_initial_pass(self):
+        # given
+        name = "agent"
+        stalled_time = 0
+        stalled = {name: stalled_time}
+        observation_time = 10
+        execution_extension = 10
+        deadline = observation_time + execution_extension
+        previous_action = Mock(name="previous-action", agent=name, end_time=stalled_time)
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [previous_action], stalled),
+            (None, [], stalled)
+        ]
+        self.execute_partial_actions.return_value = []
+        plan = []
+
+        # when
+        actual = simulator.run_plan(Mock("model"), plan, execution_extension)
+
+        # then
+        assert_that(actual.executed_actions,
+                    has_item(equal_to(Stalled(previous_action.end_time , deadline, name))))
+
+
+    def test_add_stalled_action_when_no_previous_action(self):
+        # given
+        name = "agent"
+        stalled_time = 0
+        stalled = {name: stalled_time}
+        observation_time = 10
+        execution_extension = 10
+        deadline = observation_time + execution_extension
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [Mock(name="other-action", end_time=execution_extension)], stalled),
+            (None, [], stalled)
+        ]
+        self.execute_partial_actions.return_value = []
+        plan = []
+
+        # when
+        actual = simulator.run_plan(Mock("model"), plan, execution_extension)
+
+        # then
+        assert_that(actual.executed_actions,
+                    has_item(equal_to(Stalled(stalled_time, deadline, name))))
+
+    def test_add_stalled_action_in_second_pass(self):
+        # given
+        name = "agent"
+        stalled_time = 0
+        stalled = {name: stalled_time}
+        observation_time = 10
+        execution_extension = 10
+        deadline = observation_time + execution_extension
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [], {}),
+            (None, [Mock(name="other-action", end_time=execution_extension)], stalled),
+        ]
+        self.execute_partial_actions.return_value = []
+        plan = []
+
+        # when
+        actual = simulator.run_plan(Mock("model"), plan, execution_extension)
+
+        # then
+        assert_that(actual.executed_actions,
+                    has_item(equal_to(Stalled(stalled_time, deadline, name))))
+
 
 class TestRunSimulation(unittest.TestCase):
     pass
