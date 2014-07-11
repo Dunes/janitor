@@ -1,7 +1,6 @@
 * run many experiments
 * working with first  greedy plan tends to be better than spending an extended time planning (eg 30s).
 * try to split simulator and executor
-* convert print statements to logging
 * remove debug from action -- make permanent
 * make javascript libraries available offline (google and jquery)
 * make actions use __eq__ and remove matchers
@@ -17,3 +16,4 @@ done
 * split ExtraCleans in timeline
 * add failed plan action
 * add stalled action to check agents are correctly executing
+* convert print statements to logging

@@ -2,7 +2,10 @@ from collections import namedtuple
 from planning_exceptions import ExecutionError
 from decimal import Decimal
 from functools import total_ordering
+from logger import StyleAdapter
+import logging
 
+log = StyleAdapter(logging.getLogger(__name__))
 
 debug = True
 def _error_when_debug():
@@ -47,7 +50,7 @@ class Action(object):
 		self.execution_state = ExecutionState.executing
 
 	def finish(self):
-		print("finishing:", str(self))
+		log.info("finishing: {}", self)
 		if self.execution_state != ExecutionState.executing:
 			raise ExecutionError("invalid state")
 		self.execution_state = ExecutionState.finished

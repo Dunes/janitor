@@ -5,8 +5,8 @@ from math import isnan
 
 from planner import Planner
 import problem_parser
-from logger import Logger
-import logging
+from logger import Logger, StyleAdapter
+import logging.config
 
 from operator import attrgetter
 from collections import Iterable, namedtuple
@@ -16,6 +16,9 @@ from decimal import Decimal
 
 from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import NoPlanException, StateException, ExecutionError
+
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+log = StyleAdapter(logging.getLogger("simulator"))
 
 ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time aborted_plan")
 
@@ -42,7 +45,7 @@ def run_simulation(model, logger, planning_time):
 
 	while new_knowledge and not is_goal_in_model(model["goal"], model):
 
-		print("planning")
+		log.info("planning")
 		plan, time_taken = planner.get_plan_and_time_taken(model)
 		logger.log_plan(plan)
 		time_planning += time_taken
@@ -54,18 +57,18 @@ def run_simulation(model, logger, planning_time):
 			time_waiting_for_actions_to_finish += simulation_time - planning_finished
 		else:
 			time_waiting_for_planner_to_finish += planning_finished - simulation_time
-		print("simulation_time", simulation_time)
-		print("planning_finished", planning_finished)
+		log.info("simulation_time {}", simulation_time)
+		log.info("planning_finished {}", planning_finished)
 
 		simulation_time = max(simulation_time, planning_finished)
 		observation_time = None
 
-		print("executing new plan")
+		log.info("executing new plan")
 		# observe environment and check for changes since planning, before executing plan
 		observers = observe_environment(model)
 		if observers:
 			# plan invalid due to observations whilst planning, replan
-			print("plan inconsistent with state, replanning")
+			log.info("plan inconsistent with state, replanning")
 			executed[-1].partial = True
 			continue
 
@@ -81,15 +84,15 @@ def run_simulation(model, logger, planning_time):
 		executed.extend(newly_executed_actions)
 
 
-	print("simulation finished")
+	log.info("simulation finished")
 
 	goal_achieved = is_goal_in_model(model["goal"], model)
-	print("Goal achieved:", goal_achieved)
-	print("Planner called:", planner_called)
-	print("Total time taken:", simulation_time)
-	print("Time spent planning:", time_planning)
-	print("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
-	print("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
+	log.info("Goal achieved: {}", goal_achieved)
+	log.info("Planner called: {}", planner_called)
+	log.info("Total time taken: {}", simulation_time)
+	log.info("Time spent planning: {}", time_planning)
+	log.info("time_waiting_for_actions_to_finish {}", time_waiting_for_actions_to_finish)
+	log.info("time_waiting_for_planner_to_finish {}", time_waiting_for_planner_to_finish)
 
 	logger.log_property("goal_achieved", goal_achieved)
 	logger.log_property("planner_called", planner_called)
@@ -100,7 +103,7 @@ def run_simulation(model, logger, planning_time):
 	executed_str = "'[{}]'".format(", ".join(str(action) for action in executed if type(action) is not Observe))
 	logger.log_property("execution", executed_str)
 
-	print("remaining temp nodes:",
+	log.info("remaining temp nodes: {}",
 		[(name, node) for name, node in model["nodes"].items() if name.startswith("temp")])
 
 def agents(action):
@@ -232,7 +235,7 @@ def execute_partial_actions(mid_execution_actions, model, deadline):
 
 	result = [a for a in genr if a]
 	for a in result:
-		print("partial:", a)
+		log.info("partial: {}", a)
 	return result
 
 def is_goal_in_model(goal, model):
@@ -265,13 +268,11 @@ def parser():
 	return p
 
 if __name__ == "__main__":
-	#log = logger.StyleAdapter(logging.getLogger("simulator"))
-	#logging.basicConfig(format='{name} {asctime} [{levelname}] {message}', datefmt='%H:%M:%S', style="{", level=logging.INFO)
 	args = parser().parse_args()
-	print(args)
+	log.info(args)
 	model = problem_parser.decode(args.problem_file)
 	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time)
-	print("log:", log_file_name)
+	log.info("log: {}", log_file_name)
 	with Logger(log_file_name, args.log_directory) as logger:
 		run_simulation(model, logger, args.planning_time)
 
