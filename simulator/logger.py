@@ -2,7 +2,7 @@ from os.path import join, basename, splitext, isdir
 from os import makedirs
 
 from logging import LoggerAdapter
-from inspect import getargspec
+from inspect import signature
 
 class Logger(object):
 
@@ -75,6 +75,7 @@ class BraceMessage:
 		return str(self.fmt).format(*self.args, **self.kwargs)
 
 class StyleAdapter(LoggerAdapter):
+
 	def __init__(self, logger):
 		self.logger = logger
 
@@ -84,4 +85,5 @@ class StyleAdapter(LoggerAdapter):
 			self.logger._log(level, BraceMessage(msg, args, kwargs), (), **log_kwargs)
 
 	def process(self, msg, kwargs):
-		return msg, {key: kwargs[key] for key in getargspec(self.logger._log).args[1:] if key in kwargs}
+		return msg, {arg: kwargs[arg]
+			for arg in signature(self.logger._log).parameters if arg in kwargs}
