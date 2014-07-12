@@ -1,24 +1,18 @@
-#! /usr/bin/env python3
+from logging import getLogger
 
-import argparse
 from math import isnan
 
 from planner import Planner
-import problem_parser
-from logger import Logger, StyleAdapter
-import logging.config
-
+from logger import StyleAdapter
 from operator import attrgetter
 from collections import Iterable, namedtuple
 from queue import PriorityQueue
 from itertools import chain
-from decimal import Decimal
 
 from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import NoPlanException, StateException, ExecutionError
 
-logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
-log = StyleAdapter(logging.getLogger("simulator"))
+log = StyleAdapter(getLogger(__name__))
 
 ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time aborted_plan")
 
@@ -68,9 +62,9 @@ def run_simulation(model, logger, planning_time):
 		observers = observe_environment(model)
 		if observers:
 			# plan invalid due to observations whilst planning, replan
-			log.info("plan inconsistent with state, replanning")
-			executed[-1].partial = True
-			continue
+			log.info("plan inconsistent with state, attempt partial execution")
+# 			executed[-1].partial = True
+# 			continue
 
 		plan = adjust_plan(plan, simulation_time)
 		result = run_plan(model, plan, planning_time)
@@ -259,20 +253,4 @@ def substitute_obj_name(obj_name, args):
 		return tuple(obj_name if a is True else a for a in args)
 	else:
 		return (obj_name if args is True else args,)
-
-def parser():
-	p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
-	p.add_argument("problem_file")
-	p.add_argument("--planning-time", "-t", type=Decimal, default="nan")
-	p.add_argument("--log-directory", "-l", default="logs")
-	return p
-
-if __name__ == "__main__":
-	args = parser().parse_args()
-	log.info(args)
-	model = problem_parser.decode(args.problem_file)
-	log_file_name = Logger.get_log_file_name(args.problem_file, args.planning_time)
-	log.info("log: {}", log_file_name)
-	with Logger(log_file_name, args.log_directory) as logger:
-		run_simulation(model, logger, args.planning_time)
 
