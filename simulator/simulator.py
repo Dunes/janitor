@@ -8,13 +8,14 @@ from operator import attrgetter
 from collections import Iterable, namedtuple
 from queue import PriorityQueue
 from itertools import chain
+from copy import deepcopy
 
 from action import Clean, Move, ExecutionState, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import NoPlanException, StateException, ExecutionError
 
 log = StyleAdapter(getLogger(__name__))
 
-ExecutionResult = namedtuple("ExecutionResult", "executed_actions planning_start simulation_time aborted_plan")
+ExecutionResult = namedtuple("ExecutionResult", "executed_actions observations simulation_time")
 
 def run_simulation(model, logger, planning_time):
 
@@ -25,7 +26,9 @@ def run_simulation(model, logger, planning_time):
 	# variables to run simulation
 	simulation_time = 0
 	new_knowledge = True
-	observation_time = None
+	planning_start = 0
+	observation_whilst_planning = False
+	predicted_model = None
 
 	# variables used to record simulation
 	planner_called = 0
@@ -40,13 +43,18 @@ def run_simulation(model, logger, planning_time):
 	while new_knowledge and not is_goal_in_model(model["goal"], model):
 
 		log.info("planning")
-		plan, time_taken = planner.get_plan_and_time_taken(model)
+		if not observation_whilst_planning:
+			plan, time_taken = planner.get_plan_and_time_taken(model)
+		else:
+			log.info("observation whilst planning, using predicted model")
+			plan, time_taken = planner.get_plan_and_time_taken(predicted_model)
+			observation_whilst_planning, predicted_model = False, None
 		logger.log_plan(plan)
 		time_planning += time_taken
 		planner_called += 1
-		executed.append(Plan((observation_time if observation_time is not None else simulation_time), time_taken))
+		executed.append(Plan(planning_start, time_taken))
 
-		planning_finished = time_taken + (observation_time if observation_time is not None else simulation_time)
+		planning_finished = time_taken + planning_start
 		if simulation_time > planning_finished:
 			time_waiting_for_actions_to_finish += simulation_time - planning_finished
 		else:
@@ -55,27 +63,23 @@ def run_simulation(model, logger, planning_time):
 		log.info("planning_finished {}", planning_finished)
 
 		simulation_time = max(simulation_time, planning_finished)
-		observation_time = None
 
-		log.info("executing new plan")
-		# observe environment and check for changes since planning, before executing plan
 		observers = observe_environment(model)
 		if observers:
-			# plan invalid due to observations whilst planning, replan
-			log.info("plan inconsistent with state, attempt partial execution")
-# 			executed[-1].partial = True
-# 			continue
+			raise ExecutionError("model in inconsistent state -- should be no possible observations")
 
+		log.info("executing new plan")
 		plan = adjust_plan(plan, simulation_time)
+		model_snapshot = deepcopy(model)
 		result = run_plan(model, plan, planning_time)
 
-		observation_time = result.planning_start
 		simulation_time = result.simulation_time
-		new_knowledge = bool(observation_time)
-		newly_executed_actions = result.executed_actions
-		if result.aborted_plan:
-			newly_executed_actions = sorted(newly_executed_actions + [result.aborted_plan], key=attrgetter("end_time"))
-		executed.extend(newly_executed_actions)
+		planning_start = result.observations[0] if result.observations else simulation_time
+		new_knowledge = bool(planning_start)
+		observation_whilst_planning = len(result.observations) > 1
+		if observation_whilst_planning:
+			predicted_model = predict_model(plan, model_snapshot, simulation_time)
+		executed.extend(result.executed_actions)
 
 
 	log.info("simulation finished")
@@ -128,7 +132,7 @@ def remove_unused_temp_nodes(model):
 							if not edge[0].startswith("temp") or edge[0] in to_keep]
 
 def adjust_plan(plan, start_time):
-	return list(_adjust_plan_helper(plan, start_time))
+	return tuple(_adjust_plan_helper(plan, start_time))
 
 def _adjust_plan_helper(plan, start_time):
 	for action in plan:
@@ -138,6 +142,21 @@ def _adjust_plan_helper(plan, start_time):
 		if type(action) is Move:
 			yield Observe(action.end_time, action.agent, action.end_node)
 
+def predict_model(plan, model, deadline):
+
+	execution_queue = PriorityQueue()
+	for action in plan:
+		if type(action) is not Observe:
+			execution_queue.put((action.start_time, action.execution_state, action))
+
+	result = execute_action_queue(model, execution_queue, break_on_new_knowledge=True, deadline=deadline)
+
+	simulation_time, _executed, stalled = result
+	assert simulation_time == deadline
+	assert not stalled
+
+	return model
+
 def run_plan(model, plan, execution_extension):
 
 	execution_queue = PriorityQueue()
@@ -146,22 +165,18 @@ def run_plan(model, plan, execution_extension):
 
 	# execute main plan
 	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=True, deadline=float("infinity"))
-	observation_time, executed, stalled = _result
+	simulation_time, executed, stalled = _result
 
 	if execution_queue.empty():
-		return ExecutionResult(executed, observation_time, max(a.end_time for a in executed), None)
+		return ExecutionResult(executed, None, simulation_time)
+
+	observation_time = simulation_time
 
 	# execute actions during replan phase
 	deadline = observation_time + execution_extension
-	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline,
-			execute_partial_actions=execute_partial_actions, stalled=stalled)
+	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False,
+			deadline=deadline, stalled=stalled)
 	observation_whilst_planning, additional_executed, stalled = _result
-
-	# if second observation (whilst planning) add failed plan
-	partial_plan = None
-	if observation_whilst_planning:
-		partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
-		partial_plan.partial = True
 
 	# add stalled actions
 	stalled_actions = list(Stalled(stalled_time, deadline-stalled_time, agent_name)
@@ -179,13 +194,13 @@ def run_plan(model, plan, execution_extension):
 	remove_unused_temp_nodes(model)
 
 	executed = executed + additional_executed + half_executed_actions + stalled_actions
-	planning_start = observation_whilst_planning or observation_time
+	observations = [o for o in (observation_time, observation_whilst_planning) if o is not None]
 	simulation_time = max(a.end_time for a in executed)
 
-	return ExecutionResult(executed, planning_start, simulation_time, partial_plan)
+	return ExecutionResult(executed, observations, simulation_time)
 
 
-def execute_action_queue(model, execution_queue, break_on_new_knowledge, deadline, execute_partial_actions=False, stalled=None):
+def execute_action_queue(model, execution_queue, *, break_on_new_knowledge=True, deadline, stalled=None):
 	simulation_time = None
 	executed = []
 	if stalled is None:

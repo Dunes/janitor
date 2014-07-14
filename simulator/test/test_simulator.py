@@ -4,6 +4,7 @@ Created on 26 Jun 2014
 @author: jack
 '''
 import unittest
+from unittest import skip
 from unittest.mock import MagicMock, Mock, patch, call
 
 from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_entry
@@ -295,7 +296,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((deadline+1, ExecutionState.executing, action2))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False, deadline)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline)
         simulation_time, executed, stalled = actual
 
         # then
@@ -318,8 +320,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((deadline, ExecutionState.executing, action1))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False,
-                deadline, stalled=stalled)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline, stalled=stalled)
         _simulation_time, executed, _stalled = actual
 
         # then
@@ -338,7 +340,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((end_time, ExecutionState.executing, action1))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False, deadline)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline)
         simulation_time, executed, stalled = actual
 
         # then
@@ -367,7 +370,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((deadline, ExecutionState.executing, action2))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False, deadline)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline)
         simulation_time, executed, stalled = actual
 
         # then
@@ -391,7 +395,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((deadline, ExecutionState.executing, action1))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False, deadline)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline)
         _simulation_time, executed, stalled = actual
 
         # then
@@ -415,7 +420,8 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # when
         with self.assertRaises(ExecutionError):
-            simulator.execute_action_queue(model, execution_queue, True, deadline)
+            simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=True, deadline=deadline)
 
         # then
         assert_that(execution_queue.empty())
@@ -433,7 +439,8 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # when
         with self.assertRaises(ExecutionError):
-            simulator.execute_action_queue(model, execution_queue, True, deadline)
+            simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=True, deadline=deadline)
 
         # then
         assert_that(execution_queue.empty())
@@ -455,7 +462,8 @@ class TestExecuteActionQueue(unittest.TestCase):
         execution_queue.put((start_time, ExecutionState.pre_start, action_to_start))
 
         # when
-        actual = simulator.execute_action_queue(model, execution_queue, False, deadline)
+        actual = simulator.execute_action_queue(model, execution_queue,
+                break_on_new_knowledge=False, deadline=deadline)
         simulation_time, executed, _stalled = actual
 
         # then
@@ -510,13 +518,12 @@ class TestRunPlan(unittest.TestCase):
     def test_returns_if_plan_fully_executed(self):
         # given
         self.PriorityQueue().empty.return_value = True
-        end_time = 1
-        action1 = Mock(end_time=end_time-1)
-        action2 = Mock(end_time=end_time)
-        action3 = Mock(end_time=end_time-1)
+        action1 = Mock(name="action1")
+        action2 = Mock(name="action2")
+        action3 = Mock(name="action3")
         plan = [action1, action2, action3]
         model = Mock(name="model")
-        observation_time = Mock()
+        observation_time = Mock("observation_time")
         self.execute_action_queue.return_value = (observation_time, plan, Mock("stalled"))
 
         # when
@@ -524,8 +531,8 @@ class TestRunPlan(unittest.TestCase):
 
         # then
         assert_that(actual.executed_actions, equal_to(plan))
-        assert_that(actual.planning_start, equal_to(observation_time))
-        assert_that(actual.simulation_time, equal_to(end_time))
+        assert_that(actual.observations, equal_to(None))
+        assert_that(actual.simulation_time, equal_to(observation_time))
         self.execute_action_queue.assert_called_once_with(
                 model, self.PriorityQueue(), break_on_new_knowledge=True,
                 deadline=float("infinity"))
@@ -556,11 +563,10 @@ class TestRunPlan(unittest.TestCase):
             call.execute_action_queue(model, self.PriorityQueue(), break_on_new_knowledge=True,
                     deadline=float("infinity")),
             call.execute_action_queue(model, self.PriorityQueue(), break_on_new_knowledge=False,
-                    deadline=observation_time+execution_extension,
-                    execute_partial_actions=self.execute_partial_actions, stalled={})
+                    deadline=observation_time+execution_extension, stalled={})
         ])
         assert_that(actual.executed_actions, equal_to(plan))
-        assert_that(actual.planning_start, equal_to(observation_whilst_planning))
+        assert_that(actual.observations, contains(observation_time, observation_whilst_planning))
         assert_that(actual.simulation_time, equal_to(end_time))
 
     def test_reports_inital_observation_time_if_no_obs_whilst_planning(self):
@@ -584,7 +590,7 @@ class TestRunPlan(unittest.TestCase):
 
         # then
         assert_that(actual.executed_actions, equal_to(plan))
-        assert_that(actual.planning_start, equal_to(observation_time))
+        assert_that(actual.observations, contains(observation_time))
         assert_that(actual.simulation_time, equal_to(end_time))
 
     def test_partially_execute_actions_that_are_started(self):
@@ -613,7 +619,7 @@ class TestRunPlan(unittest.TestCase):
 
         # then
         assert_that(actual.executed_actions, contains(mid_execution_action))
-        assert_that(actual.planning_start, equal_to(observation_time))
+        assert_that(actual.observations, contains(observation_time))
         assert_that(actual.simulation_time, equal_to(end_time))
 
         self.execute_partial_actions.assert_called_once_with([mid_execution_action],
@@ -681,6 +687,7 @@ class TestRunPlan(unittest.TestCase):
         # then
         self.remove_unused_temp_nodes.assert_called_once_with(model)
 
+    @skip
     def test_partial_plan_added_if_observation_whilst_planning(self):
         # given
         observation_time = 0
@@ -703,6 +710,48 @@ class TestRunPlan(unittest.TestCase):
         expected_partial_plan = Plan(observation_time, observation_whilst_planning-observation_time)
         expected_partial_plan.partial = True
         assert_that(actual.aborted_plan, equal_to(expected_partial_plan))
+
+    def test_report_observation_whilst_planning(self):
+        # given
+        observation_time = 0
+        observation_whilst_planning = 10
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [Mock(name="action", end_time=0)], {}),
+            (observation_whilst_planning, [], {})
+        ]
+        self.execute_partial_actions.return_value = []
+        model = Mock(name="model")
+        plan = []
+        execution_extension = 100
+
+        # when
+        actual = simulator.run_plan(model, plan, execution_extension)
+
+        # then
+
+        assert_that(actual.observations, contains(observation_time, observation_whilst_planning))
+
+    def test_report_no_observation_whilst_planning(self):
+        # given
+        observation_time = 0
+        self.PriorityQueue().empty.return_value = False
+        self.PriorityQueue().queue = []
+        self.execute_action_queue.side_effect = [
+            (observation_time, [Mock(name="action", end_time=0)], {}),
+            (None, [], {})
+        ]
+        self.execute_partial_actions.return_value = []
+        model = Mock(name="model")
+        plan = []
+        execution_extension = 100
+
+        # when
+        actual = simulator.run_plan(model, plan, execution_extension)
+
+        # then
+        assert_that(actual.observations, contains(observation_time))
 
     def test_add_stalled_actions_when_agent_stalled_in_initial_pass(self):
         # given
@@ -778,6 +827,11 @@ class TestRunPlan(unittest.TestCase):
         assert_that(actual.executed_actions,
                     has_item(equal_to(Stalled(stalled_time, deadline, name))))
 
+
+class TestPredictModel(unittest.TestCase):
+
+    def test_(self):
+        pass
 
 class TestRunSimulation(unittest.TestCase):
     pass
