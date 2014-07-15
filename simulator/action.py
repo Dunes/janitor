@@ -1,4 +1,3 @@
-from collections import namedtuple
 from planning_exceptions import ExecutionError
 from decimal import Decimal
 from functools import total_ordering
@@ -12,21 +11,6 @@ def _error_when_debug():
 	if debug:
 		raise ExecutionError("tried to apply action in an invalid state")
 
-@total_ordering
-class ExecutionState(object):
-	def __init__(self, desc, ordinal):
-		self.desc = desc
-		self.ordinal = ordinal
-	def __lt__(self, other):
-		return self.ordinal < other.ordinal
-	def __str__(self):
-		return self.desc
-	__repr__ = __str__
-
-ExecutionState = namedtuple("_ExecutionState", "pre_start executing finished")(
-	*(ExecutionState(desc,-ordinal) for ordinal, desc in enumerate(("pre_start", "executing", "finished")))
-)
-
 _no_match = object()
 
 @total_ordering
@@ -37,23 +21,11 @@ class Action(object):
 	def __init__(self, start_time, duration, partial=None):
 		self.start_time = start_time
 		self.duration = duration
-		self.execution_state = ExecutionState.pre_start
 		if partial is not None:
 			self.partial = partial
 
 	def __lt__(self, other):
 		return self._ordinal < other._ordinal
-
-	def start(self):
-		if self.execution_state != ExecutionState.pre_start:
-			raise ExecutionError("invalid state")
-		self.execution_state = ExecutionState.executing
-
-	def finish(self):
-		log.info("finishing: {}", self)
-		if self.execution_state != ExecutionState.executing:
-			raise ExecutionError("invalid state")
-		self.execution_state = ExecutionState.finished
 
 	@property
 	def end_time(self):
@@ -107,6 +79,10 @@ class Move(Action):
 	def apply(self, model):
 		self.is_applicable(model) or _error_when_debug()
 		model["agents"][self.agent]["at"][1] = self.end_node
+		if self.start_node.startswith("temp"):
+			del model["nodes"][self.start_node]
+			model["graph"]["edges"] =  [edge for edge in model["graph"]["edges"] if self.start_node not in edge]
+
 
 	def partially_apply(self, model, deadline):
 		self.is_applicable(model) or _error_when_debug()
@@ -138,6 +114,9 @@ class Move(Action):
 
 	def create_temp_node(self, model, deadline):
 		temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
+		if temp_node_name in model["nodes"] or any(edge for edge in model["graph"]["edges"] if edge[0] == temp_node_name):
+			print("tried to insert {}, but already initialised".format(temp_node_name))
+			import pdb; pdb.set_trace()
 		model["nodes"][temp_node_name] = {"node": True}
 		# set up edges -- only allow movement out of node
 		distance_moved = deadline - self.start_time
@@ -214,6 +193,9 @@ class Clean(Action):
 	def partially_apply(self, model, deadline):
 		self.is_applicable(model) or _error_when_debug()
 		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
+		if model["nodes"][self.room]["known"]["dirtiness"] <= 0:
+			log.warning("{} applied till {} caused zero or -tive dirtiness -- {}", self, deadline,
+					model["nodes"][self.room]["known"]["dirtiness"])
 		action = Clean(self.start_time, deadline-self.start_time, self.agent, self.room)
 		action.partial = True
 		return action
