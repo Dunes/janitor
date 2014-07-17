@@ -5,15 +5,18 @@ Created on 20 Jun 2014
 '''
 import unittest
 from unittest.mock import Mock, MagicMock
+from hamcrest import assert_that, is_not, has_item, anything
 import random
 
 import action
-from action import ExecutionState, ExecutionError
+from action import ExecutionError
+from action_state import ExecutionState
 
 from decimal import Decimal
 
 from util.builder import ModelBuilder
 from util.matcher import ModelMatcher, MoveMatcher, CleanMatcher, ExtraCleanMatcher
+
 
 
 class ExecutionStateTest(unittest.TestCase):
@@ -64,25 +67,6 @@ class ActionTest(unittest.TestCase):
     def setUp(self):
         self.action = action.Action(Decimal("0.100"), Decimal("1.050"))
 
-    def test_can_start(self):
-        self.action.start()
-
-    def test_can_finish(self):
-        self.action.start()
-        self.action.finish()
-
-    def test_cannot_restart(self):
-        self.action.start()
-        self.assertRaises(ExecutionError, self.action.start)
-
-    def test_cannot_refinish(self):
-        self.action.start()
-        self.action.finish()
-        self.assertRaises(ExecutionError, self.action.finish)
-
-    def test_cannot_finish_before_start(self):
-        self.assertRaises(ExecutionError, self.action.finish)
-
     def test_calculates_endtime(self):
         expected_endtime = self.action.start_time + self.action.duration
         self.assertEquals(expected_endtime, self.action.end_time)
@@ -117,6 +101,19 @@ class MoveTest(unittest.TestCase):
     def test_apply_fail_when_debug(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
         self.assertRaises(ExecutionError, self.move.apply, model)
+
+    def test_apply_when_moving_from_temp_node(self):
+        self.move.start_node = "temp_start_node"
+        distance = 1
+        model = ModelBuilder().with_agent("agent", at="temp_start_node") \
+            .with_edge("temp_start_node", "end_node").with_edge("end_node", "other_node", distance=distance).model
+
+        self.move.apply(model)
+
+        self.match(model).with_agent("agent").at("end_node")
+        self.match(model).with_distance(distance).from_("end_node").to("other_node")
+        assert_that(model["nodes"], is_not(has_item("temp_start_node")))
+        assert_that(model["graph"]["edges"], is_not(has_item(["temp_start_node", "end_node", distance])))
 
     def test_create_temp_node_creates_partial_action(self):
         deadline = Decimal("1.6")
@@ -351,18 +348,19 @@ class CleanTest(unittest.TestCase):
         self.assertEqual(False, actual)
 
     def test_partially_apply(self):
-        node_value = MagicMock()
+        node = MagicMock(name="node")
+        node.__getitem__().__getitem__().__le__.return_value = False # prevents logging branch
         deadline = Decimal("0.6")
         duration = deadline - self.clean.start_time
-        model = ModelBuilder().with_node("room", value=node_value).model
+        model = ModelBuilder().with_node("room", value=node).model
         self.clean.is_applicable = Mock(return_value=True)
 
         expected = action.Clean(self.clean.start_time, duration, "agent", "room", True)
 
         actual = self.clean.partially_apply(model, deadline)
 
-        node_value.__getitem__.assert_called_once_with("known")
-        node_value["known"].__setitem__.assert_called_once("dirtiness", duration)
+        node.__getitem__.assert_called_with("known")
+        node["known"].__setitem__.assert_called_once("dirtiness", duration)
         CleanMatcher(self).assertEqual(expected, actual)
 
 

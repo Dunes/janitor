@@ -115,8 +115,8 @@ class Move(Action):
 	def create_temp_node(self, model, deadline):
 		temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
 		if temp_node_name in model["nodes"] or any(edge for edge in model["graph"]["edges"] if edge[0] == temp_node_name):
-			print("tried to insert {}, but already initialised".format(temp_node_name))
-			import pdb; pdb.set_trace()
+			log.error("tried to insert {}, but already initialised", temp_node_name)
+			assert False;
 		model["nodes"][temp_node_name] = {"node": True}
 		# set up edges -- only allow movement out of node
 		distance_moved = deadline - self.start_time
@@ -194,8 +194,9 @@ class Clean(Action):
 		self.is_applicable(model) or _error_when_debug()
 		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
 		if model["nodes"][self.room]["known"]["dirtiness"] <= 0:
-			log.warning("{} applied till {} caused zero or -tive dirtiness -- {}", self, deadline,
+			log.error("{} applied till {} caused zero or -tive dirtiness -- {}", self, deadline,
 					model["nodes"][self.room]["known"]["dirtiness"])
+			assert False
 		action = Clean(self.start_time, deadline-self.start_time, self.agent, self.room)
 		action.partial = True
 		return action

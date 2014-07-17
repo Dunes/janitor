@@ -12,12 +12,12 @@ from decimal import Decimal
 
 from action import Move, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import ExecutionError
-from plan_action import ActionState, ExecutionState
+from action_state import ActionState, ExecutionState
 from pddl_parser import _unknown_value_getter
 
 log = StyleAdapter(logging.getLogger(__name__))
 
-ExecutionResult = namedtuple("ExecutionResult", "executed_actions observations simulation_time")
+ExecutionResult = namedtuple("ExecutionResult", "executed observations simulation_time")
 
 def run_simulation(model, logger, planning_time):
 
@@ -89,7 +89,7 @@ def run_simulation(model, logger, planning_time):
 		observation_whilst_planning = any(obs > planning_start for obs in result.observations)
 		if observation_whilst_planning:
 			predicted_model = predict_model(plan, model_hypothesis, simulation_time)
-		executed.extend(result.executed_actions)
+		executed.extend(result.executed)
 
 
 	log.info("simulation finished")
@@ -129,13 +129,6 @@ def observe_environment(model):
 		(action.agent, action.node) for action in actions if action.apply(model)
 	)
 
-def remove_unused_temp_nodes(model):
-	to_keep = set(state["at"][1] for state in model["agents"].values() if state["at"][1].startswith("temp"))
-
-	model["nodes"] = dict((k,v) for k,v in model["nodes"].items() if not k.startswith("temp") or k in to_keep)
-	model["graph"]["edges"] = [edge for edge in model["graph"]["edges"]
-							if not edge[0].startswith("temp") or edge[0] in to_keep]
-
 def adjust_plan(plan, start_time):
 	return tuple(_adjust_plan_helper(plan, start_time))
 
@@ -154,9 +147,12 @@ def predict_model(plan, model, deadline):
 		if type(action) is not Observe:
 			execution_queue.put(ActionState(action))
 
-	execute_action_queue(model, execution_queue, break_on_new_knowledge=False, deadline=deadline)
+	result, stalled = execute_action_queue(model, execution_queue,
+			break_on_new_knowledge=True, deadline=deadline)
+	assert result.observations == ()
+	assert stalled == {}
+	assert result.simulation_time == deadline
 	execute_partial_actions(get_executing_actions(execution_queue.queue, deadline), model, deadline)
-#	remove_unused_temp_nodes(model)
 
 	return model
 
@@ -167,32 +163,30 @@ def get_executing_actions(action_states, deadline):
 				and action_state.action.start_time < deadline)
 
 
-def run_plan(model, plan, simulation_time, execution_extension, *, flawed_plan):
+def run_plan(model, plan, simulation_time, execution_extension, *, flawed_plan=False):
 	log.debug("run_plan() flawed_plan={}", flawed_plan)
 	execution_queue = PriorityQueue()
 	for action in plan:
 		execution_queue.put(ActionState(action))
 
-
 	if not flawed_plan:
 		# execute main plan
-		_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=True, deadline=Decimal("infinity"))
-		simulation_time, executed, observations, stalled = _result
+		result1, stalled = execute_action_queue(model, execution_queue,
+								break_on_new_knowledge=True, deadline=Decimal("infinity"))
+		simulation_time = result1.simulation_time
 	else:
-		executed = []
+		result1 = ExecutionResult(executed=[], observations=set(), simulation_time=simulation_time)
 		stalled = {}
-		observations = set()
 
 	if execution_queue.empty():
-		return ExecutionResult(executed, (), simulation_time)
+		return result1
 
 	observation_time = simulation_time
 
 	# execute actions during replan phase
 	deadline = observation_time + execution_extension
-	_result = execute_action_queue(model, execution_queue, break_on_new_knowledge=False,
+	result2, stalled = execute_action_queue(model, execution_queue, break_on_new_knowledge=False,
 			deadline=deadline, stalled=stalled)
-	_sim_time, additional_executed, observations2, stalled = _result
 
 	# add stalled actions
 	stalled_actions = list(Stalled(stalled_time, deadline-stalled_time, agent_name)
@@ -206,10 +200,9 @@ def run_plan(model, plan, simulation_time, execution_extension, *, flawed_plan):
 			if state == ExecutionState.executing and action.duration == 0)
 
 	half_executed_actions = execute_partial_actions(mid_executing_actions, model, deadline)
-#	remove_unused_temp_nodes(model)
 
-	executed = executed + additional_executed + half_executed_actions + stalled_actions
-	observations = observations | observations2
+	executed = result1.executed + result2.executed + half_executed_actions + stalled_actions
+	observations = result1.observations | result2.observations
 	simulation_time = max(a.end_time for a in executed)
 
 	return ExecutionResult(executed, observations, simulation_time)
@@ -256,7 +249,7 @@ def execute_action_queue(model, execution_queue, *, break_on_new_knowledge=True,
 		else:
 			raise ExecutionError("action in unknown state")
 
-	return simulation_time, executed, observations, stalled
+	return ExecutionResult(executed, observations, simulation_time), stalled
 
 def execute_partial_actions(mid_execution_actions, model, deadline):
 	log.debug("execute_partial_actions() deadline={}", deadline)

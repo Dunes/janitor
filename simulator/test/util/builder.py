@@ -43,7 +43,7 @@ class ModelBuilder(object):
         self._add_to(node, node_value, "nodes")
         return self
 
-    def with_edge(self, from_node, to_node, distance):
+    def with_edge(self, from_node, to_node, distance=None):
         self.with_node(from_node, None)
         self.with_node(to_node, None)
         self.model["graph"]["edges"].append([from_node, to_node, distance])
