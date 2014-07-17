@@ -2,7 +2,7 @@
 
 
 function usage {
-	echo "Usage: run_problems.sh [OPTION]... FILE"
+	echo "Usage: run_problems.sh [OPTION]... [FILE]"
 	echo "Run the problems listed in FILE (one per line)."
 	echo "Records output of problems into a log directory. One file per problem."
 	echo "Separately records all plans produced by a problem in sub dir of the logging" 
@@ -11,6 +11,7 @@ function usage {
 	echo "When FILE is -, read standard input."
 	echo ""
 	echo "  -t TIME            Run problems with a planning time of TIME. (default 30)"
+	echo "  -d PROBLEM_DIR     Use directory as problem source rather than FILE"
 	echo "  -e ERROR_OUTPUT    The file to record failed problems to. "
 	echo "                       (default \`unsolved-problems.txt')"
 	echo "  -l LOG_DIR         The logging directory to log output and failed runs to."
@@ -25,7 +26,7 @@ time_opt="30"
 log_dir="logs"
 error_log_file="unsolved-problems.txt"
 
-args=`getopt t:e:l: $*`
+args=`getopt t:e:l:d: $*`
 if [[ $? -ne 0 ]]
 then
 	usage
@@ -46,6 +47,10 @@ do
 		shift
 		log_dir="$1"
 		;;
+	-d)
+		shift
+		problem_dir="$1"
+		;;
 	--)
 		shift
 		break
@@ -58,8 +63,9 @@ do
 done
 
 
+
 input="$1"
-if [[ ! "$input" ]]
+if [[ "$input" && "$problem_dir" ]] || [[ ! "$input" && ! "$problem_dir" ]]
 then
 	usage
 elif [[ "$input" == "-" ]]
@@ -69,14 +75,27 @@ fi
 
 error_log="$log_dir/$error_log_file"
 
-while read file_name
-do
+function process_file {
 	echo "starting $file_name"
-	./simulator.py "$file_name" -t "$time_opt" -l "$log_dir"
-	exit_val="$?"
-	if [ "$exit_val" -ne 0 ]
+	./main.py "$file_name" -t "$time_opt" -l "$log_dir" | tee "$log_dir/output/$(basename $file_name)"
+	exit_val="${PIPESTATUS[0]}"
+	if [[ "$exit_val" != 0 ]]
 	then
 		echo "failed to find solution for $file_name"
 		echo "$file_name" >> "$error_log"
 	fi 
-done < "$input"
+}
+
+mkdir "$log_dir/output" -p
+if [[ "$input" ]]
+then
+	while read file_name
+	do
+		process_file "$file_name"
+	done < "$input"
+else
+	for file_name in "$problem_dir"/*
+	do
+		process_file "$file_name"
+	done
+fi

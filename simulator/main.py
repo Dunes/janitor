@@ -33,4 +33,6 @@ if __name__ == "__main__":
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
     log.info("log: {}", log_file_name)
     with logger.Logger(log_file_name, args.log_directory) as logger:
-        simulator.run_simulation(model, logger, args.planning_time)
+        result = simulator.run_simulation(model, logger, args.planning_time)
+    if not result:
+        exit(1)

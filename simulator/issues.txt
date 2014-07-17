@@ -4,7 +4,6 @@
 * remove debug from action -- make permanent
 * make javascript libraries available offline (google and jquery)
 * make actions use __eq__ and remove matchers
-* add total ordering to actions, don't rely on tuple ordering for execution queue...
 * refactor simulator and run_simulation into a class and additional methods
 * add base package to project and main module
 * resolve source problems with liclipse
@@ -19,3 +18,4 @@ done
 * add failed plan action
 * add stalled action to check agents are correctly executing
 * convert print statements to logging
+* add total ordering to actions, don't rely on tuple ordering for execution queue...

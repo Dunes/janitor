@@ -114,6 +114,8 @@ def run_simulation(model, logger, planning_time):
 	log.info("remaining temp nodes: {}",
 		[(name, node) for name, node in model["nodes"].items() if name.startswith("temp")])
 
+	return goal_achieved
+
 def agents(action):
 	if type(action) is ExtraClean:
 		return set((action.agent0, action.agent1))
