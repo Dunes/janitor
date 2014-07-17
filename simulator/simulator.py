@@ -149,9 +149,10 @@ def predict_model(plan, model, deadline):
 
 	result, stalled = execute_action_queue(model, execution_queue,
 			break_on_new_knowledge=True, deadline=deadline)
-	assert result.observations == ()
+
+	assert result.observations == set()
 	assert stalled == {}
-	assert result.simulation_time == deadline
+
 	execute_partial_actions(get_executing_actions(execution_queue.queue, deadline), model, deadline)
 
 	return model
