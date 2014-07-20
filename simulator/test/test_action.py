@@ -5,11 +5,10 @@ Created on 20 Jun 2014
 '''
 import unittest
 from unittest.mock import Mock, MagicMock
-from hamcrest import assert_that, is_not, has_item, anything
+from hamcrest import assert_that, is_not, has_item
 import random
 
 import action
-from action import ExecutionError
 from action_state import ExecutionState
 
 from decimal import Decimal
@@ -69,7 +68,7 @@ class ActionTest(unittest.TestCase):
 
     def test_calculates_endtime(self):
         expected_endtime = self.action.start_time + self.action.duration
-        self.assertEquals(expected_endtime, self.action.end_time)
+        self.assertEqual(expected_endtime, self.action.end_time)
 
 class MoveTest(unittest.TestCase):
 
@@ -98,9 +97,9 @@ class MoveTest(unittest.TestCase):
         self.move.apply(model)
         self.match(model).with_agent("agent").at("end_node")
 
-    def test_apply_fail_when_debug(self):
+    def test_apply_fail(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
-        self.assertRaises(ExecutionError, self.move.apply, model)
+        self.assertRaises(AssertionError, self.move.apply, model)
 
     def test_apply_when_moving_from_temp_node(self):
         self.move.start_node = "temp_start_node"
@@ -304,7 +303,7 @@ class CleanTest(unittest.TestCase):
 
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent", at="room") \
-            .with_node("room", known={"extra-dirty": False}).model
+            .with_node("room", known={"dirty": True, "extra-dirty": False}).model
 
         actual = self.clean.is_applicable(model)
 
@@ -348,19 +347,19 @@ class CleanTest(unittest.TestCase):
         self.assertEqual(False, actual)
 
     def test_partially_apply(self):
-        node = MagicMock(name="node")
-        node.__getitem__().__getitem__().__le__.return_value = False # prevents logging branch
         deadline = Decimal("0.6")
         duration = deadline - self.clean.start_time
-        model = ModelBuilder().with_node("room", value=node).model
+        node_value = MagicMock(name="node")
+        node_value.__getitem__().__getitem__.return_value = deadline + 1
+        model = ModelBuilder().with_node("room", value=node_value).model
         self.clean.is_applicable = Mock(return_value=True)
 
         expected = action.Clean(self.clean.start_time, duration, "agent", "room", True)
 
         actual = self.clean.partially_apply(model, deadline)
 
-        node.__getitem__.assert_called_with("known")
-        node["known"].__setitem__.assert_called_once("dirtiness", duration)
+        node_value.__getitem__.assert_called_with("known")
+        node_value["known"].__setitem__.assert_called_once("dirtiness", duration)
         CleanMatcher(self).assertEqual(expected, actual)
 
 
@@ -377,7 +376,7 @@ class ExtraCleanTest(unittest.TestCase):
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent0", at="room") \
             .with_agent("agent1", at="room") \
-            .with_node("room", known={"dirty": False}).model
+            .with_node("room", known={"dirty": False, "extra-dirty": True}).model
 
         actual = self.extra_clean.is_applicable(model)
 
@@ -386,7 +385,7 @@ class ExtraCleanTest(unittest.TestCase):
     def test_is_not_applicable_because_agent_elsewhere(self):
         model = ModelBuilder().with_agent("agent0", at="elsewhere") \
             .with_agent("agent1", at="elsewhere") \
-            .with_node("room", known={"dirty": False}).model
+            .with_node("room", known={"dirty": False, "extra-dirty": True}).model
 
         actual = self.extra_clean.is_applicable(model)
 
@@ -425,9 +424,10 @@ class ExtraCleanTest(unittest.TestCase):
         self.assertEqual(False, actual)
 
     def test_partially_apply(self):
-        node_value = MagicMock()
         deadline = Decimal("0.6")
         duration = deadline - self.extra_clean.start_time
+        node_value = MagicMock(name="node")
+        node_value.__getitem__().__getitem__.return_value = deadline + 1
         model = ModelBuilder().with_node("room", value=node_value).model
         self.extra_clean.is_applicable = Mock(return_value=True)
 
@@ -435,7 +435,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         actual = self.extra_clean.partially_apply(model, deadline)
 
-        node_value.__getitem__.assert_called_once_with("known")
+        node_value.__getitem__.assert_called_with("known")
         node_value["known"].__setitem__.assert_called_once("dirtiness", duration)
         ExtraCleanMatcher(self).assertEqual(expected, actual)
 

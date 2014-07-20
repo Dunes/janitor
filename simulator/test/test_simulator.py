@@ -15,7 +15,6 @@ import simulator
 from action import Move, ExtraClean, Action, Observe, Clean, Plan, Stalled
 from action_state import ExecutionState, ActionState
 from util.builder import ActionBuilder, ModelBuilder
-from util.accuracy import quantize
 from queue import PriorityQueue
 from planning_exceptions import ExecutionError
 from simulator import ExecutionResult
@@ -206,6 +205,7 @@ class TestExecuteActionQueue(unittest.TestCase):
     def test_applies_executing_actions(self):
         # given
         action1 = Mock(self.action_template)
+        action1.apply.return_value = False
         deadline = 10
         end_time = 5
         model = Mock(name="model")
@@ -219,7 +219,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         # then
         assert_that(actual.simulation_time, equal_to(end_time))
         assert_that(actual.executed, contains(equal_to(action1)))
-        assert_that(actual.observations, contains(action1.end_time))
+        assert_that(actual.observations, empty())
         assert_that(stalled, equal_to({}))
         assert_that(execution_queue.empty())
 
@@ -227,18 +227,18 @@ class TestExecuteActionQueue(unittest.TestCase):
 
     def test_applies_concurrently_finishing_actions_when_knowledge(self):
         # given
-        action1 = MagicMock(self.action_template)
-        action1.apply.return_value = True
+        observe = MagicMock(Observe(None, None, None))
+        observe.apply.return_value = True
 
-        action2 = MagicMock(Clean(None, None, None, None))
-        action2.apply.return_value = False
-        action2.__lt__.return_value = False # comes after Move mock
+        clean = MagicMock(Clean(None, None, None, None))
+        clean.apply.return_value = False
+        clean.__lt__.return_value = False
 
         deadline = 10
-        model = Mock(name="model")
+        model = MagicMock(name="model", autospec=dict)
         execution_queue = PriorityQueue()
-        execution_queue.put(ActionState(action1, deadline, ExecutionState.executing))
-        execution_queue.put(ActionState(action2, deadline, ExecutionState.executing))
+        execution_queue.put(ActionState(observe, deadline, ExecutionState.executing))
+        execution_queue.put(ActionState(clean, deadline, ExecutionState.executing))
 
         # when
         actual, stalled = simulator.execute_action_queue(model, execution_queue,
@@ -246,12 +246,12 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # then
         assert_that(actual.simulation_time, equal_to(deadline))
-        assert_that(actual.executed, contains(equal_to(action1), equal_to(action2)))
-        assert_that(actual.observations, contains(action1.end_time))
+        assert_that(actual.executed, contains(equal_to(observe), equal_to(clean)))
+        assert_that(actual.observations, contains(observe.end_time))
         assert_that(stalled, equal_to({}))
 
-        action1.apply.assert_called_once_with(model)
-        action2.apply.assert_called_once_with(model)
+        observe.apply.assert_called_once_with(model)
+        clean.apply.assert_called_once_with(model)
 
 
     def test_stalls_agent_when_action_not_applicable(self):

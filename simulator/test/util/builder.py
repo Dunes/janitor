@@ -6,7 +6,7 @@ Created on 20 Jun 2014
 from inspect import getargspec
 
 from action import Move, Clean, ExtraClean
-from util.accuracy import quantize
+from accuracy import quantize
 from collections import OrderedDict
 
 class ModelBuilder(object):

@@ -20,9 +20,9 @@ from io import StringIO
 from planning_exceptions import IncompletePlanException
 from pddl_parser import decode_plan
 from action import Move, Clean
+from accuracy import quantize
 
 # imports from project test source
-from util.accuracy import quantize
 from util.matcher import MoveMatcher, CleanMatcher
 from unittest.case import skip
 
