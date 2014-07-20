@@ -76,13 +76,14 @@ fi
 error_log="$log_dir/$error_log_file"
 
 function process_file {
+	base_file_name="`basename $file_name`"
 	echo "starting $file_name"
-	./main.py "$file_name" -t "$time_opt" -l "$log_dir" | tee "$log_dir/output/$(basename $file_name)"
+	./main.py "$file_name" -t "$time_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
 	exit_val="${PIPESTATUS[0]}"
 	if [[ "$exit_val" != 0 ]]
 	then
-		echo "failed to find solution for $file_name"
-		echo "$file_name" >> "$error_log"
+		echo "failed to find solution for $base_file_name"
+		echo "$base_file_name" >> "$error_log"
 	fi 
 }
 
