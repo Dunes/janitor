@@ -9,11 +9,13 @@ from queue import PriorityQueue
 from itertools import chain
 from copy import deepcopy
 from decimal import Decimal
+from heapq import heapify
 
 from action import Move, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import ExecutionError
 from action_state import ActionState, ExecutionState
 from pddl_parser import _unknown_value_getter
+
 
 log = StyleAdapter(logging.getLogger(__name__))
 
@@ -72,7 +74,7 @@ def run_simulation(model, logger, planning_time):
 
 		log.info("executing new plan")
 		plan = adjust_plan(plan, simulation_time)
-		model_hypothesis = get_model_hypothesis(model)
+		original_model = deepcopy(model)
 		pre_run_plan_simulation_time = simulation_time
 		result = run_plan(model, plan, simulation_time, planning_time,
 						flawed_plan=observation_whilst_planning)
@@ -88,7 +90,7 @@ def run_simulation(model, logger, planning_time):
 			new_knowledge = False
 		observation_whilst_planning = any(obs > planning_start for obs in result.observations)
 		if observation_whilst_planning:
-			predicted_model = predict_model(plan, model_hypothesis, simulation_time)
+			predicted_model = predict_model(plan, original_model, simulation_time-planning_time, simulation_time)
 		executed.extend(result.executed)
 
 
@@ -142,22 +144,27 @@ def _adjust_plan_helper(plan, start_time):
 		if type(action) is Move:
 			yield Observe(action.end_time, action.agent, action.end_node)
 
-def predict_model(plan, model, deadline):
-	log.debug("predict_model() deadline={}", deadline)
+def predict_model(plan, model, first_observation, planning_finished):
+	log.debug("predict_model() first_observation={}, planning_finished={}", first_observation, planning_finished)
 	execution_queue = PriorityQueue()
 	for action in plan:
-		if type(action) is not Observe:
+		if type(action) is not Observe or action.end_time <= first_observation:
 			execution_queue.put(ActionState(action))
 
-	result, stalled = execute_action_queue(model, execution_queue,
-			break_on_new_knowledge=True, deadline=deadline)
+	_result, stalled = execute_action_queue(model, execution_queue,
+			break_on_new_knowledge=True, deadline=first_observation)
+
+	model_hypothesis = convert_to_hypothesis_model(model)
+
+	result, stalled = execute_action_queue(model_hypothesis, execution_queue,
+			break_on_new_knowledge=False, deadline=planning_finished, stalled=stalled)
 
 	assert result.observations == set()
-	assert stalled == {}
 
-	execute_partial_actions(get_executing_actions(execution_queue.queue, deadline), model, deadline)
+	execute_partial_actions(get_executing_actions(execution_queue.queue, planning_finished),
+			model_hypothesis, planning_finished)
 
-	return model
+	return model_hypothesis
 
 
 def get_executing_actions(action_states, deadline):
@@ -245,6 +252,7 @@ def execute_action_queue(model, execution_queue, *, break_on_new_knowledge=True,
 				# however, may be processing actions starting at deadline, so allow these to stall and not report error
 				#import pdb; pdb.set_trace()
 				raise ExecutionError("action expects model to be in different state -- {}".format(action))
+			log.debug("{} has stalled", agents(action))
 			stalled.update((agent, action.start_time) for agent in agents(action))
 		elif state == ExecutionState.pre_start:
 			action_state.start()
@@ -286,8 +294,7 @@ def substitute_obj_name(obj_name, args):
 	else:
 		return (obj_name if args is True else args,)
 
-def get_model_hypothesis(model):
-	model = deepcopy(model)
+def convert_to_hypothesis_model(model):
 	assumed_values = model["assumed-values"]
 	for node in model["nodes"].values():
 		if "known" in node:
