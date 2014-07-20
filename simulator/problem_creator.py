@@ -8,6 +8,7 @@ from itertools import chain
 from action import Observe
 
 from random import uniform as rand
+from accuracy import quantize
 
 class Point(namedtuple("Point","x y")):
 	pass
@@ -71,10 +72,10 @@ def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_leng
 		"problem": problem_name,
 		"domain": domain,
 		"assumed-values": {
-		 	"dirty": assume_dirty,
-		 	"cleaned": assume_clean,
-		 	"dirtiness": ("max" if assume_dirty else 0),
-		 	"extra-dirty": False,
+			"dirty": assume_dirty,
+			"cleaned": assume_clean,
+			"dirtiness": ("max" if assume_dirty else 0),
+			"extra-dirty": False,
 		 }
 	}
 
@@ -184,26 +185,28 @@ def create_metric():
  	}
 
 def create_room(dirtiness, extra_dirty):
+	dirty_value = dirtiness.actual if dirtiness.actual != "random" else quantize(rand(dirtiness.min, dirtiness.max))
+	has_dirtiness = 0 < (dirty_value if dirty_value not in ("max", "min") else getattr(dirtiness, dirty_value))
 	return {
 		"known": {
-	 		"node": True,
-	 		"is-room": True
-	 	},
-	 	"unknown": {
-	 		"extra-dirty": {
-	 			"actual": extra_dirty and dirtiness.actual > 0
-	 		},
-	 		"dirtiness": {
-	 			"min": dirtiness.min,
-	 			"max": dirtiness.max,
-	 			"actual": (dirtiness.actual if dirtiness.actual != "random" else rand(dirtiness.min, dirtiness.max))
-	 		},
-	 		"dirty": {
-	 			"actual": not extra_dirty and dirtiness.actual > 0
-	 		},
-	 		"cleaned": {
-	 			"actual": dirtiness.actual == 0
-	 		}
+			"node": True,
+			"is-room": True
+		},
+		"unknown": {
+			"extra-dirty": {
+				"actual": extra_dirty and has_dirtiness
+			},
+			"dirtiness": {
+				"min": dirtiness.min,
+				"max": dirtiness.max,
+				"actual": dirty_value
+			},
+			"dirty": {
+				"actual": not extra_dirty and has_dirtiness
+			},
+			"cleaned": {
+				"actual": dirtiness.actual == 0
+			}
 		}
 	}
 
