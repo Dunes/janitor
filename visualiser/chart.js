@@ -83,7 +83,7 @@ function createChartElementData(components, chart_colours, colours) {
     for (var j in agents) {
         result.push([
                 agents[j],
-                actionLabel(components[0], dict, chart_colours, colours, Boolean(dict.partial)), // action name
+                actionLabel(components[0], dict, chart_colours, colours, dict.partial === "True"), // action name
                 secondsToMillis(dict.start_time),
                 secondsToMillis(dict.start_time) + secondsToMillis(dict.duration)
             ]);
