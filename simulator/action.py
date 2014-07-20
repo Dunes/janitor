@@ -1,15 +1,9 @@
-from planning_exceptions import ExecutionError
 from decimal import Decimal
 from functools import total_ordering
 from logger import StyleAdapter
 import logging
 
 log = StyleAdapter(logging.getLogger(__name__))
-
-debug = True
-def _error_when_debug():
-	if debug:
-		raise ExecutionError("tried to apply action in an invalid state")
 
 _no_match = object()
 
@@ -32,7 +26,7 @@ class Action(object):
 		return self.start_time + self.duration
 
 	def partially_apply(self, model, deadline):
-		raise ExecutionError("cannot partially apply {}".format(self))
+		raise NotImplementedError("{} cannot be partially applied".format(self))
 
 	def __str__(self):
 		return self._format(False)
@@ -77,7 +71,7 @@ class Move(Action):
 		return model["agents"][self.agent]["at"][1] == self.start_node
 
 	def apply(self, model):
-		self.is_applicable(model) or _error_when_debug()
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		model["agents"][self.agent]["at"][1] = self.end_node
 		if self.start_node.startswith("temp"):
 			del model["nodes"][self.start_node]
@@ -85,7 +79,7 @@ class Move(Action):
 
 
 	def partially_apply(self, model, deadline):
-		self.is_applicable(model) or _error_when_debug()
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		# create temp node
 		continued_partial_move = self.start_node.startswith("temp")
 		if continued_partial_move:
@@ -143,7 +137,7 @@ class Observe(Action):
 		return model["agents"][self.agent]["at"][1] == self.node
 
 	def apply(self, model):
-		self.is_applicable(model) or _error_when_debug()
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		# check if new knowledge
 		rm_obj = model["nodes"][self.node]
 		unknown = rm_obj.get("unknown")
@@ -179,11 +173,12 @@ class Clean(Action):
 	def is_applicable(self, model):
 		return (
 			model["agents"][self.agent]["at"][1] == self.room
+			and model["nodes"][self.room]["known"].get("dirty", False)
 			and not model["nodes"][self.room]["known"].get("extra-dirty", True)
 		)
 
 	def apply(self, model):
-		self.is_applicable(model) or _error_when_debug()
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		rm_obj = model["nodes"][self.room]["known"]
 		del rm_obj["dirtiness"]
 		del rm_obj["dirty"]
@@ -191,14 +186,22 @@ class Clean(Action):
 		return False
 
 	def partially_apply(self, model, deadline):
-		self.is_applicable(model) or _error_when_debug()
-		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
-		if model["nodes"][self.room]["known"]["dirtiness"] <= 0:
-			log.error("{} applied till {} caused zero or -tive dirtiness -- {}", self, deadline,
-					model["nodes"][self.room]["known"]["dirtiness"])
-			assert False
-		action = Clean(self.start_time, deadline-self.start_time, self.agent, self.room)
-		action.partial = True
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+
+		max_duration = deadline - self.start_time
+		node_state = model["nodes"][self.room]["known"]
+		partial = node_state["dirtiness"] > max_duration
+
+		if partial:
+			node_state["dirtiness"] -= max_duration
+			duration = max_duration
+		else:
+			duration = node_state["dirtiness"]
+			log.info("{} applied partially, but able to fully complete in {}", self, duration)
+			self.apply(model)
+
+		action = Clean(self.start_time, duration, self.agent, self.room)
+		action.partial = partial
 		return action
 
 
@@ -214,11 +217,12 @@ class ExtraClean(Action):
 		return (
 			model["agents"][self.agent0]["at"][1] == self.room
 			and model["agents"][self.agent1]["at"][1] == self.room
+			and model["nodes"][self.room]["known"].get("extra-dirty", False)
 			and not model["nodes"][self.room]["known"].get("dirty", True)
 		)
 
 	def apply(self, model):
-		self.is_applicable(model) or _error_when_debug()
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		rm_obj = model["nodes"][self.room]["known"]
 		del rm_obj["extra-dirty"]
 		del rm_obj["dirtiness"]
@@ -226,8 +230,20 @@ class ExtraClean(Action):
 		return False
 
 	def partially_apply(self, model, deadline):
-		self.is_applicable(model) or _error_when_debug()
-		model["nodes"][self.room]["known"]["dirtiness"] -= deadline - self.start_time
-		action = ExtraClean(self.start_time, deadline-self.start_time, self.agent0, self.agent1, self.room)
-		action.partial = True
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+
+		max_duration = deadline - self.start_time
+		node_state = model["nodes"][self.room]["known"]
+		partial = node_state["dirtiness"] > max_duration
+
+		if partial:
+			node_state["dirtiness"] -= max_duration
+			duration = max_duration
+		else:
+			duration = node_state["dirtiness"]
+			log.info("{} applied partially, but able to fully complete in {}", self, duration)
+			self.apply(model)
+
+		action = ExtraClean(self.start_time, duration, self.agent0, self.agent1, self.room)
+		action.partial = partial
 		return action
