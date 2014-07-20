@@ -24,9 +24,9 @@ def run():
 
 	size_types = (
 #		Point(3,3),
-		Point(4,4),
-#		Point(1,16),
-#		Point(2,8),
+#		Point(4,4),
+		Point(1,16),
+		Point(2,8),
 #		Point(5,5),
 #		Point(6,6),
 #		Point(7,7), 
@@ -47,7 +47,7 @@ def run():
 	problem_name = "generated"
 	domain = "janitor"
 
-	problem_dir = "problems/no-stock-4x4"
+	problem_dir = "problems/no-stock-rect16"
 
 	for data in product(size_types, dirtiness_types, edge_length_types, 
 				agents_types, starting_location_types, percentage_extra_dirty_types):
