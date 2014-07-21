@@ -1,2 +1,4 @@
 logs
 .coverage
+.project
+.pydevproject
