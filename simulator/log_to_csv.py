@@ -1,11 +1,11 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 import argparse
+import re
 
 from csv import DictWriter, writer
 from os.path import join, basename, splitext
 from os import listdir
-from re import split
 from operator import mul
 from itertools import groupby
 from functools import partial, reduce
@@ -34,6 +34,23 @@ dependent_vars = (
 'time_waiting_for_planner_to_finish',
 )
 
+number_pattern = re.compile(r"((\A|(?<=\W))(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)")
+
+def deciexpr(expr):
+        """Substitute Decimals for floats in an expression string.
+
+        >>> from decimal import Decimal
+        >>> s = '+21.3e-5*85-.1234/81.6'
+        >>> deciexpr(s)
+        "+Decimal('21.3e-5')*Decimal('85')-Decimal('.1234')/Decimal('81.6')"
+
+        >>> eval(s)
+        0.016592745098039215
+        >>> eval(deciexpr(s))
+        Decimal("0.01659274509803921568627450980")
+
+        """
+        return number_pattern.sub(r"Decimal('\1')", expr)
 
 def run(out_file, input_dir):
 
@@ -78,7 +95,7 @@ def data_key(data, include_id=True):
 		return base_key, tuple(data[key] for key in independent_vars if key != "id")
 
 def aggregate_data(data):
-	grouped_data = zip(*[[datum[key] for key in dependent_vars] for datum in data])
+	grouped_data = list(zip(*[[datum[key] for key in dependent_vars] for datum in data]))
 	result = (len(grouped_data[0]),) + tuple(sum(v)/float(len(v)) for v in grouped_data)
 	return result
 
@@ -90,7 +107,7 @@ def get_data(name):
 
 	del data["execution"]
 
-	name_data = split("[\(\)]", basename(name)[5:-4])
+	name_data = re.split("[\(\)]", basename(name)[5:-4])
 
 	for label, value in zip(name_data[::2], name_data[1::2]):
 		label = label.strip("-")
@@ -122,5 +139,3 @@ if __name__ == "__main__":
 	args = parser().parse_args()
 	output_file = join(args.output_dir, args.output)
 	run(output_file, args.input_dir)
-
-

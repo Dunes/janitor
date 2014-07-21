@@ -110,8 +110,8 @@ def run_simulation(model, logger, planning_time):
 	logger.log_property("total_time_planning", time_planning)
 	logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
 	logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
-	executed_str = "'[{}]'".format(", ".join(str(action) for action in executed if type(action) is not Observe))
-	logger.log_property("execution", executed_str)
+	executed_str = "[{}]".format(", ".join(str(action) for action in executed if type(action) is not Observe))
+	logger.log_property("execution", executed_str, stringify=repr)
 
 	log.info("remaining temp nodes: {}",
 		[(name, node) for name, node in model["nodes"].items() if name.startswith("temp")])
@@ -120,8 +120,8 @@ def run_simulation(model, logger, planning_time):
 
 def agents(action):
 	if type(action) is ExtraClean:
-		return set((action.agent0, action.agent1))
-	return set((action.agent,))
+		return {action.agent0, action.agent1}
+	return {action.agent}
 
 
 def observe_environment(model):
