@@ -1,5 +1,5 @@
 from problem_creator import Point, ActualMinMax, create_problem
-from random import uniform, sample
+from random import sample
 from itertools import product
 from os.path import join
 
@@ -16,7 +16,7 @@ def generate_random_locations(size, percentage_extra_dirty, exclude=()):
 	locations = set(product(range(size.x), range(size.y))).difference(exclude)
 	sample_size = int(round(percentage_extra_dirty * size.x * size.y))
 	return [Point(*p) for p in sample(locations, sample_size)]
-	
+
 
 def run():
 
@@ -29,7 +29,7 @@ def run():
 		Point(2,8),
 #		Point(5,5),
 #		Point(6,6),
-#		Point(7,7), 
+#		Point(7,7),
 #		Point(10,10),
 	)
 	dirtiness_types = (
@@ -49,20 +49,20 @@ def run():
 
 	problem_dir = "problems/no-stock-rect16"
 
-	for data in product(size_types, dirtiness_types, edge_length_types, 
+	for data in product(size_types, dirtiness_types, edge_length_types,
 				agents_types, starting_location_types, percentage_extra_dirty_types):
-	
+
 		size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty = data
-	
+
 		problem_name = generate_problem_name(*data)
-	
+
 		agent_start = get_centre(size) if starting_location == "centre" else starting_location
 		empty_rooms = (agent_start,)
 		extra_dirty_rooms = generate_random_locations(size, percentage_extra_dirty, exclude=empty_rooms)
-	
+
 		for i in range(repeats):
 			output = join(problem_dir, problem_name + "-id({}).json".format(i))
-			
+
 			create_problem(output, size, dirtiness, assume_clean,
 				empty_rooms, edge_length, agents,
 				agent_start, problem_name, domain, extra_dirty_rooms)

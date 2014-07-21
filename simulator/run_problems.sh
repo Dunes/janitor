@@ -5,7 +5,7 @@ function usage {
 	echo "Usage: run_problems.sh [OPTION]... [FILE]"
 	echo "Run the problems listed in FILE (one per line)."
 	echo "Records output of problems into a log directory. One file per problem."
-	echo "Separately records all plans produced by a problem in sub dir of the logging" 
+	echo "Separately records all plans produced by a problem in sub dir of the logging"
 	echo "  directory called \`plans'"
 	echo "Record problems where a solution was not found (failed runs) to a log file."
 	echo "When FILE is -, read standard input."
@@ -78,13 +78,13 @@ error_log="$log_dir/$error_log_file"
 function process_file {
 	base_file_name="`basename $file_name`"
 	echo "starting $file_name"
-	./main.py "$file_name" -t "$time_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
+	./main.sh "$file_name" -t "$time_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
 	exit_val="${PIPESTATUS[0]}"
 	if [[ "$exit_val" != 0 ]]
 	then
 		echo "failed to find solution for $base_file_name"
 		echo "$base_file_name" >> "$error_log"
-	fi 
+	fi
 }
 
 mkdir "$log_dir/output" -p

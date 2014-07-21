@@ -1,12 +1,10 @@
 * run many experiments
 * working with first  greedy plan tends to be better than spending an extended time planning (eg 30s).
 * try to split simulator and executor
-* remove debug from action -- make permanent
 * make javascript libraries available offline (google and jquery)
 * make actions use __eq__ and remove matchers
 * refactor simulator and run_simulation into a class and additional methods
-* add base package to project and main module
-* resolve source problems with liclipse
+
 
 done
 ----
@@ -19,3 +17,6 @@ done
 * add stalled action to check agents are correctly executing
 * convert print statements to logging
 * add total ordering to actions, don't rely on tuple ordering for execution queue...
+* resolve source problems with liclipse
+* add base package to project and main module
+* remove debug from action -- make permanent

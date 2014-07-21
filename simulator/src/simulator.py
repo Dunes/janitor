@@ -9,7 +9,6 @@ from queue import PriorityQueue
 from itertools import chain
 from copy import deepcopy
 from decimal import Decimal
-from heapq import heapify
 
 from action import Move, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import ExecutionError
