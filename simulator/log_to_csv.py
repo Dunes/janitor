@@ -37,7 +37,7 @@ dependent_vars = (
 number_pattern = re.compile(r"((\A|(?<=\W))(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)")
 
 def deciexpr(expr):
-        """Substitute Decimals for floats in an expression string.
+		"""Substitute Decimals for floats in an expression string.
 
         >>> from decimal import Decimal
         >>> s = '+21.3e-5*85-.1234/81.6'
@@ -50,7 +50,7 @@ def deciexpr(expr):
         Decimal("0.01659274509803921568627450980")
 
         """
-        return number_pattern.sub(r"Decimal('\1')", expr)
+		return number_pattern.sub(r"Decimal('\1')", expr)
 
 def run(out_file, input_dir):
 
