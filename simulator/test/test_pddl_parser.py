@@ -6,6 +6,7 @@ Created on 22 Jun 2014
 # test framework imports
 import unittest
 from unittest.mock import patch, Mock
+from hamcrest import assert_that, equal_to
 from util.functools import as_list
 
 # module under test
@@ -21,10 +22,6 @@ from planning_exceptions import IncompletePlanException
 from pddl_parser import decode_plan
 from action import Move, Clean
 from accuracy import quantize
-
-# imports from project test source
-from util.matcher import MoveMatcher, CleanMatcher
-from unittest.case import skip
 
 
 class PddlDecodeTest(unittest.TestCase):
@@ -106,12 +103,9 @@ class PddlDecodeTest(unittest.TestCase):
         # then
         self.assertEquals(2, len(actual))
         actual_move, actual_clean = actual
-        MoveMatcher(self).assertEqual(expected_move, actual_move)
-        CleanMatcher(self).assertEqual(expected_clean, actual_clean)
+        assert_that(actual_move, equal_to(expected_move))
+        assert_that(actual_clean, equal_to(expected_clean))
 
-@skip("not likely to change -- write later")
-class PddlEncodeTest(unittest.TestCase):
-    pass
 
 
 if __name__ == "__main__":

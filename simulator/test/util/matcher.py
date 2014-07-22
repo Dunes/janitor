@@ -4,69 +4,10 @@ Created on 20 Jun 2014
 @author: jack
 '''
 
-from unittest.mock import sentinel
-
-class Matcher(object):
-
-    sentinel = sentinel.partial
+class ModelMatcher:
 
     def __init__(self, test_case):
         self.test_case = test_case
-
-    def assertEqualPartial(self, expected, actual):
-        return self.test_case.assertEqual(
-            getattr(expected, "partial", Matcher.sentinel),
-            getattr(actual, "partial", Matcher.sentinel)
-        )
-
-class MoveMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.agent, actual.agent)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-        self.test_case.assertEqual(expected.start_node, actual.start_node)
-        self.test_case.assertEqual(expected.end_node, actual.end_node)
-
-class CleanMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.agent, actual.agent)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-        self.test_case.assertEqual(expected.room, actual.room)
-
-class ExtraCleanMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.agent0, actual.agent0)
-        self.test_case.assertEqual(expected.agent1, actual.agent1)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-        self.test_case.assertEqual(expected.room, actual.room)
-
-class ObserveMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.agent, actual.agent)
-        self.test_case.assertEqual(expected.node, actual.node)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-
-class PlanMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.agent, actual.agent)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-
-class ActionMatcher(Matcher):
-    def assertEqual(self, expected, actual, msg=None):
-        self.assertEqualPartial(expected, actual)
-        self.test_case.assertEqual(expected.start_time, actual.start_time)
-        self.test_case.assertEqual(expected.duration, actual.duration)
-
-class ModelMatcher(Matcher):
 
     def with_model(self, model):
         self.model = model

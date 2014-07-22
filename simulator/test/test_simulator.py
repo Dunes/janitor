@@ -6,8 +6,7 @@ Created on 26 Jun 2014
 import unittest
 from unittest.mock import MagicMock, Mock, patch, call
 
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_item
-from util.matchers.actionmatcher import equal_to
+from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_item, equal_to
 
 from decimal import Decimal
 
@@ -111,8 +110,7 @@ class TestAdjustPlan(unittest.TestCase):
         actual = simulator.adjust_plan(plan, time_to_add)
 
         # then
-        assert_that(actual, contains(
-                equal_to(Action(start_time+time_to_add, duration))))
+        assert_that(actual, contains(Action(start_time+time_to_add, duration)))
 
     def test_inserts_observe_action(self):
         start_time = 0
@@ -124,8 +122,8 @@ class TestAdjustPlan(unittest.TestCase):
 
         # then
         assert_that(actual, contains(
-                equal_to(Move(start_time, duration, "agent", "start_node", "end_node")),
-                equal_to(Observe(start_time+duration, "agent", "end_node"))))
+                Move(start_time, duration, "agent", "start_node", "end_node"),
+                Observe(start_time+duration, "agent", "end_node")))
 
 class TestExecutePartialActions(unittest.TestCase):
 
@@ -175,7 +173,7 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # then
         assert_that(actual.simulation_time, equal_to(deadline))
-        assert_that(actual.executed, contains(equal_to(action1)))
+        assert_that(actual.executed, contains(action1))
         assert_that(actual.observations, empty())
         assert_that(stalled, equal_to({}))
 
@@ -218,7 +216,7 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # then
         assert_that(actual.simulation_time, equal_to(end_time))
-        assert_that(actual.executed, contains(equal_to(action1)))
+        assert_that(actual.executed, contains(action1))
         assert_that(actual.observations, empty())
         assert_that(stalled, equal_to({}))
         assert_that(execution_queue.empty())
@@ -246,7 +244,7 @@ class TestExecuteActionQueue(unittest.TestCase):
 
         # then
         assert_that(actual.simulation_time, equal_to(deadline))
-        assert_that(actual.executed, contains(equal_to(observe), equal_to(clean)))
+        assert_that(actual.executed, contains(observe, clean))
         assert_that(actual.observations, contains(observe.end_time))
         assert_that(stalled, equal_to({}))
 
@@ -607,7 +605,8 @@ class TestRunPlan(unittest.TestCase):
         actual = simulator.run_plan(Mock(name="model"), plan, Mock(name="sim_time"), execution_extension)
 
         # then
-        assert_that(actual.executed, has_item(equal_to(Stalled(previous_action.end_time , deadline, name))))
+        assert_that(actual.executed,
+            has_item(Stalled(previous_action.end_time , deadline, name)))
 
 
     def test_add_stalled_action_when_no_previous_action(self):
@@ -632,7 +631,8 @@ class TestRunPlan(unittest.TestCase):
         actual = simulator.run_plan(Mock(name="model"), plan, Mock(name="sim_time"), execution_extension)
 
         # then
-        assert_that(actual.executed, has_item(equal_to(Stalled(stalled_time, deadline, name))))
+        assert_that(actual.executed,
+            has_item(Stalled(stalled_time, deadline, name)))
 
     def test_add_stalled_action_in_second_pass(self):
         # given
@@ -655,7 +655,8 @@ class TestRunPlan(unittest.TestCase):
         actual = simulator.run_plan(Mock(name="model"), plan, Mock(name="sim_time"), execution_extension)
 
         # then
-        assert_that(actual.executed, has_item(equal_to(Stalled(stalled_time, deadline, name))))
+        assert_that(actual.executed,
+            has_item(Stalled(stalled_time, deadline, name)))
 
 
 class TestGetExecutingActions(unittest.TestCase):

@@ -18,6 +18,9 @@ class Action(object):
 		if partial is not None:
 			self.partial = partial
 
+	def __eq__(self, other):
+		return type(self) == type(other) and self.__dict__ == other.__dict__
+
 	def __lt__(self, other):
 		return self._ordinal < other._ordinal
 

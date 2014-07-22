@@ -5,7 +5,7 @@ Created on 20 Jun 2014
 '''
 import unittest
 from unittest.mock import Mock, MagicMock
-from hamcrest import assert_that, is_not, has_item
+from hamcrest import assert_that, is_not, has_item, equal_to
 import random
 
 import action
@@ -14,7 +14,7 @@ from action_state import ExecutionState
 from decimal import Decimal
 
 from util.builder import ModelBuilder
-from util.matcher import ModelMatcher, MoveMatcher, CleanMatcher, ExtraCleanMatcher
+from util.matcher import ModelMatcher
 
 
 
@@ -99,7 +99,8 @@ class MoveTest(unittest.TestCase):
 
     def test_apply_fail(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
-        self.assertRaises(AssertionError, self.move.apply, model)
+        with self.assertRaises(AssertionError):
+            self.move.apply(model)
 
     def test_apply_when_moving_from_temp_node(self):
         self.move.start_node = "temp_start_node"
@@ -117,12 +118,12 @@ class MoveTest(unittest.TestCase):
     def test_create_temp_node_creates_partial_action(self):
         deadline = Decimal("1.6")
         model = ModelBuilder().with_agent("agent", at="start_node").model
-        expected_action = action.Move(self.move.start_time, Decimal("0.6"), "agent",
+        expected = action.Move(self.move.start_time, Decimal("0.6"), "agent",
                 "start_node", "temp-agent-start_node-end_node", True)
 
-        actual_action = self.move.create_temp_node(model, deadline)
+        actual = self.move.create_temp_node(model, deadline)
 
-        MoveMatcher(self).assertEqual(expected_action, actual_action)
+        assert_that(actual, equal_to(expected))
 
 
     def test_create_temp_node_applies_partial_move(self):
@@ -144,12 +145,12 @@ class MoveTest(unittest.TestCase):
             .with_edge("temp_node", "start_node", Decimal(12)) \
             .with_edge("temp_node", "end_node", Decimal(15)).model
 
-        expected_action = action.Move(self.move.start_time, Decimal("0.6"), "agent",
+        expected = action.Move(self.move.start_time, Decimal("0.6"), "agent",
                 "temp_node", "end_node", True)
 
-        actual_action = self.move.modify_temp_node(model, deadline)
+        actual = self.move.modify_temp_node(model, deadline)
 
-        MoveMatcher(self).assertEqual(expected_action, actual_action)
+        assert_that(actual, equal_to(expected))
 
 
     def test_modify_temp_node_applies_partial_move_forward(self):
@@ -360,7 +361,7 @@ class CleanTest(unittest.TestCase):
 
         node_value.__getitem__.assert_called_with("known")
         node_value["known"].__setitem__.assert_called_once("dirtiness", duration)
-        CleanMatcher(self).assertEqual(expected, actual)
+        assert_that(actual, equal_to(expected))
 
 
 class ExtraCleanTest(unittest.TestCase):
@@ -437,7 +438,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         node_value.__getitem__.assert_called_with("known")
         node_value["known"].__setitem__.assert_called_once("dirtiness", duration)
-        ExtraCleanMatcher(self).assertEqual(expected, actual)
+        assert_that(actual, equal_to(expected))
 
 
 if __name__ == "__main__":
