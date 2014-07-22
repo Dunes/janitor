@@ -4,7 +4,8 @@
 * make javascript libraries available offline (google and jquery)
 * make actions use __eq__ and remove matchers
 * refactor simulator and run_simulation into a class and additional methods
-
+* make unit machine self-maintained ubuntu
+* get uni machine running continuous integration server -- running experiments from lastest git push
 
 done
 ----
