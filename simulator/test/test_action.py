@@ -5,7 +5,7 @@ Created on 20 Jun 2014
 '''
 import unittest
 from unittest.mock import Mock, MagicMock
-from hamcrest import assert_that, is_not, has_item, equal_to
+from hamcrest import assert_that, is_not, has_item, equal_to, less_than
 import random
 
 import action
@@ -14,8 +14,7 @@ from action_state import ExecutionState
 from decimal import Decimal
 
 from util.builder import ModelBuilder
-from util.matcher import ModelMatcher
-
+from util.matchers import has_agent, has_edge, has_node
 
 
 class ExecutionStateTest(unittest.TestCase):
@@ -25,7 +24,7 @@ class ExecutionStateTest(unittest.TestCase):
         random.shuffle(sequence)
         expected_order = [ExecutionState.finished, ExecutionState.executing,
                  ExecutionState.pre_start]
-        self.assertListEqual(expected_order, sorted(sequence))
+        assert_that(sorted(sequence), equal_to(expected_order))
 
 class ActionOrderingTest(unittest.TestCase):
 
@@ -40,12 +39,12 @@ class ActionOrderingTest(unittest.TestCase):
 
         actual = sorted([action_, plan, observe, move, clean, extra_clean])
         expected = [move, observe, action_, plan, clean, extra_clean]
-        self.assertListEqual(expected, actual)
+        assert_that(actual, equal_to(expected))
 
     def test_move_before_observe(self):
         observe = action.Observe(0, "agent", "node")
         move = action.Move(0, 0, "agent", "start_node", "end_node")
-        self.assertLess(move, observe)
+        assert_that(move, less_than(observe))
 
     def test_observe_before_others(self):
         observe = action.Observe(0, "agent", "node")
@@ -58,7 +57,7 @@ class ActionOrderingTest(unittest.TestCase):
         others = [action_, plan, clean, extra_clean]
 
         for other in others:
-            self.assertLess(observe, other)
+            assert_that(observe, less_than(other))
 
 
 class ActionTest(unittest.TestCase):
@@ -68,34 +67,27 @@ class ActionTest(unittest.TestCase):
 
     def test_calculates_endtime(self):
         expected_endtime = self.action.start_time + self.action.duration
-        self.assertEqual(expected_endtime, self.action.end_time)
+        assert_that(self.action.end_time, equal_to(expected_endtime))
 
 class MoveTest(unittest.TestCase):
 
     def setUp(self):
-        self.match = ModelMatcher(self)
         self.move = action.Move(Decimal(1), Decimal(2), "agent", "start_node", "end_node")
-        action.debug = True
-
-    def tearDown(self):
-        action.debug = False
 
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent", at="start_node").model
-        expected = True
         actual = self.move.is_applicable(model)
-        self.assertEqual(expected, actual)
+        assert_that(actual)
 
     def test_is_not_applicable(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
-        expected = False
         actual = self.move.is_applicable(model)
-        self.assertEqual(expected, actual)
+        assert_that(is_not(actual))
 
     def test_apply(self):
         model = ModelBuilder().with_agent("agent", at="start_node").model
         self.move.apply(model)
-        self.match(model).with_agent("agent").at("end_node")
+        assert_that(model, has_agent("agent").at("end_node"))
 
     def test_apply_fail(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
@@ -110,8 +102,8 @@ class MoveTest(unittest.TestCase):
 
         self.move.apply(model)
 
-        self.match(model).with_agent("agent").at("end_node")
-        self.match(model).with_distance(distance).from_("end_node").to("other_node")
+        assert_that(model, has_agent("agent").at("end_node"))
+        assert_that(model, has_agent("agent").at("end_node"))
         assert_that(model["nodes"], is_not(has_item("temp_start_node")))
         assert_that(model["graph"]["edges"], is_not(has_item(["temp_start_node", "end_node", distance])))
 
@@ -133,10 +125,9 @@ class MoveTest(unittest.TestCase):
 
         self.move.create_temp_node(model, deadline)
 
-        self.match(model).with_agent("agent").at(temp_node)
-        self.match(model).with_distance(deadline - self.move.start_time).from_(temp_node).to(self.move.start_node)
-        self.match(model).with_distance(self.move.end_time - deadline).from_(temp_node).to(self.move.end_node)
-
+        assert_that(model, has_agent("agent").at(temp_node))
+        assert_that(model, has_edge().with_distance(deadline - self.move.start_time).from_(temp_node).to(self.move.start_node))
+        assert_that(model, has_edge().with_distance(self.move.end_time - deadline).from_(temp_node).to(self.move.end_node))
 
     def test_modify_temp_node_creates_partial_move(self):
         self.move.start_node = "temp_node"
@@ -165,9 +156,9 @@ class MoveTest(unittest.TestCase):
         self.move.modify_temp_node(model, deadline)
 
         movement = deadline - self.move.start_time
-        self.match(model).with_agent("agent").at("temp_node")
-        self.match(model).with_distance(to_start + movement).from_("temp_node").to("start_node")
-        self.match(model).with_distance(to_end - movement).from_("temp_node").to("end_node")
+        assert_that(model, has_agent("agent").at("temp_node"))
+        assert_that(model, has_edge().with_distance(to_start + movement).from_("temp_node").to("start_node"))
+        assert_that(model, has_edge().with_distance(to_end - movement).from_("temp_node").to("end_node"))
 
     def test_modify_temp_node_applies_partial_move_backward(self):
         self.move.start_node = "temp_node"
@@ -182,9 +173,9 @@ class MoveTest(unittest.TestCase):
         self.move.modify_temp_node(model, deadline)
 
         movement = deadline - self.move.start_time
-        self.match(model).with_agent("agent").at("temp_node")
-        self.match(model).with_distance(to_start - movement).from_("temp_node").to("start_node")
-        self.match(model).with_distance(to_end + movement).from_("temp_node").to("end_node")
+        assert_that(model, has_agent("agent").at("temp_node"))
+        assert_that(model, has_edge().with_distance(to_start - movement).from_("temp_node").to("start_node"))
+        assert_that(model, has_edge().with_distance(to_end + movement).from_("temp_node").to("end_node"))
 
 
     def test_partially_apply_selects_create(self):
@@ -198,7 +189,7 @@ class MoveTest(unittest.TestCase):
 
         self.move.is_applicable.assert_called_once_with(model)
         self.move.create_temp_node.assert_called_once_with(model, deadline)
-        self.assertEqual(expected, actual)
+        assert_that(actual, equal_to(expected))
 
 
     def test_partially_apply_selects_modify(self):
@@ -214,31 +205,24 @@ class MoveTest(unittest.TestCase):
 
         self.move.is_applicable.assert_called_once_with(model)
         self.move.modify_temp_node.assert_called_once_with(model, deadline)
-        self.assertEqual(expected, actual)
+        assert_that(actual, equal_to(expected))
 
 
 
 class ObserveTest(unittest.TestCase):
 
     def setUp(self):
-        self.match = ModelMatcher(self)
         self.observe = action.Observe(Decimal(1), "agent", "node")
-        action.debug = True
-
-    def tearDown(self):
-        action.debug = False
 
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent", at="node").model
-        expected = True
         actual = self.observe.is_applicable(model)
-        self.assertEqual(expected, actual)
+        assert_that(actual)
 
     def test_is_not_applicable(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere").model
-        expected = False
         actual = self.observe.is_applicable(model)
-        self.assertEqual(expected, actual)
+        assert_that(is_not(actual))
 
     def test_check_new_knowledge_is_true(self):
         unknown_values = {"key": {"actual": 0}}
@@ -246,7 +230,7 @@ class ObserveTest(unittest.TestCase):
 
         actual = self.observe._check_new_knowledge(unknown_values, assumed_values)
 
-        self.assertEqual(True, actual)
+        assert_that(actual)
 
     def test_check_new_knowledge_is_false(self):
         unknown_values = {"key": {"actual": 0}}
@@ -254,7 +238,7 @@ class ObserveTest(unittest.TestCase):
 
         actual = self.observe._check_new_knowledge(unknown_values, assumed_values)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_apply_with_new_knowledge(self):
         unknown = {"k": "v"}
@@ -266,8 +250,8 @@ class ObserveTest(unittest.TestCase):
 
         actual = self.observe.apply(model)
 
-        self.match(model).with_node("node", known={"k": "v"}, unknown={})
-        self.assertEqual(True, actual)
+        assert_that(model, has_node("node").with_value(known={"k": "v"}, unknown={}))
+        assert_that(actual)
 
 
     def test_apply_with_no_new_knowledge(self):
@@ -280,8 +264,8 @@ class ObserveTest(unittest.TestCase):
 
         actual = self.observe.apply(model)
 
-        self.match(model).with_node("node", known={"k": "v"}, unknown={})
-        self.assertEqual(False, actual)
+        assert_that(model, has_node("node").with_value(known={"k": "v"}, unknown={}))
+        assert_that(is_not(actual))
 
     def test_apply_with_no_unknown(self):
         model = ModelBuilder().with_node("node").model
@@ -289,18 +273,13 @@ class ObserveTest(unittest.TestCase):
 
         actual = self.observe.apply(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
 
 class CleanTest(unittest.TestCase):
 
     def setUp(self):
-        self.match = ModelMatcher(self)
         self.clean = action.Clean(Decimal(0), Decimal(1), "agent", "room")
-        action.debug = True
-
-    def tearDown(self):
-        action.debug = False
 
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent", at="room") \
@@ -308,7 +287,7 @@ class CleanTest(unittest.TestCase):
 
         actual = self.clean.is_applicable(model)
 
-        self.assertEqual(True, actual)
+        assert_that(actual)
 
     def test_is_not_applicable_because_agent_elsewhere(self):
         model = ModelBuilder().with_agent("agent", at="elsewhere") \
@@ -316,7 +295,7 @@ class CleanTest(unittest.TestCase):
 
         actual = self.clean.is_applicable(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_is_not_applicable_because_extra_dirty(self):
         model = ModelBuilder().with_agent("agent", at="room") \
@@ -324,14 +303,14 @@ class CleanTest(unittest.TestCase):
 
         actual = self.clean.is_applicable(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_is_not_applicable_because_extra_dirty_is_assumed_if_not_known(self):
         model = ModelBuilder().with_agent("agent", at="room").with_node("room").model
 
         actual = self.clean.is_applicable(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_apply(self):
         node_value = MagicMock()
@@ -345,7 +324,7 @@ class CleanTest(unittest.TestCase):
         known_values.__delitem__.assert_called_once("dirty")
         known_values.__delitem__.assert_called_once("dirtiness")
         known_values.__setitem__.assert_called_once_with("cleaned", True)
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_partially_apply(self):
         deadline = Decimal("0.6")
@@ -367,12 +346,7 @@ class CleanTest(unittest.TestCase):
 class ExtraCleanTest(unittest.TestCase):
 
     def setUp(self):
-        self.match = ModelMatcher(self)
         self.extra_clean = action.ExtraClean(Decimal(0), Decimal(1), "agent0", "agent1", "room")
-        action.debug = True
-
-    def tearDown(self):
-        action.debug = False
 
     def test_is_applicable(self):
         model = ModelBuilder().with_agent("agent0", at="room") \
@@ -381,7 +355,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         actual = self.extra_clean.is_applicable(model)
 
-        self.assertEqual(True, actual)
+        assert_that(actual)
 
     def test_is_not_applicable_because_agent_elsewhere(self):
         model = ModelBuilder().with_agent("agent0", at="elsewhere") \
@@ -390,7 +364,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         actual = self.extra_clean.is_applicable(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_is_not_applicable_because_extra_dirty(self):
         model = ModelBuilder().with_agent("agent0", at="room") \
@@ -408,7 +382,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         actual = self.extra_clean.is_applicable(model)
 
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_apply(self):
         node_value = MagicMock()
@@ -422,7 +396,7 @@ class ExtraCleanTest(unittest.TestCase):
         known_values.__delitem__.assert_called_once("extra-dirty")
         known_values.__delitem__.assert_called_once("dirtiness")
         known_values.__setitem__.assert_called_once_with("cleaned", True)
-        self.assertEqual(False, actual)
+        assert_that(is_not(actual))
 
     def test_partially_apply(self):
         deadline = Decimal("0.6")
