@@ -1,8 +1,9 @@
--"""
+"""
 Created on 21 Jun 2014
 
 @author: jack
 """
+
 import unittest
 from unittest.mock import patch, Mock, DEFAULT, call
 
