@@ -8,20 +8,24 @@ from logger import StyleAdapter
 
 log = StyleAdapter(logging.getLogger(__name__))
 
+
 @total_ordering
 class ExecutionState(object):
     def __init__(self, desc, ordinal):
         self.desc = desc
         self.ordinal = ordinal
+
     def __lt__(self, other):
         return self.ordinal < other.ordinal
+
     def __str__(self):
         return self.desc
     __repr__ = __str__
 
 ExecutionState = namedtuple("_ExecutionState", "pre_start executing finished")(
-    *(ExecutionState(desc,-ordinal) for ordinal, desc in enumerate(("pre_start", "executing", "finished")))
+    *(ExecutionState(desc, -ordinal) for ordinal, desc in enumerate(("pre_start", "executing", "finished")))
 )
+
 
 @total_ordering
 class ActionState(object):

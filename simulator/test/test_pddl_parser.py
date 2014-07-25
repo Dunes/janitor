@@ -1,8 +1,8 @@
-'''
+"""
 Created on 22 Jun 2014
 
 @author: jack
-'''
+"""
 # test framework imports
 import unittest
 from unittest.mock import patch, Mock
@@ -29,7 +29,6 @@ class PddlDecodeTest(unittest.TestCase):
     def setUp(self):
         pass
 
-
     def tearDown(self):
         pass
 
@@ -39,7 +38,7 @@ class PddlDecodeTest(unittest.TestCase):
         # given
         report_incomplete_plan = Mock()
         data_input = dedent("""
-            ; No metric specified - using makespan
+            ; No metric specified - using make-span
 
             ; Plan found with metric 52.007
             ; States evaluated so far: 51
@@ -105,7 +104,6 @@ class PddlDecodeTest(unittest.TestCase):
         actual_move, actual_clean = actual
         assert_that(actual_move, equal_to(expected_move))
         assert_that(actual_clean, equal_to(expected_clean))
-
 
 
 if __name__ == "__main__":

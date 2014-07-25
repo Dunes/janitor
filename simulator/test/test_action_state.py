@@ -1,8 +1,8 @@
-'''
+"""
 Created on 14 Jul 2014
 
 @author: jack
-'''
+"""
 import unittest
 
 from unittest.mock import Mock
@@ -38,7 +38,6 @@ class TestActionState(unittest.TestCase):
     def test_cannot_finish_before_start(self):
         with self.assertRaises(ExecutionError):
             self.action_state.finish()
-
 
     def test_unpacking(self):
         # given

@@ -2,3 +2,4 @@ logs
 .coverage
 .project
 .pydevproject
+.idea

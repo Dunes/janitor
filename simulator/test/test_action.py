@@ -1,8 +1,8 @@
-'''
+"""
 Created on 20 Jun 2014
 
 @author: jack
-'''
+"""
 import unittest
 from unittest.mock import Mock, MagicMock
 from hamcrest import assert_that, is_not, has_item, equal_to, less_than
@@ -25,6 +25,7 @@ class ExecutionStateTest(unittest.TestCase):
         expected_order = [ExecutionState.finished, ExecutionState.executing,
                  ExecutionState.pre_start]
         assert_that(sorted(sequence), equal_to(expected_order))
+
 
 class ActionOrderingTest(unittest.TestCase):
 
@@ -68,6 +69,7 @@ class ActionTest(unittest.TestCase):
     def test_calculates_endtime(self):
         expected_endtime = self.action.start_time + self.action.duration
         assert_that(self.action.end_time, equal_to(expected_endtime))
+
 
 class MoveTest(unittest.TestCase):
 
@@ -117,7 +119,6 @@ class MoveTest(unittest.TestCase):
 
         assert_that(actual, equal_to(expected))
 
-
     def test_create_temp_node_applies_partial_move(self):
         deadline = Decimal("1.6")
         model = ModelBuilder().with_agent("agent", at="start_node").model
@@ -126,8 +127,10 @@ class MoveTest(unittest.TestCase):
         self.move.create_temp_node(model, deadline)
 
         assert_that(model, has_agent("agent").at(temp_node))
-        assert_that(model, has_edge().with_distance(deadline - self.move.start_time).from_(temp_node).to(self.move.start_node))
-        assert_that(model, has_edge().with_distance(self.move.end_time - deadline).from_(temp_node).to(self.move.end_node))
+        assert_that(model, has_edge().with_distance(deadline - self.move.start_time)
+            .from_(temp_node).to(self.move.start_node))
+        assert_that(model, has_edge().with_distance(self.move.end_time - deadline)
+            .from_(temp_node).to(self.move.end_node))
 
     def test_modify_temp_node_creates_partial_move(self):
         self.move.start_node = "temp_node"
@@ -142,7 +145,6 @@ class MoveTest(unittest.TestCase):
         actual = self.move.modify_temp_node(model, deadline)
 
         assert_that(actual, equal_to(expected))
-
 
     def test_modify_temp_node_applies_partial_move_forward(self):
         self.move.start_node = "temp_node"
@@ -177,7 +179,6 @@ class MoveTest(unittest.TestCase):
         assert_that(model, has_edge().with_distance(to_start - movement).from_("temp_node").to("start_node"))
         assert_that(model, has_edge().with_distance(to_end + movement).from_("temp_node").to("end_node"))
 
-
     def test_partially_apply_selects_create(self):
         expected = object()
         deadline = object()
@@ -190,7 +191,6 @@ class MoveTest(unittest.TestCase):
         self.move.is_applicable.assert_called_once_with(model)
         self.move.create_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
-
 
     def test_partially_apply_selects_modify(self):
         expected = Mock()
@@ -206,7 +206,6 @@ class MoveTest(unittest.TestCase):
         self.move.is_applicable.assert_called_once_with(model)
         self.move.modify_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
-
 
 
 class ObserveTest(unittest.TestCase):
@@ -252,7 +251,6 @@ class ObserveTest(unittest.TestCase):
 
         assert_that(model, has_node("node").with_value(known={"k": "v"}, unknown={}))
         assert_that(actual)
-
 
     def test_apply_with_no_new_knowledge(self):
         unknown = {}

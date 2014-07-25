@@ -1,11 +1,14 @@
 class ExecutionError(Exception):
-	pass
-	
+    pass
+
+
 class NoPlanException(Exception):
-	pass
+    pass
+
 
 class IncompletePlanException(Exception):
-	pass
-	
+    pass
+
+
 class StateException(Exception):
-	pass
+    pass

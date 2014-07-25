@@ -1,8 +1,8 @@
-'''
+"""
 Created on 19 Jul 2014
 
 @author: jack
-'''
+"""
 import unittest
 
 from hamcrest import assert_that, equal_to
@@ -11,6 +11,7 @@ from decimal import Decimal
 
 import problem_parser
 from unittest.mock import patch, mock_open
+
 
 class TestProblemParser(unittest.TestCase):
 

@@ -1,14 +1,14 @@
-'''
+"""
 Created on 20 Jun 2014
 
 @author: jack
-'''
+"""
 import unittest
 from accuracy import quantize
 from decimal import Decimal
 
-class AccuracyTest(unittest.TestCase):
 
+class AccuracyTest(unittest.TestCase):
 
     def test_quantize_with_int(self):
         self.assertEqual(Decimal("0"), quantize(0))

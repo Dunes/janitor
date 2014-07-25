@@ -1,13 +1,14 @@
-'''
+"""
 Created on 20 Jun 2014
 
 @author: jack
-'''
+"""
 
 import hamcrest
 from hamcrest import anything, equal_to
 
 __all__ = ["has_agent", "has_edge", "has_node"]
+
 
 class HasAgent(hamcrest.base_matcher.BaseMatcher):
 
@@ -28,6 +29,7 @@ class HasAgent(hamcrest.base_matcher.BaseMatcher):
 
     def describe_to(self, description):
         description.append("model with agent {!r} at {!r}".format(self.agent_name, self.at))
+
 
 class HasEdge(hamcrest.base_matcher.BaseMatcher):
 
@@ -53,6 +55,7 @@ class HasEdge(hamcrest.base_matcher.BaseMatcher):
 
     def describe_to(self, description):
         description.append("graph with edge {!r}".format([self.from_node, self.to_node, self.distance]))
+
 
 class HasNode(hamcrest.base_matcher.BaseMatcher):
 
@@ -88,8 +91,10 @@ class HasNode(hamcrest.base_matcher.BaseMatcher):
 def has_node(node):
     return HasNode().with_node(node)
 
+
 def has_agent(agent):
     return HasAgent().with_agent(agent)
+
 
 def has_edge():
     return HasEdge()

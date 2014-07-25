@@ -1,13 +1,14 @@
-'''
+"""
 Created on 20 Jun 2014
 
 @author: jack
-'''
+"""
 from inspect import getargspec
 
 from action import Move, Clean, ExtraClean
 from accuracy import quantize
 from collections import OrderedDict
+
 
 class ModelBuilder(object):
 
@@ -21,8 +22,10 @@ class ModelBuilder(object):
 
     def with_agent(self, agent, at=None, available=None):
         agent_value = self._default_agent
-        if at is not None: agent_value["at"] = [True, at]
-        if available is not None: agent_value["available"] = available
+        if at is not None:
+            agent_value["at"] = [True, at]
+        if available is not None:
+            agent_value["available"] = available
         self._add_to(agent, agent_value, "agents")
         return self
 
@@ -66,6 +69,7 @@ class ModelBuilder(object):
         return {
             "node": True
         }
+
 
 class ActionBuilder(object):
 
@@ -113,7 +117,6 @@ class ActionBuilder(object):
         self.params["partial"] = True
         return self
 
-
     def move(self):
         return Move(**{key: self.params.get(key) for key in getargspec(Move).args[1:]})
 
@@ -122,4 +125,3 @@ class ActionBuilder(object):
 
     def extra_clean(self):
         return ExtraClean(**{key: self.params.get(key) for key in getargspec(ExtraClean).args[1:]})
-

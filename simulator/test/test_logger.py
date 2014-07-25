@@ -1,8 +1,8 @@
-'''
+-"""
 Created on 21 Jun 2014
 
 @author: jack
-'''
+"""
 import unittest
 from unittest.mock import patch, Mock, DEFAULT, call
 
@@ -10,13 +10,13 @@ from logger import Logger
 
 from io import StringIO
 
+
+# noinspection PyUnresolvedReferences
 class LoggerTest(unittest.TestCase):
 
-
     def setUp(self):
-        self.patch = patch.object(Logger, "__init__", return_value=None) # @UndefinedVariable
+        self.patch = patch.object(Logger, "__init__", return_value=None)  # @UndefinedVariable
         self.patch.start()
-
 
     def tearDown(self):
         self.patch.stop()
@@ -76,14 +76,14 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual("'name': 'value',\n", logger.log.getvalue())
 
     @patch("logger.open", return_value=StringIO(), create=True)
-    def test_log_property_log_not_open_yet(self, thing):
+    def test_log_property_log_not_open_yet(self, string_io_open):
         logger = Logger()
         logger.log_file_name = None
         logger.log = None
 
         logger.log_property("name", "value")
 
-        self.assertEqual("{\n'name': value,\n", logger.log.getvalue())
+        self.assertEqual("{\n'name': value,\n", string_io_open().getvalue())
 
     def test_log_plan(self):
         logger = Logger()
@@ -94,14 +94,14 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual("['plan']\n", logger.plan_log.getvalue())
 
     @patch("logger.open", return_value=StringIO(), create=True)
-    def test_log_plan_log_not_open_yet(self, thing):
+    def test_log_plan_log_not_open_yet(self, string_io_open):
         logger = Logger()
         logger.plan_log_file_name = None
         logger.plan_log = None
 
         logger.log_plan(["plan"])
 
-        self.assertEqual("['plan']\n", logger.plan_log.getvalue())
+        self.assertEqual("['plan']\n", string_io_open().getvalue())
 
     def test_close(self):
         logger = Logger()
@@ -129,7 +129,7 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual(False, logger.log.close.called)
         self.assertEqual(False, logger.plan_log.close.called)
 
-    def test_close_reraise_ioerror(self):
+    def test_close_re_raise_io_error(self):
         logger = Logger()
         logger.log = Mock()
         logger.log.closed = False
@@ -143,8 +143,10 @@ class LoggerTest(unittest.TestCase):
         self.assertEqual(False, logger.log.close.called)
         logger.plan_log.close.assert_called_once_with()
 
+
 class LoggerInitTest(unittest.TestCase):
 
+    # noinspection PyUnresolvedReferences
     @patch.object(Logger, "get_plan_log_file_name")
     @patch.object(Logger, "_create_if_not_exists")
     def test_init(self, _create_if_not_exists, get_plan_log_file_name):
