@@ -31,7 +31,7 @@ if [[ $? -ne 0 ]]
 then
 	usage
 fi
-set -- $args
+set -- ${args}
 while [[ $1 ]]
 do
 	case "$1" in
@@ -76,7 +76,8 @@ fi
 error_log="$log_dir/$error_log_file"
 
 function process_file {
-	base_file_name="`basename $file_name`"
+    file_name="$1"
+	base_file_name="`basename ${file_name}`"
 	echo "starting $file_name"
 	./main.sh "$file_name" -t "$time_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
 	exit_val="${PIPESTATUS[0]}"
