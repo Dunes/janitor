@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
-'''
+"""
 Created on 12 Jul 2014
 
 @author: jack
-'''
+"""
 
 import argparse
 import decimal
@@ -14,6 +14,7 @@ logging.config.fileConfig("logging.conf")
 import problem_parser
 import logger
 import simulator
+
 
 def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
