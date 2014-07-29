@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE
 from pddl_parser import decode_plan_from_optic, encode_problem_to_file
 import tempfile
 from os.path import join as path_join
-from threading import Timer
+from threading import Timer, Thread
 from time import time
 from math import isnan
 from planning_exceptions import NoPlanException, IncompletePlanException
@@ -23,15 +23,18 @@ class Planner(object):
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     def get_plan(self, model):
-        problem_file = self.create_problem_file(model)
+        # problem_file = self.create_problem_file(model)
+        problem_file = "/dev/stdin"
 
         if self.planning_time == "till_first_plan":
             args = self.planner_location, "-N", self.domain_file, problem_file
-            p = Popen(args, stdout=PIPE, cwd=self.working_directory)
+            p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
+            Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
             plan = list(decode_plan_from_optic(self.decode(p.stdout), report_incomplete_plan=False))
         else:
             args = self.planner_location, self.domain_file, problem_file
-            p = Popen(args, stdout=PIPE, cwd=self.working_directory)
+            p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
+            Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
             timer = Timer(float(self.planning_time), p.terminate)
             timer.start()
 

@@ -69,6 +69,15 @@ class Logger(object):
         return self
 
 
+class DummyLogger:
+
+    def log_plan(self, plan):
+        pass
+
+    def log_property(self, name, value, stringify=str):
+        pass
+
+
 class BraceMessage:
     def __init__(self, fmt, args, kwargs):
         self.fmt = fmt

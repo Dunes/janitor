@@ -1,0 +1,122 @@
+from logging import getLogger
+from enum import Enum
+from operator import attrgetter
+from accuracy import quantize, round_half_up
+from action import Plan, Observe, Move
+from logger import StyleAdapter
+from new_simulator import ExecutionProblem
+from requests import AdjustmentRequest
+from planning_exceptions import ExecutionError
+
+log = StyleAdapter(getLogger(__name__))
+
+
+class NoAction(Enum):
+    PlanEmpty = 1
+    TooEarly = 2
+
+
+class Executor:
+
+    def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None, last_observation=quantize(-1),
+            plan_valid=False):
+        self.started = False
+        self.plan = plan if plan else []
+        self.executing = executing if executing else {}
+        self.stalled = stalled if stalled else set()
+        self.planning_duration = planning_duration
+        self.last_observation = last_observation
+        self.plan_valid = plan_valid
+
+    def copy(self):
+        log.debug("Executor.copy()")
+        return Executor(self.planning_duration, plan=list(self.plan), executing=dict(self.executing),
+            last_observation=self.last_observation, plan_valid=self.plan_valid)
+
+    def next_action(self, current_time, future_time):
+        log.debug("Executor.next_action() current_time={}, future_time={}", current_time, future_time)
+        if not self.plan_valid and Plan.agent not in self.executing:
+            return self.get_plan_request(round_half_up(current_time))
+        action = self.next_unstalled_action(future_time)
+        if action is NoAction.PlanEmpty:
+            plan_action = self.get_plan_request(round_half_up(current_time))
+            assert plan_action is None
+            return plan_action
+        elif action is NoAction.TooEarly:
+            return None
+        elif type(action) is not Observe:
+            for agent in action.agents():
+                if agent in self.executing and future_time != self.executing[agent].end_time:
+                    log.error("'{}' in executing, future_time is {}, current action: {}\nnext action: {}",
+                        agent, future_time, self.executing[agent], action)
+                assert agent not in self.executing or future_time == self.executing[agent].end_time
+                self.executing[agent] = action
+        return action
+
+    def next_unstalled_action(self, time):
+        while self.plan:
+            action = self.plan[-1]
+            if time < action.start_time:
+                log.info("no action starting before {}", time)
+                return NoAction.TooEarly
+            if action.agents() & self.stalled:
+                log.debug("Discarding stalled agent action: {}", action)
+                self.plan.pop()
+            else:
+                return self.plan.pop()
+        log.info("No valid action available")
+        return NoAction.PlanEmpty
+
+    def process_result(self, result):
+        log.debug("Executor.process_result() result={}", result)
+
+        if type(result.action) is not Observe:
+            for agent in result.action.agents():
+                if self.executing[agent] == result.action or type(result.action) is Plan:
+                    del self.executing[agent]
+
+        if type(result.action) is Plan:
+            request = AdjustmentRequest(result.time)
+            self.plan = self.adjust_plan(result.result, result.time)
+            self.stalled.clear()
+            return request
+        elif result.result == ExecutionProblem.ReachedDeadline:
+            return AdjustmentRequest(result.time)
+        elif result.result == ExecutionProblem.AgentStalled:
+            self.stalled |= result.action.agents()
+            return None
+        elif result.result is True:
+            if self.last_observation < result.time:
+                self.plan_valid = False
+                self.last_observation = result.time
+            return self.get_plan_request(result.time)
+        elif result.result is False:
+            return None
+        else:
+            raise ExecutionError("Unknown value for result {}".format(result))
+
+    def get_plan_request(self, time):
+        if self.plan_valid or Plan.agent in self.executing:
+            return None
+        plan = Plan(time, self.planning_duration)
+        self.executing[Plan.agent] = plan
+        self.plan_valid = True
+        return plan
+
+    def update_executing_actions(self, adjusted_actions):
+        for action in adjusted_actions:
+            for agent in action.agents():
+                self.executing[agent] = action
+
+    def adjust_plan(self, plan, start_time):
+        return sorted(self._adjust_plan_helper(plan, start_time),
+            key=attrgetter("start_time"), reverse=True)
+
+    @staticmethod
+    def _adjust_plan_helper(plan, start_time):
+        for action in plan:
+            # adjust for OPTIC starting at t = 0
+            action = action.copy_with(start_time=action.start_time + start_time)
+            yield action
+            if type(action) is Move:
+                yield Observe(action.end_time, action.agent, action.end_node)

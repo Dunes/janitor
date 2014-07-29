@@ -11,9 +11,12 @@ import logging.config
 
 logging.config.fileConfig("logging.conf")
 
+from executor import Executor
+from planner import Planner
+from new_simulator import Simulator
+
 import problem_parser
 import logger
-import simulator
 
 
 def parser():
@@ -30,10 +33,17 @@ if __name__ == "__main__":
 
     args = parser().parse_args()
     log.info(args)
-    model = problem_parser.decode(args.problem_file)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
     log.info("log: {}", log_file_name)
+
+    model = problem_parser.decode(args.problem_file)
+    executor = Executor(args.planning_time)
+    planner = Planner(args.planning_time)
+
     with logger.Logger(log_file_name, args.log_directory) as logger:
-        result = simulator.run_simulation(model, logger, args.planning_time)
+        simulator = Simulator(model, executor, planner, logger)
+        result = simulator.run()
+        simulator.print_results(logger)
+
     if not result:
         exit(1)

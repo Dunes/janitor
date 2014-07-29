@@ -1,7 +1,8 @@
 from collections import Sequence
 from numbers import Number
 from itertools import dropwhile, chain
-from decimal import Decimal
+from io import TextIOWrapper, RawIOBase, BufferedIOBase
+from accuracy import quantize
 import action
 from planning_exceptions import IncompletePlanException
 
@@ -34,8 +35,8 @@ def decode_plan(data_input, report_incomplete_plan=True):
         if line[-1] != "\n":
             raise IncompletePlanException("action not terminated properly")
         items = line.split(" ")
-        start_time = Decimal(items[0][:-1])
-        duration = Decimal(items[-1][1:-2])
+        start_time = quantize(items[0][:-1])
+        duration = quantize(items[-1][1:-2])
         action_name = items[1].strip("()")
         arguments = tuple(i.strip("()") for i in items[2:-2])
         action_ = _action_map[action_name](start_time, duration, *arguments)
@@ -44,8 +45,17 @@ def decode_plan(data_input, report_incomplete_plan=True):
         raise IncompletePlanException("possible missing action")
 
 
+def get_text_file_handle(filename):
+    if isinstance(filename, str):
+        return open(filename, "w")
+    elif isinstance(filename, (RawIOBase, BufferedIOBase)):
+        return TextIOWrapper(filename)
+    else:
+        return filename
+
+
 def encode_problem_to_file(filename, model):
-    with (open(filename, "w") if isinstance(filename, str) else filename) as fh:
+    with get_text_file_handle(filename) as fh:
         encode_problem(fh, model)
 
 
