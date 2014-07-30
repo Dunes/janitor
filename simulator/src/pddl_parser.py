@@ -111,7 +111,7 @@ def _encode_init_helper(out, items, assumed_values):
             _encode_init_values(out, object_name, object_values)
         else:
             _encode_init_values(out, object_name, object_values["known"])
-            _encode_init_values(out, object_name, object_values["unknown"], assumed_values, _unknown_value_getter)
+            _encode_init_values(out, object_name, object_values["unknown"], assumed_values, unknown_value_getter)
 
 
 def _encode_init_values(out, object_name, object_values, assumed_values=None, value_getter=(lambda x, _0, _1: x)):
@@ -132,7 +132,7 @@ def _encode_init_values(out, object_name, object_values, assumed_values=None, va
                 _encode_predicate(out, pred_values)
 
 
-def _unknown_value_getter(possible_values, object_name, assumed_values):
+def unknown_value_getter(possible_values, object_name, assumed_values):
     if "assumed" in possible_values:
         return possible_values["assumed"]
     value = assumed_values[object_name]

@@ -5,7 +5,7 @@ from accuracy import quantize, round_half_up
 from action import Plan, Observe, Move
 from logger import StyleAdapter
 from new_simulator import ExecutionProblem
-from requests import AdjustmentRequest
+from requests import AdjustToPartialRequest
 from planning_exceptions import ExecutionError
 
 log = StyleAdapter(getLogger(__name__))
@@ -18,6 +18,8 @@ class NoAction(Enum):
 
 class Executor:
 
+    ID_COUNTER = 0
+
     def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None, last_observation=quantize(-1),
             plan_valid=False):
         self.started = False
@@ -27,6 +29,7 @@ class Executor:
         self.planning_duration = planning_duration
         self.last_observation = last_observation
         self.plan_valid = plan_valid
+        self.id = Executor.get_next_id()
 
     def copy(self):
         log.debug("Executor.copy()")
@@ -76,12 +79,12 @@ class Executor:
                     del self.executing[agent]
 
         if type(result.action) is Plan:
-            request = AdjustmentRequest(result.time)
+            request = AdjustToPartialRequest(result.time)
             self.plan = self.adjust_plan(result.result, result.time)
             self.stalled.clear()
             return request
         elif result.result == ExecutionProblem.ReachedDeadline:
-            return AdjustmentRequest(result.time)
+            return AdjustToPartialRequest(result.time)
         elif result.result == ExecutionProblem.AgentStalled:
             self.stalled |= result.action.agents()
             return None
@@ -104,9 +107,13 @@ class Executor:
         return plan
 
     def update_executing_actions(self, adjusted_actions):
-        for action in adjusted_actions:
-            for agent in action.agents():
-                self.executing[agent] = action
+        for change in adjusted_actions:
+            if change.action:
+                for agent in change.agents:
+                    self.executing[agent] = change.action
+            else:
+                for agent in change.agents:
+                    del self.executing[agent]
 
     def adjust_plan(self, plan, start_time):
         return sorted(self._adjust_plan_helper(plan, start_time),
@@ -120,3 +127,9 @@ class Executor:
             yield action
             if type(action) is Move:
                 yield Observe(action.end_time, action.agent, action.end_node)
+
+    @classmethod
+    def get_next_id(cls):
+        id_ = cls.ID_COUNTER
+        cls.ID_COUNTER += 1
+        return id_

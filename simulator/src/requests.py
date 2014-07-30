@@ -2,11 +2,25 @@ from heapq import heapify
 from logging import getLogger
 from action_state import ExecutionState, ActionState
 from logger import StyleAdapter
+from collections import namedtuple
 
 log = StyleAdapter(getLogger(__name__))
 
 
-class AdjustmentRequest:
+class ChangedAction(namedtuple("ChangedAction", "agents action")):
+    pass
+
+
+class RemovePrestartRequest:
+
+    def __init__(self, deadline):
+        raise NotImplementedError()
+
+    def adjust(self, action_queue):
+        raise NotImplementedError()
+
+
+class AdjustToPartialRequest:
     """Adjustment request for current strategy"""
     def __init__(self, deadline):
         self.deadline = deadline
@@ -21,20 +35,20 @@ class AdjustmentRequest:
                 queue.append(action_state)
                 continue
 
+            old_action = action
             action = action_state.action.as_partial(duration=self.deadline - action.start_time)
-            if not action:
-                continue
 
-            if not action.duration > 0:
+            if action and not action.duration > 0:
                 assert action.duration > 0
 
-            adjusted_actions.append(action)
-            if action_state.state == ExecutionState.executing:
-                action_state = ActionState(action)
-                action_state.start()
-            else:
-                action_state = ActionState(action)
-            queue.append(action_state)
+            adjusted_actions.append(ChangedAction(agents=old_action.agents(), action=action))
+            if action:
+                if action_state.state == ExecutionState.executing:
+                    action_state = ActionState(action)
+                    action_state.start()
+                else:
+                    action_state = ActionState(action)
+                queue.append(action_state)
         heapify(queue)
         action_queue.queue = queue
         return adjusted_actions

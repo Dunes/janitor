@@ -1,12 +1,12 @@
 from enum import Enum
 from copy import deepcopy
-from accuracy import quantize, round_half_up, increment
-from pddl_parser import _unknown_value_getter
+from accuracy import quantize, round_half_up, increment, as_end_time
+from pddl_parser import unknown_value_getter
 from action import Action, Plan, Observe, Move, Clean, ExtraClean, Stalled
 from action_state import ActionState, ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
-from requests import AdjustmentRequest
+from requests import AdjustToPartialRequest
 
 from collections import namedtuple, Iterable
 from priority_queue import PriorityQueue
@@ -19,7 +19,7 @@ log = StyleAdapter(getLogger(__name__))
 
 class ActionResult(namedtuple("ActionResult", "action time result")):
     def __str__(self):
-        return "ActionResult(action={arg.action!s}, time={arg.time!s} result={arg.result!s})".format(arg=self)
+        return "ActionResult(action={arg.action!s}, time={arg.time!s}, result={arg.result!s})".format(arg=self)
 
     @staticmethod
     def from_action_state(action_state, model):
@@ -60,7 +60,8 @@ class Simulator:
 
     def run(self, *, deadline=Decimal("Infinity")):
         log.info("Simulator({}).run() deadline={}", self.id, deadline)
-        if self.time >= deadline:
+        deadline = as_end_time(deadline)
+        if self.time > deadline:
             log.info("Simulator({}).run() finished as time ({}) >= deadline ({})", self.id, self.time, deadline)
             return
 
@@ -74,7 +75,7 @@ class Simulator:
             action_state = self.action_queue.get()
 
             # current action time after deadline, ask executor if it wants to finish any actions early
-            if action_state.time >= deadline:
+            if action_state.time > deadline:
                 self.action_queue.put(action_state)
                 action_request = self.executor.process_result(
                     ActionResult(action_state.action, deadline, ExecutionProblem.ReachedDeadline))
@@ -138,7 +139,7 @@ class Simulator:
         elif isinstance(request, Action):
             self.action_queue.put(ActionState(request))
             return True
-        elif type(request) is AdjustmentRequest:
+        elif type(request) is AdjustToPartialRequest:
             adjusted_actions = request.adjust(self.action_queue)
             self.executor.update_executing_actions(adjusted_actions)
             return adjusted_actions
@@ -159,7 +160,7 @@ class Simulator:
         for node in model["nodes"].values():
             if "known" in node:
                 node["known"].update({
-                    key: _unknown_value_getter(value, key, assumed_values)
+                    key: unknown_value_getter(value, key, assumed_values)
                     for key, value in node["unknown"].items()
                 })
                 node["unknown"].clear()
