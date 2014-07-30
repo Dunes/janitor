@@ -1,11 +1,12 @@
 from logging import getLogger
 from enum import Enum
 from operator import attrgetter
+from decimal import Decimal
 from accuracy import quantize, round_half_up
 from action import Plan, Observe, Move
 from logger import StyleAdapter
 from new_simulator import ExecutionProblem
-from requests import AdjustToPartialRequest
+from requests import AdjustToPartialRequest, RemovePrestartRequest, AssertAgentsFinishingNowRequest
 from planning_exceptions import ExecutionError
 
 log = StyleAdapter(getLogger(__name__))
@@ -33,16 +34,16 @@ class Executor:
 
     def copy(self):
         log.debug("Executor.copy()")
-        return Executor(self.planning_duration, plan=list(self.plan), executing=dict(self.executing),
+        return type(self)(self.planning_duration, plan=list(self.plan), executing=dict(self.executing),
             last_observation=self.last_observation, plan_valid=self.plan_valid)
 
     def next_action(self, current_time, future_time):
         log.debug("Executor.next_action() current_time={}, future_time={}", current_time, future_time)
         if not self.plan_valid and Plan.agent not in self.executing:
-            return self.get_plan_request(round_half_up(current_time))
+            return self.get_plan_request(current_time)
         action = self.next_unstalled_action(future_time)
         if action is NoAction.PlanEmpty:
-            plan_action = self.get_plan_request(round_half_up(current_time))
+            plan_action = self.get_plan_request(current_time)
             assert plan_action is None
             return plan_action
         elif action is NoAction.TooEarly:
@@ -79,12 +80,12 @@ class Executor:
                     del self.executing[agent]
 
         if type(result.action) is Plan:
-            request = AdjustToPartialRequest(result.time)
+            request = self.get_request_for_plan_complete(result.time)
             self.plan = self.adjust_plan(result.result, result.time)
             self.stalled.clear()
             return request
         elif result.result == ExecutionProblem.ReachedDeadline:
-            return AdjustToPartialRequest(result.time)
+            return self.get_request_for_reached_deadline(result.time)
         elif result.result == ExecutionProblem.AgentStalled:
             self.stalled |= result.action.agents()
             return None
@@ -98,10 +99,10 @@ class Executor:
         else:
             raise ExecutionError("Unknown value for result {}".format(result))
 
-    def get_plan_request(self, time):
+    def get_plan_request(self, time: Decimal) -> Plan:
         if self.plan_valid or Plan.agent in self.executing:
             return None
-        plan = Plan(time, self.planning_duration)
+        plan = self.get_plan_action(time)
         self.executing[Plan.agent] = plan
         self.plan_valid = True
         return plan
@@ -128,8 +129,50 @@ class Executor:
             if type(action) is Move:
                 yield Observe(action.end_time, action.agent, action.end_node)
 
+    def get_plan_action(self, time: Decimal) -> Plan:
+        raise NotImplementedError()
+
+    def get_request_for_plan_complete(self, time):
+        raise NotImplementedError()
+
+    def get_request_for_reached_deadline(self, time):
+        raise NotImplementedError()
+
+    def get_state_prediction_end_time(self):
+        raise NotImplementedError()
+
     @classmethod
     def get_next_id(cls):
         id_ = cls.ID_COUNTER
         cls.ID_COUNTER += 1
         return id_
+
+
+class PredictStateAtPlannerFinishExecutor(Executor):
+
+    def get_plan_action(self, time: Decimal) -> Plan:
+        return Plan(round_half_up(time), self.planning_duration)
+
+    def get_request_for_plan_complete(self, time):
+        return AdjustToPartialRequest(time)
+
+    def get_request_for_reached_deadline(self, time):
+        return AdjustToPartialRequest(time)
+
+    def get_state_prediction_end_time(self):
+        return self.executing[Plan.agent].end_time
+
+
+class FinishActionsOnObservationExecutor(Executor):
+
+    def get_plan_action(self, time: Decimal) -> Plan:
+        if self.executing:
+            return Plan(round_half_up(max(a.end_time for a in self.executing.values())), self.planning_duration)
+        else:
+            return Plan(round_half_up(time), self.planning_duration)
+
+    def get_request_for_plan_complete(self, time):
+        return AssertAgentsFinishingNowRequest(time)
+
+    def get_request_for_reached_deadline(self, time):
+        return RemovePrestartRequest(time)

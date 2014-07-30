@@ -14,10 +14,21 @@ class ChangedAction(namedtuple("ChangedAction", "agents action")):
 class RemovePrestartRequest:
 
     def __init__(self, deadline):
-        raise NotImplementedError()
+        self.deadline = deadline
 
     def adjust(self, action_queue):
-        raise NotImplementedError()
+        log.debug("RemovePrestartRequest.adjust() with queue {}", action_queue.queue)
+        queue = []
+        adjusted_actions = []
+        for action_state in action_queue.queue:
+            action = action_state.action
+            if action.end_time <= self.deadline or action_state == ExecutionState.executing: # TODO: not working
+                queue.append(action_state)
+            else:
+                adjusted_actions.append(ChangedAction(agents=action.agents(), action=None))
+        heapify(queue)
+        action_queue.queue = queue
+        return adjusted_actions
 
 
 class AdjustToPartialRequest:
@@ -52,3 +63,14 @@ class AdjustToPartialRequest:
         heapify(queue)
         action_queue.queue = queue
         return adjusted_actions
+
+
+class AssertAgentsFinishingNowRequest:
+
+    def __init__(self, deadline):
+        self.deadline = deadline
+
+    def adjust(self, action_queue):
+        for action_state in action_queue.queue:
+            assert action_state.action.end_time == self.deadline
+        return ()

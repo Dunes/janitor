@@ -1,6 +1,6 @@
 from enum import Enum
 from copy import deepcopy
-from accuracy import quantize, round_half_up, increment, as_end_time
+from accuracy import quantize, round_half_up, as_end_time
 from pddl_parser import unknown_value_getter
 from action import Action, Plan, Observe, Move, Clean, ExtraClean, Stalled
 from action_state import ActionState, ExecutionState
@@ -107,7 +107,7 @@ class Simulator:
         log.debug("Simulator({}).process_action_state() action_state={}", self.id, action_state)
         self.time = action_state.time
         if type(action_state.action) is Plan and action_state.state == ExecutionState.pre_start:
-            plan, time_taken = self.get_plan(action_state.action.duration)
+            plan, time_taken = self.get_plan()
             action_state = ActionState(action_state.action.copy_with(duration=time_taken, plan=plan))
             action_state.start()
             self.action_queue.put(action_state)
@@ -146,10 +146,11 @@ class Simulator:
         else:
             raise NotImplementedError("Unknown request type: {}".format(request))
 
-    def get_plan(self, planning_duration):
-        log.debug("Simulator({}).get_plan(), planning_duration={}", self.id, planning_duration)
+    def get_plan(self):
+        log.debug("Simulator({}).get_plan()", self.id)
+        deadline = self.executor.get_state_prediction_end_time()
         simulator = self.copy_with(model=self.convert_to_hypothesis_model(self.model))
-        simulator.run(deadline=self.time + planning_duration)
+        simulator.run(deadline=deadline)
         predicted_model = simulator.model
         return self.planner.get_plan_and_time_taken(predicted_model)
 
