@@ -2,11 +2,12 @@ from logging import getLogger
 from enum import Enum
 from operator import attrgetter
 from decimal import Decimal
-from accuracy import quantize, round_half_up
+from accuracy import quantize, round_half_up, as_end_time
 from action import Plan, Observe, Move
+from action_state import ExecutionState
 from logger import StyleAdapter
 from new_simulator import ExecutionProblem
-from requests import AdjustToPartialRequest, RemovePrestartRequest, AssertAgentsFinishingNowRequest
+from requests import AdjustToPartialRequest, RemoveActionsWithStateRequest
 from planning_exceptions import ExecutionError
 
 log = StyleAdapter(getLogger(__name__))
@@ -105,6 +106,7 @@ class Executor:
         plan = self.get_plan_action(time)
         self.executing[Plan.agent] = plan
         self.plan_valid = True
+        self.last_observation = plan.start_time
         return plan
 
     def update_executing_actions(self, adjusted_actions):
@@ -114,7 +116,7 @@ class Executor:
                     self.executing[agent] = change.action
             else:
                 for agent in change.agents:
-                    del self.executing[agent]
+                    self.executing.pop(agent, None)
 
     def adjust_plan(self, plan, start_time):
         return sorted(self._adjust_plan_helper(plan, start_time),
@@ -167,12 +169,16 @@ class FinishActionsOnObservationExecutor(Executor):
 
     def get_plan_action(self, time: Decimal) -> Plan:
         if self.executing:
-            return Plan(round_half_up(max(a.end_time for a in self.executing.values())), self.planning_duration)
+            max_end_of_executing_action = max(a.end_time for a in self.executing.values() if a.start_time < time)
+            return Plan(round_half_up(max_end_of_executing_action) - self.planning_duration, self.planning_duration)
         else:
             return Plan(round_half_up(time), self.planning_duration)
 
     def get_request_for_plan_complete(self, time):
-        return AssertAgentsFinishingNowRequest(time)
+        return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
 
     def get_request_for_reached_deadline(self, time):
-        return RemovePrestartRequest(time)
+        return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
+
+    def get_state_prediction_end_time(self):
+        return self.executing[Plan.agent].end_time

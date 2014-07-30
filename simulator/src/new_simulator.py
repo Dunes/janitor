@@ -6,7 +6,7 @@ from action import Action, Plan, Observe, Move, Clean, ExtraClean, Stalled
 from action_state import ActionState, ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
-from requests import AdjustToPartialRequest
+from requests import Request
 
 from collections import namedtuple, Iterable
 from priority_queue import PriorityQueue
@@ -139,7 +139,7 @@ class Simulator:
         elif isinstance(request, Action):
             self.action_queue.put(ActionState(request))
             return True
-        elif type(request) is AdjustToPartialRequest:
+        elif isinstance(request, Request):
             adjusted_actions = request.adjust(self.action_queue)
             self.executor.update_executing_actions(adjusted_actions)
             return adjusted_actions

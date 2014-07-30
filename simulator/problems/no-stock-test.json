@@ -1,1 +1,55 @@
-{"metric": {"type": "minimize", "predicate": ["total-time"]}, "assumed-values": {"extra-dirty": false, "dirty": true, "dirtiness": "max", "cleaned": false}, "problem": "test", "agents": {"bob": {"agent": true, "available": true, "at": [true, "empty-rm"]}, "alice": {"agent": true, "available": true, "at": [true, "empty-rm"]}}, "domain": "janitor", "graph": {"edges": [["empty-rm", "rm", 20], ["empty-rm", "rm-extra-dirty", 20]], "bidirectional": true}, "nodes": {"rm": {"known": {"is-room": true, "node": true}, "unknown": {"dirtiness": {"max": 20.000, "min": 0.000, "actual": 15.000}, "extra-dirty": {"actual": false}, "dirty": {"actual": true}, "cleaned": {"actual": false}}}, "rm-extra-dirty": {"known": {"is-room": true, "node": true}, "unknown": {"dirtiness": {"max": 5.000, "min": 0.000, "actual": 5.000}, "extra-dirty": {"actual": true}, "dirty": {"actual": false}, "cleaned": {"actual": false}}}, "empty-rm": {"is-room": true, "node": true}}, "goal": {"hard-goals": [["cleaned", "rm"], ["cleaned", "rm-extra-dirty"]]}}
+{
+	"domain": "janitor", "problem": "test",
+	"goal": {"hard-goals": [["cleaned", "rm"], ["cleaned", "rm-extra-dirty"]]},
+	"metric": {"type": "minimize", "predicate": ["total-time"]}, 
+	"assumed-values": {"extra-dirty": false, "dirty": true, "dirtiness": "max", "cleaned": false}, 
+	"agents": {
+	 	"bob": {
+	 		"agent": true, 
+	 		"available": true, 
+	 		"at": [true, "empty-rm"]
+	 	}, 
+	 	"alice": {
+	 		"agent": true, 
+	 		"available": true, 
+	 		"at": [true, "empty-rm"]
+	 	}
+	 }, 
+ 	"graph": {
+ 		"edges": [
+ 			["empty-rm", "rm", 20], 
+ 			["empty-rm", "rm-extra-dirty", 20]
+ 		], 
+ 		"bidirectional": true
+ 	}, 
+ 	"nodes": {
+ 		"rm": {
+ 			"known": {
+ 				"is-room": true, 
+ 				"node": true
+ 			}, 
+ 			"unknown": {
+ 				"dirtiness": {"max": 20.000, "min": 0.000, "actual": 15.000}, 
+ 				"extra-dirty": {"actual": false}, 
+ 				"dirty": {"actual": true}, 
+ 				"cleaned": {"actual": false}
+ 			}
+ 		}, 
+ 		"rm-extra-dirty": {
+ 			"known": {
+ 				"is-room": true, 
+ 				"node": true
+ 			}, 
+ 			"unknown": {
+ 				"dirtiness": {"max": 5.000, "min": 0.000, "actual": 5.000}, 
+ 				"extra-dirty": {"actual": true}, 
+ 				"dirty": {"actual": false}, 
+ 				"cleaned": {"actual": false}
+ 			}
+ 		}, 
+ 		"empty-rm": {
+ 			"is-room": true, 
+ 			"node": true
+ 		}
+ 	}
+}
