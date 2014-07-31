@@ -148,7 +148,7 @@ class Simulator:
 
     def get_plan(self):
         log.debug("Simulator({}).get_plan()", self.id)
-        deadline = self.executor.get_state_prediction_end_time()
+        deadline = self.executor.current_plan_execution_limit
         simulator = self.copy_with(model=self.convert_to_hypothesis_model(self.model))
         simulator.run(deadline=deadline)
         predicted_model = simulator.model

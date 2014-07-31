@@ -16,19 +16,21 @@ log = StyleAdapter(getLogger(__name__))
 class NoAction(Enum):
     PlanEmpty = 1
     TooEarly = 2
+    ExecutionLimitReached = 3
 
 
 class Executor:
 
     ID_COUNTER = 0
 
-    def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None, last_observation=quantize(-1),
-            plan_valid=False):
+    def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None,
+            current_plan_execution_limit=Decimal("Infinity"), last_observation=quantize(-1), plan_valid=False):
         self.started = False
         self.plan = plan if plan else []
         self.executing = executing if executing else {}
         self.stalled = stalled if stalled else set()
         self.planning_duration = planning_duration
+        self.current_plan_execution_limit = current_plan_execution_limit
         self.last_observation = last_observation
         self.plan_valid = plan_valid
         self.id = Executor.get_next_id()
@@ -36,18 +38,15 @@ class Executor:
     def copy(self):
         log.debug("Executor.copy()")
         return type(self)(self.planning_duration, plan=list(self.plan), executing=dict(self.executing),
-            last_observation=self.last_observation, plan_valid=self.plan_valid)
+            current_plan_execution_limit=self.current_plan_execution_limit, last_observation=self.last_observation,
+            plan_valid=self.plan_valid)
 
     def next_action(self, current_time, future_time):
         log.debug("Executor.next_action() current_time={}, future_time={}", current_time, future_time)
         if not self.plan_valid and Plan.agent not in self.executing:
             return self.get_plan_request(current_time)
         action = self.next_unstalled_action(future_time)
-        if action is NoAction.PlanEmpty:
-            plan_action = self.get_plan_request(current_time)
-            assert plan_action is None
-            return plan_action
-        elif action is NoAction.TooEarly:
+        if action in (NoAction.TooEarly, NoAction.ExecutionLimitReached, NoAction.PlanEmpty):
             return None
         elif type(action) is not Observe:
             for agent in action.agents():
@@ -58,13 +57,19 @@ class Executor:
                 self.executing[agent] = action
         return action
 
-    def next_unstalled_action(self, time):
+    def next_unstalled_action(self, time: Decimal):
+        if time.is_finite() and time >= self.current_plan_execution_limit:
+            return NoAction.ExecutionLimitReached
         while self.plan:
             action = self.plan[-1]
             if time < action.start_time:
                 log.info("no action starting before {}", time)
                 return NoAction.TooEarly
-            if action.agents() & self.stalled:
+            elif action.end_time > self.current_plan_execution_limit:
+                log.info("Discarding action that ends after current execution limit: {} -- {}",
+                    self.current_plan_execution_limit, action)
+                self.plan.pop()
+            elif action.agents() & self.stalled:
                 log.debug("Discarding stalled agent action: {}", action)
                 self.plan.pop()
             else:
@@ -81,6 +86,7 @@ class Executor:
                     del self.executing[agent]
 
         if type(result.action) is Plan:
+            self.current_plan_execution_limit = Decimal("Infinity")
             request = self.get_request_for_plan_complete(result.time)
             self.plan = self.adjust_plan(result.result, result.time)
             self.stalled.clear()
@@ -104,6 +110,7 @@ class Executor:
         if self.plan_valid or Plan.agent in self.executing:
             return None
         plan = self.get_plan_action(time)
+        self.current_plan_execution_limit = self.get_state_prediction_end_time(plan)
         self.executing[Plan.agent] = plan
         self.plan_valid = True
         self.last_observation = plan.start_time
@@ -140,7 +147,7 @@ class Executor:
     def get_request_for_reached_deadline(self, time):
         raise NotImplementedError()
 
-    def get_state_prediction_end_time(self):
+    def get_state_prediction_end_time(self, plan):
         raise NotImplementedError()
 
     @classmethod
@@ -161,11 +168,11 @@ class PredictStateAtPlannerFinishExecutor(Executor):
     def get_request_for_reached_deadline(self, time):
         return AdjustToPartialRequest(time)
 
-    def get_state_prediction_end_time(self):
-        return self.executing[Plan.agent].end_time
+    def get_state_prediction_end_time(self, plan):
+        return plan.end_time
 
 
-class FinishActionsOnObservationExecutor(Executor):
+class FinishActionsAndUseStatePredictionExecutor(Executor):
 
     def get_plan_action(self, time: Decimal) -> Plan:
         if self.executing:
@@ -178,7 +185,28 @@ class FinishActionsOnObservationExecutor(Executor):
         return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
 
     def get_request_for_reached_deadline(self, time):
+        # TODO: could return None
         return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
 
-    def get_state_prediction_end_time(self):
-        return self.executing[Plan.agent].end_time
+    def get_state_prediction_end_time(self, plan):
+        return plan.end_time
+
+
+class FinishActionsExecutor(Executor):
+
+    def get_plan_action(self, time: Decimal) -> Plan:
+        if self.executing:
+            max_end_of_executing_action = max(a.end_time for a in self.executing.values() if a.start_time < time)
+            return Plan(round_half_up(max_end_of_executing_action), self.planning_duration)
+        else:
+            return Plan(round_half_up(time), self.planning_duration)
+
+    def get_request_for_plan_complete(self, time):
+        return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
+
+    def get_request_for_reached_deadline(self, time):
+        # TODO: could return None
+        return RemoveActionsWithStateRequest(time, ExecutionState.pre_start, ExecutionState.executing)
+
+    def get_state_prediction_end_time(self, plan):
+        return as_end_time(plan.start_time)

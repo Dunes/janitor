@@ -1,4 +1,4 @@
-from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP, ROUND_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP, ROUND_CEILING
 
 __all__ = ["increment", "quantize", "round_half_up", "as_end_time"]
 
@@ -18,4 +18,4 @@ def round_half_up(value) -> Decimal:
 def as_end_time(value: Decimal) -> Decimal:
     if value.is_infinite():
         return value
-    return value.quantize(precision, rounding=ROUND_UP) - increment
+    return value.quantize(precision, rounding=ROUND_CEILING) - increment
