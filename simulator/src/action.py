@@ -1,6 +1,6 @@
 from decimal import Decimal
 from functools import total_ordering, partial as partial_func
-from accuracy import increment
+from accuracy import to_prev_start_time, as_end_time, increment
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError
 import logging
@@ -11,7 +11,7 @@ log = StyleAdapter(logging.getLogger(__name__))
 @total_ordering
 class Action(object):
 
-    _ordinal = 2
+    _ordinal = 1
 
     def __init__(self, start_time, duration, partial=None):
         object.__setattr__(self, "start_time", start_time)
@@ -109,8 +109,6 @@ class Stalled(Action):
 
 class Move(Action):
 
-    _ordinal = 0
-
     _format_attrs = ("start_time", "duration", "agent", "start_node", "end_node", "partial")
 
     def __init__(self, start_time, duration, agent, start_node, end_node, partial=None):
@@ -190,12 +188,14 @@ class Move(Action):
 
 class Observe(Action):
 
-    _ordinal = 1
+    DURATION = increment
+
+    _ordinal = 2
 
     _format_attrs = ("start_time", "agent", "node")
 
-    def __init__(self, start_time, agent, node):
-        super(Observe, self).__init__(start_time - increment, increment)
+    def __init__(self, observation_time, agent, node):
+        super(Observe, self).__init__(as_end_time(observation_time), Observe.DURATION)
         object.__setattr__(self, "agent", agent)
         object.__setattr__(self, "node", node)
 

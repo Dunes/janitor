@@ -1,15 +1,15 @@
 from enum import Enum
-from copy import deepcopy
-from accuracy import quantize, round_half_up, as_end_time
+from copy import copy, deepcopy
+from accuracy import quantize, as_end_time, as_start_time
 from pddl_parser import unknown_value_getter
-from action import Action, Plan, Observe, Move, Clean, ExtraClean, Stalled
+from action import Plan, Observe, Move, Clean, ExtraClean, Stalled
 from action_state import ActionState, ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
 from requests import Request
 
 from collections import namedtuple, Iterable
-from priority_queue import PriorityQueue
+from priority_queue import MultiActionStateQueue
 from itertools import chain
 from decimal import Decimal
 from logging import getLogger
@@ -20,11 +20,6 @@ log = StyleAdapter(getLogger(__name__))
 class ActionResult(namedtuple("ActionResult", "action time result")):
     def __str__(self):
         return "ActionResult(action={arg.action!s}, time={arg.time!s}, result={arg.result!s})".format(arg=self)
-
-    @staticmethod
-    def from_action_state(action_state, model):
-        assert action_state.state is ExecutionState.finished
-        return ActionResult(action_state.action, round_half_up(action_state.time), action_state.action.apply(model))
 
 
 class ExecutionProblem(Enum):
@@ -41,7 +36,7 @@ class Simulator:
         self.executor = executor
         self.planner = planner
         self.plan_logger = plan_logger if plan_logger else DummyLogger()
-        self.action_queue = action_queue if action_queue else PriorityQueue()
+        self.action_queue = action_queue if action_queue else MultiActionStateQueue()
         self.executed = []
         self.stalled = set()
         self.time = time
@@ -53,7 +48,7 @@ class Simulator:
         executor = executor if executor else self.executor.copy()
         planner = planner if planner else self.planner
         plan_logger = plan_logger if plan_logger else DummyLogger()
-        action_queue = action_queue if action_queue else deepcopy(self.action_queue)
+        action_queue = action_queue if action_queue else copy(self.action_queue)
         time = time if time else self.time
         return Simulator(model=model, executor=executor, planner=planner, plan_logger=plan_logger,
             action_queue=action_queue, time=time)
@@ -66,83 +61,104 @@ class Simulator:
             return
 
         if self.action_queue.empty() and not self.process_request(
-                self.executor.next_action(self.time, deadline)):
+                self.executor.next_actions(self.time, deadline)):
             log.info("Simulator({}).run() finished as no-op", self.id)
             return
 
         while not self.action_queue.empty() and not self.is_goal_in_model():
             # get next action from queue
-            action_state = self.action_queue.get()
+            action_states = self.action_queue.get()
+            first_action_state = action_states[0]
 
             # current action time after deadline, ask executor if it wants to finish any actions early
-            if action_state.time > deadline:
-                self.action_queue.put(action_state)
+            if first_action_state.time > deadline:
+                self.action_queue.put(action_states)
                 action_request = self.executor.process_result(
-                    ActionResult(action_state.action, deadline, ExecutionProblem.ReachedDeadline))
+                    ActionResult([a.action for a in action_states], deadline, ExecutionProblem.ReachedDeadline))
                 if self.process_request(action_request):
                     continue
                 else:
                     break
 
             # ask executor if it has an action to start before or at this time
-            action_request = self.executor.next_action(self.time, min(action_state.time, deadline))
+            action_request = self.executor.next_actions(self.time, min(first_action_state.time, deadline))
             if self.process_request(action_request):
-                self.action_queue.put(action_state)
+                self.action_queue.put(action_states)
                 continue
 
             # if no request then process action
-            self.time = action_state.time
+            self.time = first_action_state.time
 
-            self.process_action_state(action_state)
+            self.process_action_states(action_states)
 
             # ask executor last chance for next action if queue empty
             if self.action_queue.empty():
-                action_request = self.executor.next_action(self.time, deadline)
+                action_request = self.executor.next_actions(self.time, deadline)
                 self.process_request(action_request)
 
         log.info("Simulator({}).run() finished", self.id)
         return self.is_goal_in_model()
 
-    def process_action_state(self, action_state):
-        log.debug("Simulator({}).process_action_state() action_state={}", self.id, action_state)
-        self.time = action_state.time
-        if type(action_state.action) is Plan and action_state.state == ExecutionState.pre_start:
-            plan, time_taken = self.get_plan()
-            action_state = ActionState(action_state.action.copy_with(duration=time_taken, plan=plan))
-            action_state.start()
-            self.action_queue.put(action_state)
-            self.plan_logger.log_plan(plan)
-        elif not action_state.action.is_applicable(self.model):
-            log.debug("{} has stalled attempting: {}", action_state.action.agents(), action_state.action)
-            self.stalled.update((a, action_state.time) for a in action_state.action.agents())
-            action_result = ActionResult(action_state.action, action_state.time, ExecutionProblem.AgentStalled)
-            request = self.executor.process_result(action_result)
-            self.process_request(request)
-        elif action_state.state == ExecutionState.pre_start:
-            action_state.start()
-            self.action_queue.put(action_state)
-        elif action_state.state == ExecutionState.executing:
-            action_state.finish()
-            self.executed.append(action_state.action)
-            action_result = ActionResult.from_action_state(action_state, self.model)
-            # tell executor about result
-            request = self.executor.process_result(action_result)
-            self.process_request(request)
+    def process_action_states(self, action_states):
+        first = action_states[0]
+        log.debug("Simulator({}).process_action_state() time={a.time}, state={a.state!s}, action_state={a_s}", self.id,
+            a=first, a_s=action_states)
+
+        self.time = first.time
+        if first.state == ExecutionState.pre_start:
+            self.start_actions(action_states)
+        elif first.state == ExecutionState.executing:
+            self.finish_actions(action_states)
         else:
-            raise ExecutionError("action_state is invalid {} for time {} with action {}"
-                .format(action_state.state, action_state.time, action_state.action))
+            raise ExecutionError("first action_state is invalid {} for time {} with action {}"
+                .format(first.state, first.time, first.action))
+
+    def start_actions(self, action_states):
+        results = []
+        plan_action_state = None
+        for action_state in action_states:
+            if type(action_state.action) is Plan:
+                plan_action_state = action_state
+            elif not action_state.action.is_applicable(self.model):
+                log.debug("{} has stalled attempting: {}", action_state.action.agents(), action_state.action)
+                self.stalled.update((a, action_state.time) for a in action_state.action.agents())
+                results.append(ActionResult(action_state.action, action_state.time, ExecutionProblem.AgentStalled))
+            else:
+                self.action_queue.put(action_state.start())
+
+        if plan_action_state:
+            plan, time_taken = self.get_plan()
+            self.action_queue.put(
+                ActionState(plan_action_state.action.copy_with(duration=time_taken, plan=plan)).start())
+            self.plan_logger.log_plan(plan)
+
+        request = self.executor.process_results(results)
+        self.process_request(request)
+
+    def finish_actions(self, action_states):
+        results = []
+        for action_state in action_states:
+            if not action_state.action.is_applicable(self.model):
+                log.debug("{} has stalled attempting: {}", action_state.action.agents(), action_state.action)
+                self.stalled.update((a, action_state.time) for a in action_state.action.agents())
+                results.append(ActionResult(action_state.action, action_state.time, ExecutionProblem.AgentStalled))
+            else:
+                action_state = action_state.finish()
+                result = action_state.action.apply(self.model)
+                self.executed.append(action_state.action)
+                results.append(ActionResult(action_state.action, as_start_time(action_state.time), result))
+
+        request = self.executor.process_results(results)
+        self.process_request(request)
 
     def process_request(self, request):
         log.debug("Simulator({}).process_request(), request={}", self.id, request)
         if request is None:
             return False
-        elif isinstance(request, Action):
-            self.action_queue.put(ActionState(request))
-            return True
         elif isinstance(request, Request):
-            adjusted_actions = request.adjust(self.action_queue)
-            self.executor.update_executing_actions(adjusted_actions)
-            return adjusted_actions
+            adjustment = request.adjust(self.action_queue)
+            self.executor.update_executing_actions(adjustment)
+            return adjustment
         else:
             raise NotImplementedError("Unknown request type: {}".format(request))
 
@@ -198,8 +214,12 @@ class Simulator:
         time_planning = sum(a.duration for a in self.executed if type(a) is Plan)
         time_waiting_for_actions_to_finish = self.get_time_waiting_for_actions_to_finish()
         time_waiting_for_planner_to_finish = self.get_time_waiting_for_planner_to_finish()
-        stalled_actions = [Stalled(time, min(p.end_time for p in plan_actions if p.end_time > time) - time, agent)
+        try:
+            stalled_actions = [Stalled(time, min(p.end_time for p in plan_actions if p.end_time > time) - time, agent)
                            for agent, time in self.stalled]
+        except ValueError as e:
+            log.warning("stalled action collation failed with: {}", e)
+            stalled_actions = []
         log.info("Goal achieved: {}", goal_achieved)
         log.info("Planner called: {}", planner_called)
         log.info("Total time taken: {}", self.time)

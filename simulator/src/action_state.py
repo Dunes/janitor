@@ -6,6 +6,7 @@ from accuracy import increment
 from planning_exceptions import ExecutionError
 
 from logger import StyleAdapter
+from copy import copy
 
 log = StyleAdapter(logging.getLogger(__name__))
 
@@ -49,25 +50,27 @@ class ActionState(object):
     def start(self):
         if self.state != ExecutionState.pre_start:
             raise ExecutionError("invalid state")
-        object.__setattr__(self, "state", ExecutionState.executing)
-        object.__setattr__(self, "time", self.action.end_time - increment)
+        new = copy(self)
+        object.__setattr__(new, "state", ExecutionState.executing)
+        object.__setattr__(new, "time", new.action.end_time - increment)
+        return new
 
     def finish(self):
         log.info("finishing: {}", self.action)
         if self.state != ExecutionState.executing:
             raise ExecutionError("invalid state")
-        object.__setattr__(self, "state", ExecutionState.finished)
+        new = copy(self)
+        object.__setattr__(new, "state", ExecutionState.finished)
+        return new
 
-    def __iter__(self):
-        yield self.time
-        yield self.state
-        yield self.action
+    def as_tuple(self):
+        return self.time, self.state
 
     def __lt__(self, other):
-        return tuple(self) < tuple(other)
+        return self.as_tuple() < other.as_tuple()
 
     def __eq__(self, other):
-        return tuple(self) == tuple(other)
+        return self.as_tuple() == other.as_tuple()
 
     def __setattr__(self, key, value):
         raise TypeError("ActionStates should not be directly manipulated")

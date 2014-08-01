@@ -1,8 +1,11 @@
 from heapq import heapify
+from itertools import chain
 from logging import getLogger
+from action import Plan
 from action_state import ExecutionState, ActionState
 from logger import StyleAdapter
 from collections import namedtuple
+from priority_queue import MultiActionStateQueue
 
 log = StyleAdapter(getLogger(__name__))
 
@@ -15,6 +18,38 @@ class Request:
 
     def adjust(self, action_queue):
         raise NotImplementedError()
+
+    def __add__(self, other):
+        if other:
+            return MultiRequest(chain(self._as_iter(self), self._as_iter(other)))
+        else:
+            return self
+
+    @staticmethod
+    def _as_iter(request):
+        try:
+            return iter(request)
+        except TypeError:
+            return request,
+
+
+class ActionRequest(Request):
+
+    def __init__(self, actions):
+        self.actions = actions
+
+    def adjust(self, action_queue):
+        action_queue.put(ActionState(action) for action in self.actions)
+        return True
+
+
+class MultiRequest(Request, tuple):
+
+    def adjust(self, action_queue):
+        result = None
+        for sub_request in self:
+            result = sub_request.adjust(action_queue) or result
+        return result
 
 
 class RemoveActionsWithStateRequest(Request):
@@ -43,13 +78,13 @@ class AdjustToPartialRequest(Request):
     def __init__(self, deadline):
         self.deadline = deadline
 
-    def adjust(self, action_queue):
+    def adjust(self, action_queue: MultiActionStateQueue):
         log.debug("AdjustmentRequest.adjust() with queue {}", action_queue.queue)
         queue = []
         adjusted_actions = []
-        for action_state in action_queue.queue:
+        for action_state in action_queue.values():
             action = action_state.action
-            if action.end_time <= self.deadline:
+            if action.end_time <= self.deadline or type(action) is Plan:
                 queue.append(action_state)
                 continue
 
@@ -68,7 +103,8 @@ class AdjustToPartialRequest(Request):
                     action_state = ActionState(action)
                 queue.append(action_state)
         heapify(queue)
-        action_queue.queue = queue
+        action_queue.clear()
+        action_queue.put(queue)
         return adjusted_actions
 
 
