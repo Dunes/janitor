@@ -8,6 +8,8 @@ precision = Decimal("0")
 
 increment = Decimal("0.5")
 
+INSTANTANEOUS_ACTION_DURATION = increment
+
 
 def quantize(value) -> Decimal:
     return Decimal(value).quantize(precision, rounding=ROUND_DOWN)

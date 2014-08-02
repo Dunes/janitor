@@ -1,11 +1,11 @@
 from decimal import Decimal
 from functools import total_ordering, partial as partial_func
-from accuracy import to_prev_start_time, as_end_time, increment
+from accuracy import as_end_time, INSTANTANEOUS_ACTION_DURATION
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError
-import logging
+from logging import getLogger
 
-log = StyleAdapter(logging.getLogger(__name__))
+log = StyleAdapter(getLogger(__name__))
 
 
 @total_ordering
@@ -36,6 +36,12 @@ class Action(object):
     @property
     def end_time(self):
         return self.start_time + self.duration
+
+    def is_applicable(self, model):
+        raise NotImplementedError()
+
+    def apply(self, model):
+        raise NotImplementedError()
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError("{} cannot be partially applied".format(self))
@@ -90,8 +96,7 @@ class Plan(Action):
         object.__setattr__(self, "agent", agent if agent else Plan.agent)
         object.__setattr__(self, "plan", plan)
 
-    @staticmethod
-    def is_applicable(model):
+    def is_applicable(self, model):
         return True
 
     def apply(self, model):
@@ -133,9 +138,9 @@ class Move(Action):
         # create temp node
         continued_partial_move = self.start_node.startswith("temp")
         if continued_partial_move:
-            action = self.modify_temp_node(model, deadline)
+            self.modify_temp_node(model, deadline)
         else:
-            action = self.create_temp_node(model, deadline)
+            self.create_temp_node(model, deadline)
         return False
 
     def modify_temp_node(self, model, deadline):
@@ -147,6 +152,9 @@ class Move(Action):
             distance_moved = deadline - self.start_time
         elif back_edge[1] == self.end_node:
             distance_moved = self.start_time - deadline
+        else:
+            raise ExecutionError("Neither temp node edge links to end_node: edges: {}, action: {}"
+                .format([back_edge, forward_edge], self))
 
         back_edge[2] += distance_moved
         forward_edge[2] -= distance_moved
@@ -188,14 +196,12 @@ class Move(Action):
 
 class Observe(Action):
 
-    DURATION = increment
-
     _ordinal = 2
 
     _format_attrs = ("start_time", "agent", "node")
 
     def __init__(self, observation_time, agent, node):
-        super(Observe, self).__init__(as_end_time(observation_time), Observe.DURATION)
+        super(Observe, self).__init__(as_end_time(observation_time), INSTANTANEOUS_ACTION_DURATION)
         object.__setattr__(self, "agent", agent)
         object.__setattr__(self, "node", node)
 
