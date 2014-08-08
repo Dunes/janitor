@@ -1,9 +1,11 @@
 * run many experiments
 * working with first  greedy plan tends to be better than spending an extended time planning (eg 30s).
 * make javascript libraries available offline (google and jquery)
-* make actions use __eq__ and remove matchers
-* make unit machine self-maintained ubuntu
 * get uni machine running continuous integration server -- running experiments from lastest git push
+* Test move finishing at end of plan has its corresponding observe action applied
+* refine logging output
+* write tests for executor and new simulator
+* remove simulator and refactor new_simulator as simulator
 
 done
 ----
@@ -21,3 +23,5 @@ done
 * remove debug from action -- make permanent
 * refactor simulator and run_simulation into a class and additional methods
 * try to split simulator and executor
+* make unit machine self-maintained ubuntu
+* make actions use __eq__ and remove matchers

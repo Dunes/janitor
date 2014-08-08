@@ -13,7 +13,7 @@ from decimal import Decimal
 from action import Move, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import ExecutionError
 from action_state import ActionState, ExecutionState
-from pddl_parser import _unknown_value_getter
+from pddl_parser import unknown_value_getter
 
 
 log = StyleAdapter(logging.getLogger(__name__))
@@ -313,7 +313,7 @@ class Simulator:
         for node in model["nodes"].values():
             if "known" in node:
                 node["known"].update({
-                    key: _unknown_value_getter(value, key, assumed_values)
+                    key: unknown_value_getter(value, key, assumed_values)
                     for key, value in node["unknown"].items()
                 })
                 node["unknown"].clear()

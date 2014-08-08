@@ -23,7 +23,8 @@ import logger
 def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
     p.add_argument("problem_file")
-    p.add_argument("--planning-time", "-t", type=decimal.Decimal, default="nan")
+    p.add_argument("--planning-time", "-t", type=decimal.Decimal, default="nan",
+        help="The amount of time to spend planning")
     p.add_argument("--log-directory", "-l", default="logs")
     return p
 

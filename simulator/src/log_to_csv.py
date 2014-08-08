@@ -40,10 +40,16 @@ def deciexpr(expr):
     return number_pattern.sub(r"Decimal('\1')", expr)
 
 
-def run(out_file, input_dir):
-    raw_data = sorted((
-        get_data(join(input_dir, name)) for name in (x for x in listdir(input_dir) if x.endswith(".log"))
-    ), key=data_key)
+def run(out_file, input_dirs):
+    assert input_dirs
+    files = []
+    for input_dir in input_dirs:
+        for filename in listdir(input_dir):
+            if filename.endswith(".log"):
+                files.append(join(input_dir, filename))
+    assert files
+
+    raw_data = sorted((get_data(filename) for filename in files), key=data_key)
 
     aggregated_data = (
         indy_vars + aggregate_data(group) for (_key, indy_vars), group in
@@ -111,7 +117,7 @@ def get_data(name):
 def parser():
     p = argparse.ArgumentParser(description="Converts planning log files to csv format")
     p.add_argument("--output", "-o", required=True)
-    p.add_argument("--input-dir", "-i", required=True)
+    p.add_argument("--input-dir", "-i", required=True, nargs="+")
     p.add_argument("--output-dir", "-d", default="/home/jack/Dropbox/work/results")
     return p
 

@@ -152,10 +152,12 @@ class MultiActionQueue(MultiQueue):
     def __init__(self, sequence=()):
         super().__init__(sequence, queue_type=Queue, key=attrgetter("start_time"))
 
-    def get_before(self, time):
-        def before(action):
-            return action.start_time <= time
-        return self.get(key=before)
+    def get_ends_before(self, time):
+        actions = [a for a in self.queue.queue if a.end_time < time]
+        rest = [a for a in self.queue.queue if a.end_time >= time]
+        self.queue.clear()
+        self.queue.extend(rest)
+        return actions
 
     def __copy__(self):
         return MultiActionQueue(self.queue)

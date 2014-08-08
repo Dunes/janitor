@@ -127,9 +127,9 @@ class Simulator:
                 self.action_queue.put(action_state.start())
 
         if plan_action_state:
-            plan, time_taken = self.get_plan()
+            plan, duration = self.get_plan()
             self.action_queue.put(
-                ActionState(plan_action_state.action.copy_with(duration=time_taken, plan=plan)).start())
+                ActionState(plan_action_state.action.copy_with(duration=duration, plan=plan)).start())
             self.plan_logger.log_plan(plan)
 
         request = self.executor.process_results(results)

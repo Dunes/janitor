@@ -35,7 +35,7 @@ class Action(object):
 
     @property
     def end_time(self):
-        return self.start_time + self.duration
+        return as_end_time(self.start_time + self.duration)
 
     def is_applicable(self, model):
         raise NotImplementedError()

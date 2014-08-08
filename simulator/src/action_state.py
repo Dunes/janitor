@@ -2,7 +2,6 @@ import logging
 
 from functools import total_ordering
 from enum import Enum
-from accuracy import increment
 from planning_exceptions import ExecutionError
 
 from logger import StyleAdapter
@@ -52,7 +51,7 @@ class ActionState(object):
             raise ExecutionError("invalid state")
         new = copy(self)
         object.__setattr__(new, "state", ExecutionState.executing)
-        object.__setattr__(new, "time", new.action.end_time - increment)
+        object.__setattr__(new, "time", new.action.end_time)
         return new
 
     def finish(self):

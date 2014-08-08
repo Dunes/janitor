@@ -107,11 +107,11 @@ class Executor:
                     del self.executing[agent]
 
         if type(result.action) is Plan:
+            applicable_actions = self.plan.get_ends_before(as_start_time(self.current_plan_execution_limit))
+            self.plan = MultiActionQueue(applicable_actions + self.adjust_plan(result.result, result.time))
             self.current_plan_execution_limit = Decimal("Infinity")
-            request = self.get_request_for_plan_complete(result.time)
-            self.plan = MultiActionQueue(self.adjust_plan(result.result, result.time))
             self.stalled.clear()
-            return request
+            return self.get_request_for_plan_complete(result.time)
         elif result.result == ExecutionProblem.ReachedDeadline:
             return self.get_request_for_reached_deadline(result.time)
         elif result.result == ExecutionProblem.AgentStalled:
