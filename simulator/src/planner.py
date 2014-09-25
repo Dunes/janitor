@@ -6,7 +6,7 @@ from os.path import join as path_join
 from threading import Timer, Thread
 from time import time
 from math import isnan
-from planning_exceptions import NoPlanException, IncompletePlanException
+from planning_exceptions import NoPlanException, IncompletePlanException, PlannerException
 from accuracy import quantize
 
 
@@ -46,6 +46,9 @@ class Planner(object):
                     break
             timer.cancel()
 
+        if p.returncode is None and not plan:
+            # no plan ever returned by planner, but did not run for allotted time -- likely bug with problem/domain file
+            raise PlannerException()
         if not plan:
             raise NoPlanException()
         return plan

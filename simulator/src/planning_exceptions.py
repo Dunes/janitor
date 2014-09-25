@@ -12,3 +12,7 @@ class IncompletePlanException(Exception):
 
 class StateException(Exception):
     pass
+
+
+class PlannerException(Exception):
+    pass
