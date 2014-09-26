@@ -2,7 +2,7 @@ from enum import Enum
 from copy import copy, deepcopy
 from accuracy import quantize, as_end_time, as_start_time
 from pddl_parser import unknown_value_getter
-from action import Plan, Observe, Move, Clean, ExtraClean, Stalled
+from action import Plan, Observe, Move, Clean, ExtraClean, Stalled, GetExecutionHeuristic
 from action_state import ActionState, ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
@@ -18,6 +18,7 @@ log = StyleAdapter(getLogger(__name__))
 
 
 class ActionResult(namedtuple("ActionResult", "action time result")):
+
     def __str__(self):
         return "ActionResult(action={arg.action!s}, time={arg.time!s}, result={arg.result!s})".format(arg=self)
 
@@ -116,9 +117,12 @@ class Simulator:
     def start_actions(self, action_states):
         results = []
         plan_action_state = None
+        heuristic_action_state = None
         for action_state in action_states:
             if type(action_state.action) is Plan:
                 plan_action_state = action_state
+            elif type(action_state.action) is GetExecutionHeuristic:
+                heuristic_action_state = action_state
             elif not action_state.action.is_applicable(self.model):
                 log.debug("{} has stalled attempting: {}", action_state.action.agents(), action_state.action)
                 self.stalled.update((a, action_state.time) for a in action_state.action.agents())
@@ -126,8 +130,13 @@ class Simulator:
             else:
                 self.action_queue.put(action_state.start())
 
+        if heuristic_action_state:
+            duration = heuristic_action_state.action.duration
+            plan = self.planner.get_plan(self.model, duration)
+            self.action_queue.put(
+                ActionState(heuristic_action_state.action.copy_with(plan=plan)).start())
         if plan_action_state:
-            plan, duration = self.get_plan()
+            plan, duration = self.get_plan(duration=plan_action_state.action.duration)
             self.action_queue.put(
                 ActionState(plan_action_state.action.copy_with(duration=duration, plan=plan)).start())
             self.plan_logger.log_plan(plan)
@@ -162,13 +171,13 @@ class Simulator:
         else:
             raise NotImplementedError("Unknown request type: {}".format(request))
 
-    def get_plan(self):
+    def get_plan(self, duration=None):
         log.debug("Simulator({}).get_plan()", self.id)
         deadline = self.executor.current_plan_execution_limit
         simulator = self.copy_with(model=self.convert_to_hypothesis_model(self.model))
         simulator.run(deadline=deadline)
         predicted_model = simulator.model
-        return self.planner.get_plan_and_time_taken(predicted_model)
+        return self.planner.get_plan_and_time_taken(predicted_model, duration=duration)
 
     def convert_to_hypothesis_model(self, model):
         log.debug("Simulator({}).convert_to_hypothesis_model()", self.id)

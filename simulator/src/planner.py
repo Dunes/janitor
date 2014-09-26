@@ -3,11 +3,31 @@ from subprocess import Popen, PIPE
 from pddl_parser import decode_plan_from_optic, encode_problem_to_file
 import tempfile
 from os.path import join as path_join
-from threading import Timer, Thread
+from threading import Timer, Thread, RLock
 from time import time
 from math import isnan
 from planning_exceptions import NoPlanException, IncompletePlanException, PlannerException
 from accuracy import quantize
+from logging import getLogger
+from logger import StyleAdapter
+
+
+log = StyleAdapter(getLogger(__name__))
+
+
+def synchronized(func):
+    lock = RLock()
+
+    def f(*args, **kwargs):
+        try:
+            if not lock.acquire(blocking=False):
+                log.warning("Trying to run planner when another instance of planner is running")
+                lock.acquire()
+            return func(*args, **kwargs)
+        finally:
+            lock.release()
+    f.__name__ = func.__name__
+    return f
 
 
 class Planner(object):
@@ -22,11 +42,16 @@ class Planner(object):
 
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
-    def get_plan(self, model):
+    @synchronized
+    def get_plan(self, model, duration=None):
         # problem_file = self.create_problem_file(model)
         problem_file = "/dev/stdin"
+        if duration is None:
+            duration = self.planning_time
+        elif duration == 0:
+            duration = "till_first_plan"
 
-        if self.planning_time == "till_first_plan":
+        if duration == "till_first_plan":
             args = self.planner_location, "-N", self.domain_file, problem_file
             p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
             Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
@@ -35,7 +60,7 @@ class Planner(object):
             args = self.planner_location, self.domain_file, problem_file
             p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
             Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
-            timer = Timer(float(self.planning_time), p.terminate)
+            timer = Timer(float(duration), p.terminate)
             timer.start()
 
             plan = None
@@ -53,9 +78,9 @@ class Planner(object):
             raise NoPlanException()
         return plan
 
-    def get_plan_and_time_taken(self, model):
+    def get_plan_and_time_taken(self, model, duration=None):
         start = time()
-        plan = self.get_plan(model)
+        plan = self.get_plan(model, duration)
         end = time()
         return plan, quantize(end - start)
 

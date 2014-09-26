@@ -325,3 +325,19 @@ class ExtraClean(Action):
 
     def agents(self) -> set:
         return {self.agent0, self.agent1}
+
+
+class GetExecutionHeuristic(Action):
+
+    _format_attrs = ("start_time", "duration", "agent")
+
+    def __init__(self, start_time, duration=Decimal(0), agent=None, plan=None):
+        super(GetExecutionHeuristic, self).__init__(start_time, duration=duration)
+        object.__setattr__(self, "agent", agent if agent else Plan.agent)
+        object.__setattr__(self, "plan", plan)
+
+    def is_applicable(self, model):
+        return True
+
+    def apply(self, model):
+        return self.plan

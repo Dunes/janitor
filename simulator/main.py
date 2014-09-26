@@ -12,7 +12,7 @@ import logging.config
 logging.config.fileConfig("logging.conf")
 
 from executor import PartialExecutionOnObservationExecutor, PartialExecutionOnObservationAndStatePredictionExecutor, \
-    FinishActionsAndUseStatePredictionExecutor, FinishActionsExecutor
+    FinishActionsAndUseStatePredictionExecutor, FinishActionsExecutor, GreedyPlanHeuristicExecutor
 from planner import Planner
 from new_simulator import Simulator
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     log.info("log: {}", log_file_name)
 
     model = problem_parser.decode(args.problem_file)
-    executor = PartialExecutionOnObservationExecutor(args.planning_time)
+    executor = GreedyPlanHeuristicExecutor(args.planning_time)
     planner = Planner(args.planning_time)
 
     with logger.Logger(log_file_name, args.log_directory) as logger:

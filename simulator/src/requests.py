@@ -6,6 +6,7 @@ from action_state import ExecutionState, ActionState
 from logger import StyleAdapter
 from collections import namedtuple
 from priority_queue import MultiActionStateQueue
+from accuracy import as_start_time
 
 log = StyleAdapter(getLogger(__name__))
 
@@ -89,7 +90,7 @@ class AdjustToPartialRequest(Request):
                 continue
 
             old_action = action
-            action = action_state.action.as_partial(duration=self.deadline - action.start_time)
+            action = action_state.action.as_partial(duration=as_start_time(self.deadline - action.start_time))
 
             if action and not action.duration > 0:
                 assert action.duration > 0

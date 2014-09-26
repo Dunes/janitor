@@ -3,8 +3,8 @@ from logging import getLogger
 from enum import Enum
 from operator import attrgetter
 from decimal import Decimal
-from accuracy import quantize, as_end_time, as_start_time
-from action import Plan, Observe, Move
+from accuracy import quantize, as_end_time, as_start_time, INSTANTANEOUS_ACTION_DURATION
+from action import Plan, Observe, Move, GetExecutionHeuristic, Clean
 from action_state import ExecutionState
 from copy import copy
 from logger import StyleAdapter
@@ -73,14 +73,14 @@ class Executor:
     def is_action_available(self, action, time):
         if time < action.start_time:
             return NoAction.TooEarly
-        elif action.end_time > self.current_plan_execution_limit:
-            return NoAction.ExecutionLimitReached
+        # elif action.end_time > self.current_plan_execution_limit:
+        #     return NoAction.ExecutionLimitReached
         elif action.agents() & self.stalled:
             return NoAction.Stalled
         return True
 
     def next_unstalled_actions(self, time: Decimal):
-        if time.is_finite() and time >= self.current_plan_execution_limit:
+        if time.is_finite() and time > self.current_plan_execution_limit:
             return NoAction.ExecutionLimitReached
         elif self.plan.empty():
             return NoAction.PlanEmpty
@@ -101,9 +101,9 @@ class Executor:
         return MultiRequest(requests) if requests else None
 
     def process_result(self, result):
-        if type(result.action) is not Observe:
+        if type(result.action) not in (Observe, list):
             for agent in result.action.agents():
-                if self.executing[agent] == result.action or type(result.action) is Plan:
+                if self.match_action(self.executing[agent], result.action):
                     del self.executing[agent]
 
         if type(result.action) is Plan:
@@ -112,6 +112,11 @@ class Executor:
             self.current_plan_execution_limit = Decimal("Infinity")
             self.stalled.clear()
             return self.get_request_for_plan_complete(result.time)
+        elif type(result.action) is GetExecutionHeuristic:
+            applicable_actions = self.plan.get_ends_before(as_start_time(self.current_plan_execution_limit))
+            self.plan = MultiActionQueue(applicable_actions + self.adjust_plan(result.result, result.time))
+            self.stalled.clear()
+            return self.next_actions(result.time, self.current_plan_execution_limit)
         elif result.result == ExecutionProblem.ReachedDeadline:
             return self.get_request_for_reached_deadline(result.time)
         elif result.result == ExecutionProblem.AgentStalled:
@@ -126,6 +131,16 @@ class Executor:
             return None
         else:
             raise ExecutionError("Unknown value for result {}".format(result))
+
+    @staticmethod
+    def match_action(action0, action1):
+        if action0 == action1 or (type(action0) is Plan and type(action1) is Plan):
+            return True
+        elif type(action0) == type(action1) and action0.start_time == action1.start_time \
+                        and action0.agents() == action1.agents():
+            log.warning("Matching two actions with different end times {} and {}".format(action0, action1))
+            return True
+        return False
 
     def get_plan_request(self, time: Decimal) -> Plan:
         if self.plan_valid or Plan.agent in self.executing:
@@ -257,3 +272,25 @@ class FinishActionsExecutor(Executor):
 
     def get_state_prediction_end_time(self, plan):
         return as_end_time(plan.start_time)
+
+
+class GreedyPlanHeuristicExecutor(Executor):
+
+    def get_plan_action(self, time: Decimal) -> Plan:
+        return Plan(as_start_time(time), self.planning_duration)
+
+    def get_request_for_plan_complete(self, time):
+        return AdjustToPartialRequest(time)
+
+    def get_request_for_reached_deadline(self, time):
+        return AdjustToPartialRequest(time)
+
+    def get_state_prediction_end_time(self, plan):
+        return plan.end_time
+
+    def get_additional_plan_requests(self, time):
+        self.plan = MultiActionQueue()
+        return MultiRequest((
+            AdjustToPartialRequest(time),
+            ActionRequest((GetExecutionHeuristic(as_start_time(time)),))
+        ))
