@@ -135,11 +135,13 @@ class Simulator:
             plan = self.planner.get_plan(self.model, duration)
             self.action_queue.put(
                 ActionState(heuristic_action_state.action.copy_with(plan=plan)).start())
+            del plan, duration
         if plan_action_state:
             plan, duration = self.get_plan(duration=plan_action_state.action.duration)
             self.action_queue.put(
                 ActionState(plan_action_state.action.copy_with(duration=duration, plan=plan)).start())
             self.plan_logger.log_plan(plan)
+            del plan, duration
 
         request = self.executor.process_results(results)
         self.process_request(request)

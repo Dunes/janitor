@@ -46,37 +46,41 @@ class Planner(object):
     def get_plan(self, model, duration=None):
         # problem_file = self.create_problem_file(model)
         problem_file = "/dev/stdin"
+        report = True
+        args = self.planner_location, self.domain_file, problem_file
+        single_pass = False
         if duration is None:
             duration = self.planning_time
         elif duration == 0:
-            duration = "till_first_plan"
-
-        if duration == "till_first_plan":
+            duration = 2.
             args = self.planner_location, "-N", self.domain_file, problem_file
-            p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-            Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
-            plan = list(decode_plan_from_optic(self.decode(p.stdout), report_incomplete_plan=False))
-        else:
-            args = self.planner_location, self.domain_file, problem_file
-            p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-            Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
-            timer = Timer(float(duration), p.terminate)
-            timer.start()
+            report = False
+            single_pass = True
 
-            plan = None
-            while True:
-                try:
-                    plan = list(decode_plan_from_optic(self.decode(p.stdout), report_incomplete_plan=True))
-                except IncompletePlanException:
-                    break
-            timer.cancel()
+        p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
+        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
+        timer = Timer(float(duration), p.terminate)
+        timer.start()
 
-        if p.returncode is None and not plan:
-            # no plan ever returned by planner, but did not run for allotted time -- likely bug with problem/domain file
-            raise PlannerException()
-        if not plan:
+        plan = None
+        # run loop only once when duration is 0
+        while True:
+            try:
+                plan = list(decode_plan_from_optic(self.decode(p.stdout), report_incomplete_plan=report))
+            except IncompletePlanException:
+                break
+            if single_pass:
+                break
+        timer.cancel()
+        p.wait(1)
+
+        if plan is not None:
+            return plan
+        if report:
             raise NoPlanException()
-        return plan
+        if single_pass:
+            return []
+        raise RuntimeError("Illegal state")
 
     def get_plan_and_time_taken(self, model, duration=None):
         start = time()
