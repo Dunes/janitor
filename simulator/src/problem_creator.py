@@ -238,6 +238,7 @@ def create_problem_irreversible(output, size, dirtiness, assume_clean, empty_roo
             "dirtiness": ("max" if assume_dirty else 0),
             "extra-dirty": False,
             "occupied": False,
+            "unoccupied": True
          }
     }
 
@@ -365,6 +366,12 @@ def create_room_irreversible(dirtiness, extra_dirty=False, occupied=False):
             },
             "completed": {
                 "actual": occupied or dirtiness.actual == 0
+            },
+            "occupied": {
+                "actual": occupied
+            },
+            "unoccupied": {
+                "actual": not occupied
             }
         }
     }
