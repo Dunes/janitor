@@ -101,7 +101,7 @@ def get_data(name):
             data[label] = value
         elif label == "size":
             data[label] = value
-            data["total_nodes"] = reduce(mul, eval(value))  # TODO: replace with product
+            data["total_nodes"] = reduce(mul, eval(value))
         elif label == "dirt":
             dirt_type, dirt_min, dirt_max = value.split(",")
             data["dirt_type"] = dirt_type
