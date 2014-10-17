@@ -245,7 +245,7 @@ def create_problem_irreversible(output, size, dirtiness, assume_clean, empty_roo
     problem["graph"], grid = create_graph_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms,
         edge_length)
     problem["agents"] = create_agents(agents, grid[agent_start.x][agent_start.y])
-    problem["goal"] = create_goal_irreversible(size, empty_rooms, extra_dirty_rooms)
+    problem["goal"] = create_goal_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms)
     problem["metric"] = create_metric()
 
     # start problem such that agents have observed starting location
@@ -260,7 +260,7 @@ def create_nodes_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_roo
     num_empty_rooms = len(empty_rooms)
     num_extra_dirty_rooms = len(extra_dirty_rooms)
     num_occupied_rooms = len(occupied_rooms)
-    total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms - num_empty_rooms
+    total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms - num_occupied_rooms
 
     if set(empty_rooms).intersection(extra_dirty_rooms):
         raise ValueError("rooms cannot be both empty rooms and extra dirty: "
@@ -330,11 +330,12 @@ def create_graph_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_roo
     }, grid)
 
 
-def create_goal_irreversible(size, empty_rooms, extra_dirty_rooms):
-    num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms)
+def create_goal_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms):
+    num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms) - len(occupied_rooms)
     room_ids = chain(
         ("rm"+str(i) for i in range(1, num_rooms+1)),
-        ("rm-ed"+str(i) for i in range(1, len(extra_dirty_rooms)+1))
+        ("rm-ed"+str(i) for i in range(1, len(extra_dirty_rooms)+1)),
+        ("rm-occ"+str(i) for i in range(1, len(occupied_rooms)+1))
     )
     return {
         "hard-goals": [
@@ -349,7 +350,6 @@ def create_room_irreversible(dirtiness, extra_dirty=False, occupied=False):
     return {
         "known": {
             "node": True,
-            "is-room": True
         },
         "unknown": {
             "extra-dirty": {
