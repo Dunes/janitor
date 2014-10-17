@@ -1,5 +1,5 @@
 (define (problem janitor-problem)
-	(:domain janitor)
+	(:domain irreversible-action)
 	(:objects agent1 agent2 n1 rm1 rm2 rm-ed1 rm-ed2)
 	(:init 
 		(agent agent1)

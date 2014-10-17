@@ -1,4 +1,4 @@
-(define (domain janitor)
+(define (domain irreversible-action)
 	(:requirements :strips :fluents :durative-actions :conditional-effects :adl :equality)
 
 	(:predicates

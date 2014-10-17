@@ -32,8 +32,8 @@ def synchronized(func):
 
 class Planner(object):
 
-    def __init__(self, planning_time, planner_location="./optic-cplex", domain_file="./janitor/janitor-domain.pddl",
-            working_directory="..", encoding="UTF-8"):
+    def __init__(self, planning_time, planner_location="../optic-cplex", domain_file="../janitor/janitor-domain.pddl",
+            working_directory=".", encoding="UTF-8"):
         self.planning_time = planning_time if not isnan(planning_time) else "till_first_plan"
         self.planner_location = planner_location
         self.domain_file = domain_file

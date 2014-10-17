@@ -66,7 +66,8 @@ def run():
     output = "generated"
     assume_clean = False
     problem_name = "generated"
-    domain = "janitor"
+    # domain = "janitor"
+    domain = "irreversible-action"
 
     problem_dir = "problems/irreversible"
 
