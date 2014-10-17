@@ -2,7 +2,7 @@
 
 import argparse
 from collections import namedtuple
-from json import dump
+from problem_parser import encode
 from copy import deepcopy
 from itertools import chain
 from action import Observe
@@ -73,7 +73,8 @@ def parser():
     return p
 
 
-def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_length, agents, agent_start, problem_name, domain, extra_dirty_rooms):
+def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_length, agents, agent_start, problem_name,
+                   domain, extra_dirty_rooms):
     assume_dirty = not assume_clean
     problem = {
         "problem": problem_name,
@@ -97,8 +98,7 @@ def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_leng
         rm = agent["at"][1]
         Observe(None, agent_name, rm).apply(problem)
 
-    with open(output, "w") as f:
-        dump(problem, f)
+    encode(output, problem)
 
 
 def create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness):
@@ -221,6 +221,150 @@ def create_room(dirtiness, extra_dirty):
             },
             "cleaned": {
                 "actual": dirtiness.actual == 0
+            }
+        }
+    }
+
+
+def create_problem_irreversible(output, size, dirtiness, assume_clean, empty_rooms, edge_length, agents,
+                                        agent_start, problem_name, domain, extra_dirty_rooms, occupied_rooms):
+    assume_dirty = not assume_clean
+    problem = {
+        "problem": problem_name,
+        "domain": domain,
+        "assumed-values": {
+            "dirty": assume_dirty,
+            "completed": assume_clean,
+            "dirtiness": ("max" if assume_dirty else 0),
+            "extra-dirty": False,
+            "occupied": False,
+         }
+    }
+
+    problem["nodes"] = create_nodes_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms, dirtiness)
+    problem["graph"], grid = create_graph_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms,
+        edge_length)
+    problem["agents"] = create_agents(agents, grid[agent_start.x][agent_start.y])
+    problem["goal"] = create_goal_irreversible(size, empty_rooms, extra_dirty_rooms)
+    problem["metric"] = create_metric()
+
+    # start problem such that agents have observed starting location
+    for agent_name, agent in problem["agents"].items():
+        rm = agent["at"][1]
+        Observe(quantize(0), agent_name, rm).apply(problem)
+
+    encode(output, problem)
+
+
+def create_nodes_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms, dirtiness):
+    num_empty_rooms = len(empty_rooms)
+    num_extra_dirty_rooms = len(extra_dirty_rooms)
+    num_occupied_rooms = len(occupied_rooms)
+    total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms - num_empty_rooms
+
+    if set(empty_rooms).intersection(extra_dirty_rooms):
+        raise ValueError("rooms cannot be both empty rooms and extra dirty: "
+                         + str(set(empty_rooms).intersection(extra_dirty_rooms)))
+
+    empty_rms = (
+        ("empty-rm"+str(i), {"node": True})
+            for i in range(1, num_empty_rooms+1)
+    )
+
+    extra_dirty_rms = (
+        ("rm-ed"+str(i), create_room_irreversible(dirtiness, extra_dirty=True))
+            for i in range(1, num_extra_dirty_rooms + 1)
+    )
+
+    occupied_rms = (
+        ("rm-occ"+str(i), create_room_irreversible(dirtiness, occupied=True))
+            for i in range(1, num_occupied_rooms + 1)
+    )
+
+    rooms = (
+        ("rm"+str(i), create_room_irreversible(dirtiness)) for i in range(1, total_normal_rooms + 1)
+    )
+
+    return dict(chain(empty_rms, rooms, extra_dirty_rms, occupied_rms))
+
+
+def create_graph_irreversible(size, empty_rooms, extra_dirty_rooms, occupied_rooms, edge_length):
+    empty_room_num = 1
+    extra_dirty_room_num = 1
+    occupied_room_num = 1
+    room_num = 1
+
+    grid = []
+    for x in range(size.x):
+        column = []
+        for y in range(size.y):
+            if (x, y) in empty_rooms:
+                column.append("empty-rm"+str(empty_room_num))
+                empty_room_num += 1
+            elif (x, y) in extra_dirty_rooms:
+                column.append("rm-ed"+str(extra_dirty_room_num))
+                extra_dirty_room_num += 1
+            elif (x, y) in occupied_rooms:
+                column.append("rm-occ"+str(occupied_room_num))
+                occupied_room_num += 1
+            else:
+                column.append("rm"+str(room_num))
+                room_num += 1
+        grid.append(column)
+
+    edges = []
+    for x, column in enumerate(grid):
+        for y, room in enumerate(column):
+            if x - 1 >= 0:
+                edges.append([room, grid[x-1][y], edge_length])
+            if x + 1 < size.x:
+                edges.append([room, grid[x+1][y], edge_length])
+            if y - 1 >= 0:
+                edges.append([room, grid[x][y-1], edge_length])
+            if y + 1 < size.y:
+                edges.append([room, grid[x][y+1], edge_length])
+
+    return ({
+        "bidirectional": False,
+        "edges": edges
+    }, grid)
+
+
+def create_goal_irreversible(size, empty_rooms, extra_dirty_rooms):
+    num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms)
+    room_ids = chain(
+        ("rm"+str(i) for i in range(1, num_rooms+1)),
+        ("rm-ed"+str(i) for i in range(1, len(extra_dirty_rooms)+1))
+    )
+    return {
+        "hard-goals": [
+            ["completed", rm_id] for rm_id in room_ids
+        ]
+    }
+
+
+def create_room_irreversible(dirtiness, extra_dirty=False, occupied=False):
+    dirty_value = dirtiness.actual if dirtiness.actual != "random" else quantize(rand(dirtiness.min, dirtiness.max))
+    has_dirtiness = 0 < (dirty_value if dirty_value not in ("max", "min") else getattr(dirtiness, dirty_value))
+    return {
+        "known": {
+            "node": True,
+            "is-room": True
+        },
+        "unknown": {
+            "extra-dirty": {
+                "actual": extra_dirty and has_dirtiness
+            },
+            "dirtiness": {
+                "min": dirtiness.min,
+                "max": dirtiness.max,
+                "actual": dirty_value
+            },
+            "dirty": {
+                "actual": not extra_dirty and has_dirtiness
+            },
+            "completed": {
+                "actual": occupied or dirtiness.actual == 0
             }
         }
     }
