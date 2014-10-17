@@ -79,11 +79,12 @@ def run():
 
         agent_start = get_centre(size) if starting_location == "centre" else starting_location
         empty_rooms = (agent_start,)
-        extra_dirty_rooms = generate_random_locations(size, percentage=percentage_extra_dirty, exclude=empty_rooms)
-        occupied_rooms = generate_random_locations(size, sample_size=number_occupied, exclude=empty_rooms)
 
         for i in range(repeats):
             output = join(problem_dir, problem_name + "-id({}).json".format(i))
+
+            extra_dirty_rooms = generate_random_locations(size, percentage=percentage_extra_dirty, exclude=empty_rooms)
+            occupied_rooms = generate_random_locations(size, sample_size=number_occupied, exclude=empty_rooms)
 
             create_problem_irreversible(output, size, dirtiness, assume_clean,
                 empty_rooms, edge_length, agents,
