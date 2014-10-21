@@ -48,8 +48,10 @@ def run():
 
     with logger.Logger(log_file_name, args.log_directory) as result_logger:
         simulator = Simulator(model, executor, planner, result_logger)
-        result = simulator.run()
-        simulator.print_results(result_logger)
+        try:
+            result = simulator.run()
+        finally:
+            simulator.print_results(result_logger)
 
     if not result:
         exit(1)
