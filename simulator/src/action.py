@@ -71,11 +71,12 @@ class Action(object):
         return {self.agent}
 
     def copy_with(self, **kwargs):
+        assert "apply" not in vars(self)
         attributes = self.__dict__.copy()
         attributes.update(kwargs)
         return self.__class__(**attributes)
 
-    def as_partial(self, **kwargs):
+    def as_partial(self, end_time=None, **kwargs):
         if kwargs.get("duration") == 0:
             return None
         obj = self.copy_with(partial=True, **kwargs)
@@ -250,10 +251,12 @@ class Clean(Action):
         object.__setattr__(self, "room", room)
 
     def is_applicable(self, model):
+        known = model["nodes"][self.room]["known"]
         return (
             model["agents"][self.agent]["at"][1] == self.room
-            and model["nodes"][self.room]["known"].get("dirty", False)
-            and not model["nodes"][self.room]["known"].get("extra-dirty", True)
+            and known.get("dirty", False)
+            and not known.get("extra-dirty", True)
+            # and known.get("unoccupied", False)
         )
 
     def apply(self, model):
@@ -261,7 +264,7 @@ class Clean(Action):
         rm_obj = model["nodes"][self.room]["known"]
         del rm_obj["dirtiness"]
         del rm_obj["dirty"]
-        rm_obj["cleaned"] = True
+        rm_obj["completed"] = rm_obj["unoccupied"]
         return False
 
     def partially_apply(self, model, deadline):
@@ -273,6 +276,8 @@ class Clean(Action):
 
         if partial:
             node_state["dirtiness"] -= max_duration
+            if node_state["occupied"]:
+                node_state["completed"] = False
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
@@ -292,11 +297,13 @@ class ExtraClean(Action):
         object.__setattr__(self, "agent1", agent1)
 
     def is_applicable(self, model):
+        known = model["nodes"][self.room]["known"]
         return (
             model["agents"][self.agent0]["at"][1] == self.room
             and model["agents"][self.agent1]["at"][1] == self.room
-            and model["nodes"][self.room]["known"].get("extra-dirty", False)
-            and not model["nodes"][self.room]["known"].get("dirty", True)
+            and known.get("extra-dirty", False)
+            and not known.get("dirty", True)
+            # and known.get("unoccupied", False)
         )
 
     def apply(self, model):
@@ -304,7 +311,7 @@ class ExtraClean(Action):
         rm_obj = model["nodes"][self.room]["known"]
         del rm_obj["extra-dirty"]
         del rm_obj["dirtiness"]
-        rm_obj["cleaned"] = True
+        rm_obj["completed"] = rm_obj["unoccupied"]
         return False
 
     def partially_apply(self, model, deadline):
@@ -316,6 +323,8 @@ class ExtraClean(Action):
 
         if partial:
             node_state["dirtiness"] -= max_duration
+            if node_state["occupied"]:
+                node_state["completed"] = False
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
