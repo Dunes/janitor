@@ -107,14 +107,17 @@ class Executor:
                     del self.executing[agent]
 
         if type(result.action) is Plan:
-            applicable_actions = self.plan.get_ends_before(as_start_time(self.current_plan_execution_limit))
-            self.plan = MultiActionQueue(applicable_actions + self.adjust_plan(result.result, result.time))
+            self.truncate_plan(as_start_time(self.current_plan_execution_limit))
+
+            expected_plan_end = result.action.start_time + self.get_plan_start_time_adjustment(result.action.duration)
+            self.plan.put(self.adjust_plan(result.result, expected_plan_end))
             self.current_plan_execution_limit = Decimal("Infinity")
             self.stalled.clear()
-            return self.get_request_for_plan_complete(result.time)
+            return self.get_request_for_plan_complete(expected_plan_end)
         elif type(result.action) is GetExecutionHeuristic:
             applicable_actions = self.plan.get_ends_before(as_start_time(self.current_plan_execution_limit))
             self.plan = MultiActionQueue(applicable_actions + self.adjust_plan(result.result, result.time))
+            self.truncate_plan(as_start_time(self.current_plan_execution_limit))
             self.stalled.clear()
             return self.next_actions(result.time, self.current_plan_execution_limit)
         elif result.result == ExecutionProblem.ReachedDeadline:
@@ -167,6 +170,14 @@ class Executor:
                 for agent in change.agents:
                     self.executing.pop(agent, None)
 
+    def truncate_plan(self, deadline):
+        sub_plan = [
+            action if action.end_time < deadline else
+            action.as_partial(duration=as_start_time(deadline - action.start_time))
+            for action in self.plan.get_starts_before(deadline)
+        ]
+        self.plan = MultiActionQueue(sub_plan)
+
     def adjust_plan(self, plan, start_time):
         return sorted(self._adjust_plan_helper(plan, start_time), key=attrgetter("start_time", "_ordinal"))
 
@@ -189,6 +200,11 @@ class Executor:
         raise NotImplementedError()
 
     def get_state_prediction_end_time(self, plan):
+        raise NotImplementedError()
+
+    def get_plan_start_time_adjustment(self, actual_planning_duration):
+        # should be "actual_planning_duration" mostly, except if planner is using state prediction
+        # in which case it should be self.planning_duration
         raise NotImplementedError()
 
     def get_additional_plan_requests(self, time):
@@ -294,3 +310,6 @@ class GreedyPlanHeuristicExecutor(Executor):
             AdjustToPartialRequest(time),
             ActionRequest((GetExecutionHeuristic(as_start_time(time)),))
         ))
+
+    def get_plan_start_time_adjustment(self, actual_planning_duration):
+        return self.planning_duration

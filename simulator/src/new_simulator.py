@@ -61,6 +61,8 @@ class Simulator:
             log.info("Simulator({}).run() finished as time ({}) >= deadline ({})", self.id, self.time, deadline)
             return
 
+        self.executor.truncate_plan(deadline)
+
         if self.action_queue.empty() and not self.process_request(
                 self.executor.next_actions(self.time, deadline)):
             log.info("Simulator({}).run() finished as no-op", self.id)
