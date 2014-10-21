@@ -159,6 +159,13 @@ class MultiActionQueue(MultiQueue):
         self.queue.extend(rest)
         return actions
 
+    def get_starts_before(self, time):
+        actions = [a for a in self.queue.queue if a.start_time < time]
+        rest = [a for a in self.queue.queue if a.start_time >= time]
+        self.queue.clear()
+        self.queue.extend(rest)
+        return actions
+
     def __copy__(self):
         return MultiActionQueue(self.queue)
 
