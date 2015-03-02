@@ -19,6 +19,7 @@ from planning_exceptions import ExecutionError
 from simulator import ExecutionResult
 
 
+@unittest.skip("tests are for old simulator code")
 class TestAgents(unittest.TestCase):
 
     def test_with_not_extra_clean(self):
@@ -55,6 +56,7 @@ class TestAgents(unittest.TestCase):
             simulator.agents(action)
 
 
+@unittest.skip("tests are for old simulator code")
 class TestObserveEnvironment(unittest.TestCase):
 
     @patch("simulator.Observe.apply", autospec=True)
@@ -98,6 +100,7 @@ class TestObserveEnvironment(unittest.TestCase):
         assert_that(actual, equal_to(expected))
 
 
+@unittest.skip("tests are for old simulator code")
 class TestAdjustPlan(unittest.TestCase):
 
     def test_adds_start_time_to_actions(self):
@@ -125,6 +128,7 @@ class TestAdjustPlan(unittest.TestCase):
             Observe(start_time + duration, "agent", "end_node")))
 
 
+@unittest.skip("tests are for old simulator code")
 class TestExecutePartialActions(unittest.TestCase):
 
     def test_calls_partially_apply(self):
@@ -153,6 +157,7 @@ class TestExecutePartialActions(unittest.TestCase):
         assert_that(actual, equal_to(expected))
 
 
+@unittest.skip("tests are for old simulator code")
 class TestExecuteActionQueue(unittest.TestCase):
 
     action_template = Move(None, None, None, None, None)
@@ -336,6 +341,7 @@ class TestExecuteActionQueue(unittest.TestCase):
         assert_that(actual.simulation_time, equal_to(start_time))
 
 
+@unittest.skip("tests are for old simulator code")
 class TestRunPlan(unittest.TestCase):
 
     def setUp(self):
@@ -638,6 +644,7 @@ class TestRunPlan(unittest.TestCase):
         assert_that(actual.executed, has_item(Stalled(stalled_time, deadline, name)))
 
 
+@unittest.skip("tests are for old simulator code")
 class TestGetExecutingActions(unittest.TestCase):
 
     def test_gets_executing_actions(self):
@@ -679,6 +686,7 @@ class TestGetExecutingActions(unittest.TestCase):
         assert_that(actual, empty())
 
 
+@unittest.skip("tests are for old simulator code")
 class TestRunSimulation(unittest.TestCase):
     pass
 

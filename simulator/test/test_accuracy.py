@@ -17,10 +17,8 @@ class AccuracyTest(unittest.TestCase):
         self.assertEqual(Decimal("0"), quantize(0.))
 
     def test_quantize_rounds_down(self):
-        self.assertEqual(Decimal("0.123"), quantize(0.1234))
+        self.assertEqual(Decimal("0"), quantize(0.9))
 
-    def test_quantize_rounds_up(self):
-        self.assertEqual(Decimal("0.101"), quantize(0.1005))
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

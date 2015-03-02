@@ -14,7 +14,7 @@ class ModelBuilder(object):
 
     def __init__(self, ordered=False):
         dict_type = OrderedDict if ordered else dict
-        self.model = {"agents": dict_type(), "nodes": dict_type(), "graph": {"edges": []}}
+        self.model = {"agents": dict_type(), "nodes": dict_type(), "graph": {"edges": [], "bidirectional": False}}
 
     def _add_to(self, key, value, key_group):
         key_grp = self.model[key_group]
