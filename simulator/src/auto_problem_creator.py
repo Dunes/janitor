@@ -13,12 +13,10 @@ def generate_problem_name(size, dirtiness, edge_length, agents, starting_locatio
     return format_string.format(**keys)
 
 
-def generate_problem_name_irreversible(size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty,
-                                       number_occupied):
+def generate_problem_name_irreversible(size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty):
     keys = dict(locals())
     format_string = "auto-size({size.x},{size.y})-dirt({dirtiness.actual},{dirtiness.min},{dirtiness.max})-" \
-        "edge({edge_length})-agents({agents})-start({starting_location})-extra_dirt({percentage_extra_dirty:.0%})-" \
-        "occupied({number_occupied})"
+        "edge({edge_length})-agents({agents})-start({starting_location})-extra_dirt({percentage_extra_dirty:.0%})"
     return format_string.format(**keys)
 
 
@@ -61,7 +59,6 @@ def run():
     agents_types = (3, 5, 7,)
     starting_location_types = ("centre",)  # empty_rooms and agent_start
     percentage_extra_dirty_types = (0.2,)
-    number_occupied_types = (2,)
 
     output = "generated"
     assume_clean = False
@@ -72,9 +69,9 @@ def run():
     problem_dir = "problems/irreversible"
 
     for data in product(size_types, dirtiness_types, edge_length_types,
-                agents_types, starting_location_types, percentage_extra_dirty_types, number_occupied_types):
+                agents_types, starting_location_types, percentage_extra_dirty_types):
 
-        size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty, number_occupied = data
+        size, dirtiness, edge_length, agents, starting_location, percentage_extra_dirty = data
 
         problem_name = generate_problem_name_irreversible(*data)
 
@@ -85,11 +82,10 @@ def run():
             output = join(problem_dir, problem_name + "-id({}).json".format(i))
 
             extra_dirty_rooms = generate_random_locations(size, percentage=percentage_extra_dirty, exclude=empty_rooms)
-            occupied_rooms = generate_random_locations(size, sample_size=number_occupied, exclude=empty_rooms)
 
             create_problem_irreversible(output, size, dirtiness, assume_clean,
                 empty_rooms, edge_length, agents,
-                agent_start, problem_name, domain, extra_dirty_rooms, occupied_rooms)
+                agent_start, problem_name, domain, extra_dirty_rooms)
 
 if __name__ == "__main__":
     run()

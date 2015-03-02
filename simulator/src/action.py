@@ -26,7 +26,7 @@ class Action(object):
         raise TypeError("Action objects are immutable")
 
     def __eq__(self, other):
-        return type(self) == type(other) and self.__dict__ == other.__dict__
+        return type(self) is type(other) and self.__dict__ == other.__dict__
 
     def __lt__(self, other):
         if isinstance(other, Action):
@@ -256,7 +256,6 @@ class Clean(Action):
             model["agents"][self.agent]["at"][1] == self.room
             and known.get("dirty", False)
             and not known.get("extra-dirty", True)
-            # and known.get("unoccupied", False)
         )
 
     def apply(self, model):
@@ -264,7 +263,7 @@ class Clean(Action):
         rm_obj = model["nodes"][self.room]["known"]
         del rm_obj["dirtiness"]
         del rm_obj["dirty"]
-        rm_obj["completed"] = rm_obj["unoccupied"]
+        rm_obj["cleaned"] = True
         return False
 
     def partially_apply(self, model, deadline):
@@ -276,8 +275,6 @@ class Clean(Action):
 
         if partial:
             node_state["dirtiness"] -= max_duration
-            if node_state["occupied"]:
-                node_state["completed"] = False
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
@@ -303,7 +300,6 @@ class ExtraClean(Action):
             and model["agents"][self.agent1]["at"][1] == self.room
             and known.get("extra-dirty", False)
             and not known.get("dirty", True)
-            # and known.get("unoccupied", False)
         )
 
     def apply(self, model):
@@ -311,7 +307,7 @@ class ExtraClean(Action):
         rm_obj = model["nodes"][self.room]["known"]
         del rm_obj["extra-dirty"]
         del rm_obj["dirtiness"]
-        rm_obj["completed"] = rm_obj["unoccupied"]
+        rm_obj["cleaned"] = True
         return False
 
     def partially_apply(self, model, deadline):
@@ -323,8 +319,6 @@ class ExtraClean(Action):
 
         if partial:
             node_state["dirtiness"] -= max_duration
-            if node_state["occupied"]:
-                node_state["completed"] = False
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)

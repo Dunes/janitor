@@ -325,7 +325,7 @@ class CleanTest(unittest.TestCase):
         known_values = node_value["known"]
         known_values.__delitem__.assert_called_once("dirty")
         known_values.__delitem__.assert_called_once("dirtiness")
-        known_values.__setitem__.assert_called_once_with("completed", ANY)
+        known_values.__setitem__.assert_called_once_with("cleaned", ANY)
         assert_that(is_not(actual))
 
     @patch("action.Clean.is_applicable", new=Mock(return_value=True))
@@ -397,7 +397,7 @@ class ExtraCleanTest(unittest.TestCase):
         known_values = node_value["known"]
         known_values.__delitem__.assert_called_once("extra-dirty")
         known_values.__delitem__.assert_called_once("dirtiness")
-        known_values.__setitem__.assert_called_once_with("completed", ANY)
+        known_values.__setitem__.assert_called_once_with("cleaned", ANY)
         assert_that(is_not(actual))
 
     @patch("action.ExtraClean.is_applicable", new=Mock(return_value=True))
