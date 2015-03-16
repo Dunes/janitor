@@ -20,7 +20,6 @@ class ActualMinMax(namedtuple("ActualMinMax", "actual min max")):
 
 
 class TupleAction(argparse.Action):
-
     def __init__(self, maintype, subtype, **kwargs):
         super(TupleAction, self).__init__(**kwargs)
         self.maintype = maintype
@@ -84,7 +83,7 @@ def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_leng
             "cleaned": assume_clean,
             "dirtiness": ("max" if assume_dirty else 0),
             "extra-dirty": False,
-         }
+        }
     }
 
     problem["nodes"] = create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness)
@@ -107,20 +106,20 @@ def create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness):
     total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms
 
     if set(empty_rooms).intersection(extra_dirty_rooms):
-        raise ValueError("rooms cannot be both empty rooms and extra dirty: "
-                         + str(set(empty_rooms).intersection(extra_dirty_rooms)))
+        raise ValueError("rooms cannot be both empty rooms and extra dirty: {}".format(
+                         set(empty_rooms).intersection(extra_dirty_rooms)))
 
     empty_rms = (
-        ("empty-rm"+str(i), {"node": True})
-            for i in range(1, num_empty_rooms+1)
+        ("empty-rm{}".format(i), {"node": True})
+        for i in range(1, num_empty_rooms + 1)
     )
 
     extra_dirty_rms = (
-        ("rm-ed"+str(i), create_room(dirtiness, extra_dirty=True)) for i in range(1, num_extra_dirty_rooms + 1)
+        ("rm-ed{}".format(i), create_room(dirtiness, extra_dirty=True)) for i in range(1, num_extra_dirty_rooms + 1)
     )
 
     rooms = (
-        ("rm"+str(i), create_room(dirtiness, extra_dirty=False)) for i in range(1, total_normal_rooms + 1)
+        ("rm{}".format(i), create_room(dirtiness, extra_dirty=False)) for i in range(1, total_normal_rooms + 1)
     )
 
     return dict(chain(empty_rms, rooms, extra_dirty_rms))
@@ -136,13 +135,13 @@ def create_graph(size, empty_rooms, extra_dirty_rooms, edge_length):
         column = []
         for y in range(size.y):
             if (x, y) in empty_rooms:
-                column.append("empty-rm"+str(empty_room_num))
+                column.append("empty-rm{}".format(empty_room_num))
                 empty_room_num += 1
             elif (x, y) in extra_dirty_rooms:
-                column.append("rm-ed"+str(extra_dirty_room_num))
+                column.append("rm-ed{}".format(extra_dirty_room_num))
                 extra_dirty_room_num += 1
             else:
-                column.append("rm"+str(room_num))
+                column.append("rm{}".format(room_num))
                 room_num += 1
         grid.append(column)
 
@@ -150,25 +149,26 @@ def create_graph(size, empty_rooms, extra_dirty_rooms, edge_length):
     for x, column in enumerate(grid):
         for y, room in enumerate(column):
             if x - 1 >= 0:
-                edges.append([room, grid[x-1][y], edge_length])
+                edges.append([room, grid[x - 1][y], edge_length])
             if x + 1 < size.x:
-                edges.append([room, grid[x+1][y], edge_length])
+                edges.append([room, grid[x + 1][y], edge_length])
             if y - 1 >= 0:
-                edges.append([room, grid[x][y-1], edge_length])
+                edges.append([room, grid[x][y - 1], edge_length])
             if y + 1 < size.y:
-                edges.append([room, grid[x][y+1], edge_length])
+                edges.append([room, grid[x][y + 1], edge_length])
 
-    return ({
-        "bidirectional": False,
-        "edges": edges
-    }, grid)
+    return (
+        {
+            "bidirectional": False,
+            "edges": edges
+        }, grid)
 
 
 def create_agents(agents, room):
     agent = create_agent(room)
     return dict(
-        ("agent"+str(i), deepcopy(agent))
-            for i in range(1, agents+1))
+        ("agent{}".format(i), deepcopy(agent))
+        for i in range(1, agents + 1))
 
 
 def create_agent(room):
@@ -182,8 +182,8 @@ def create_agent(room):
 def create_goal(size, empty_rooms, extra_dirty_rooms):
     num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms)
     room_ids = chain(
-        ("rm"+str(i) for i in range(1, num_rooms+1)),
-        ("rm-ed"+str(i) for i in range(1, len(extra_dirty_rooms)+1))
+        ("rm{}".format(i) for i in range(1, num_rooms + 1)),
+        ("rm-ed{}".format(i) for i in range(1, len(extra_dirty_rooms) + 1))
     )
     return {
         "hard-goals": [

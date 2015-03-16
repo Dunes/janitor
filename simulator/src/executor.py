@@ -3,8 +3,8 @@ from logging import getLogger
 from enum import Enum
 from operator import attrgetter
 from decimal import Decimal
-from accuracy import quantize, as_end_time, as_start_time, INSTANTANEOUS_ACTION_DURATION
-from action import Plan, Observe, Move, GetExecutionHeuristic, Clean
+from accuracy import quantize, as_end_time, as_start_time
+from action import Plan, Observe, Move, GetExecutionHeuristic
 from action_state import ExecutionState
 from copy import copy
 from logger import StyleAdapter
@@ -140,7 +140,7 @@ class Executor:
         if action0 == action1 or (type(action0) is Plan and type(action1) is Plan):
             return True
         elif type(action0) == type(action1) and action0.start_time == action1.start_time \
-                        and action0.agents() == action1.agents():
+                and action0.agents() == action1.agents():
             log.warning("Matching two actions with different end times {} and {}".format(action0, action1))
             return True
         return False

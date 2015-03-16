@@ -107,7 +107,7 @@ def _encode_init(out, agents, nodes, graph, assumed_values):
 
 def _encode_init_helper(out, items, assumed_values):
     for object_name, object_values in items.items():
-        if not "known" in object_values:
+        if "known" not in object_values:
             _encode_init_values(out, object_name, object_values)
         else:
             _encode_init_values(out, object_name, object_values["known"])

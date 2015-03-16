@@ -1,4 +1,4 @@
-from builtins import staticmethod
+from functools import wraps
 from subprocess import Popen, PIPE
 from pddl_parser import decode_plan_from_optic, encode_problem_to_file
 import tempfile
@@ -6,7 +6,7 @@ from os.path import join as path_join
 from threading import Timer, Thread, RLock
 from time import time
 from math import isnan
-from planning_exceptions import NoPlanException, IncompletePlanException, PlannerException
+from planning_exceptions import NoPlanException, IncompletePlanException
 from accuracy import quantize
 from logging import getLogger
 from logger import StyleAdapter
@@ -17,7 +17,7 @@ log = StyleAdapter(getLogger(__name__))
 
 def synchronized(func):
     lock = RLock()
-
+    @wraps(func)
     def f(*args, **kwargs):
         try:
             if not lock.acquire(blocking=False):
@@ -26,7 +26,6 @@ def synchronized(func):
             return func(*args, **kwargs)
         finally:
             lock.release()
-    f.__name__ = func.__name__
     return f
 
 
