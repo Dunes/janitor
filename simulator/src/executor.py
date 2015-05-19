@@ -145,7 +145,7 @@ class Executor:
             return True
         return False
 
-    def get_plan_request(self, time: Decimal) -> Plan:
+    def get_plan_request(self, time: Decimal) -> ActionRequest:
         if self.plan_valid or Plan.agent in self.executing:
             return None
         plan = self.get_plan_action(time)

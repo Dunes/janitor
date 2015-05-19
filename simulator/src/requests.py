@@ -1,5 +1,6 @@
 from heapq import heapify
 from itertools import chain
+from abc import abstractmethod, ABCMeta
 from logging import getLogger
 from action import Plan
 from action_state import ExecutionState, ActionState
@@ -15,14 +16,25 @@ class ChangedAction(namedtuple("ChangedAction", "agents action")):
     pass
 
 
-class Request:
+class Request(metaclass=ABCMeta):
 
+    @abstractmethod
     def adjust(self, action_queue):
         raise NotImplementedError()
 
     def __add__(self, other):
-        if other:
+        if self and other:
             return MultiRequest(chain(self._as_iter(self), self._as_iter(other)))
+        elif other:
+            return MultiRequest(self._as_iter(other))
+        else:
+            return self
+
+    def __radd__(self, other):
+        if self and other:
+            return MultiRequest(chain(self._as_iter(other), self._as_iter(self)))
+        elif other:
+            return MultiRequest(self._as_iter(other))
         else:
             return self
 
@@ -42,6 +54,9 @@ class ActionRequest(Request):
     def adjust(self, action_queue):
         action_queue.put(ActionState(action) for action in self.actions)
         return True
+
+    def __bool__(self):
+        return bool(self.actions)
 
 
 class MultiRequest(Request, tuple):
