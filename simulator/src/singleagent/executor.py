@@ -29,6 +29,14 @@ class Executor:
     def notify_action_finishing(self, action_state, model):
         raise NotImplementedError
 
+    @property
+    def deadline(self):
+        return self._deadline
+
+    @deadline.setter
+    def deadline(self, deadline):
+        self._deadline = deadline
+
     def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None,
             current_plan_execution_limit=Decimal("Infinity"), last_observation=quantize(-1), plan_valid=False,
             agents):
