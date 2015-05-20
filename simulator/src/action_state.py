@@ -40,6 +40,11 @@ class ExecutionState(OrderedEnum):
 
 @total_ordering
 class ActionState(object):
+    """
+    :type time: Decimal
+    :type state: ExecutionState
+    :type action: Action
+    """
 
     def __init__(self, action, time=None, state=ExecutionState.pre_start):
         object.__setattr__(self, "time", action.start_time if time is None else time)
@@ -47,6 +52,7 @@ class ActionState(object):
         object.__setattr__(self, "action", action)
 
     def start(self):
+        """:rtype: ActionState"""
         if self.state != ExecutionState.pre_start:
             raise ExecutionError("invalid state")
         new = copy(self)
@@ -55,6 +61,7 @@ class ActionState(object):
         return new
 
     def finish(self):
+        """:rtype: ActionState"""
         log.info("finishing: {}", self.action)
         if self.state != ExecutionState.executing:
             raise ExecutionError("invalid state")

@@ -54,22 +54,24 @@ def get_text_file_handle(filename):
         return filename
 
 
-def encode_problem_to_file(filename, model):
+def encode_problem_to_file(filename, model, agent, goals):
     with get_text_file_handle(filename) as fh:
-        encode_problem(fh, model)
+        encode_problem(fh, model, agent, goals)
 
 
-def encode_problem(out, model):
+def encode_problem(out, model, agent, goals):
 
     has_metric = "metric" in model
 
     _encode_preamble(out, "problem-name", model["domain"], has_metric)
 
-    _encode_objects(out, chain(model["agents"].keys(), model["nodes"].keys()))
+    agent_names = model["agents"].keys() if agent == "all" else (agent,)
+    _encode_objects(out, chain(agent_names, model["nodes"].keys()))
 
-    _encode_init(out, model["agents"], model["nodes"], model["graph"], model["assumed-values"])
+    agent_values = model["agents"] if agent == "all" else {agent: model["agents"][agent]}
+    _encode_init(out, agent_values, model["nodes"], model["graph"], model["assumed-values"])
 
-    _encode_goal(out, model["goal"])
+    _encode_goal(out, goals if goals else model["goal"])
 
     if has_metric:
         _encode_metric(out, model["metric"])

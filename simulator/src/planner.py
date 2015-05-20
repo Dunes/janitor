@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE
 from pddl_parser import decode_plan_from_optic, encode_problem_to_file
 import tempfile
 from os.path import join as path_join
-from threading import Timer, Thread, RLock
+from threading import Timer, Thread, Lock
 from time import time
 from math import isnan
 from planning_exceptions import NoPlanException, IncompletePlanException
@@ -16,7 +16,8 @@ log = StyleAdapter(getLogger(__name__))
 
 
 def synchronized(func):
-    lock = RLock()
+    lock = Lock()
+
     @wraps(func)
     def f(*args, **kwargs):
         try:
@@ -42,7 +43,7 @@ class Planner(object):
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     @synchronized
-    def get_plan(self, model, duration=None):
+    def get_plan(self, model, duration=None, agent="all", goals=None):
         # problem_file = self.create_problem_file(model)
         problem_file = "/dev/stdin"
         report = True
@@ -57,7 +58,7 @@ class Planner(object):
             single_pass = True
 
         p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model)).start()
+        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model, agent, goals)).start()
         timer = Timer(float(duration), p.terminate)
         timer.start()
 
@@ -81,9 +82,9 @@ class Planner(object):
             return []
         raise RuntimeError("Illegal state")
 
-    def get_plan_and_time_taken(self, model, duration=None):
+    def get_plan_and_time_taken(self, model, duration=None, agent="all"):
         start = time()
-        plan = self.get_plan(model, duration)
+        plan = self.get_plan(model, duration, agent)
         end = time()
         return plan, quantize(end - start)
 

@@ -7,26 +7,128 @@ from decimal import Decimal
 from accuracy import quantize, as_end_time, as_start_time
 from singleagent.agent import Agent
 from action import Plan, Observe, Move, GetExecutionHeuristic
-from action_state import ExecutionState
+from action_state import ActionState, ExecutionState
 from copy import copy
 from logger import StyleAdapter
-from new_simulator import ExecutionProblem
 from priority_queue import MultiActionQueue
 from requests import AdjustToPartialRequest, RemoveActionsWithStateRequest, ActionRequest, MultiRequest
 from planning_exceptions import ExecutionError
 from itertools import count
+from weakref import WeakValueDictionary
+from abc import abstractmethod, ABCMeta
+
 
 log = StyleAdapter(getLogger(__name__))
 
 
-class Executor:
+class Executor(metaclass=ABCMeta):
 
     ID_COUNTER = count()
+    EXECUTORS = WeakValueDictionary()
 
-    def notify_action_starting(self, action_state, model):
+    def __init__(self, *, deadline):
+        self.executing = None
+        self._deadline = deadline
+        self.id = next(self.ID_COUNTER)
+        self.EXECUTORS[self.id] = self
+
+    @abstractmethod
+    def copy(self):
         raise NotImplementedError
 
-    def notify_action_finishing(self, action_state, model):
+    @property
+    @abstractmethod
+    def deadline(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def has_goals(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def next_action(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def notify_action_starting(self, action_state: ActionState, model):
+        raise NotImplementedError
+
+    @abstractmethod
+    def notify_action_finishing(self, action_state: ActionState, model):
+        raise NotImplementedError
+
+
+class AgentExecutor(Executor):
+
+    def __init__(self, *, plan=None, deadline=Decimal("Infinity"), planner_id):
+        super().__init__(deadline=deadline)
+        self.plan = plan or []
+        self.planner_id = planner_id
+
+    def copy(self):
+        raise NotImplementedError
+        log.debug("Executor.copy()")
+
+    @property
+    def deadline(self):
+        return self._deadline
+
+    @deadline.setter
+    def deadline(self, deadline):
+        self._deadline = deadline
+        if self.executing:
+            new_action = self.executing.action.as_partial(deadline)
+            if not new_action:
+                raise ExecutionError("executing action does not want to partially complete")
+            self.executing = ActionState(new_action, deadline, ExecutionState.executing)
+        new_plan = []
+        for a in self.plan:
+            if a.end_time <= deadline:
+                new_plan.append(a)
+            else:
+                partial_action = a.as_partial(deadline)
+                if partial_action:
+                    new_plan.append(partial_action)
+                break
+        self.plan = new_plan
+
+    @property
+    def has_goals(self):
+        return bool(self.plan or self.executing)
+
+    @property
+    def next_action(self):
+        if self.executing:
+            return self.executing
+        return ActionState(self.plan[0])
+
+    def notify_action_starting(self, action_state: ActionState, model):
+        log.debug("Executor.notify_action_starting() action_state={}", action_state)
+        assert not self.executing
+        self.executing = action_state.start()
+
+    def notify_action_finishing(self, action_state: ActionState, model):
+        assert self.executing is action_state
+        self.executing = None
+        action_state = action_state.finish()
+        action_state.action.apply(model)
+
+
+class CentralPlannerExecutor(Executor):
+
+    planner = Planner()
+
+    def __init__(self, *, executor_ids, agent_names, deadline=Decimal("Infinity")):
+        super().__init__(deadline=deadline)
+        self.valid_plan = False
+        self.planning_duration = 10
+        self.executor_ids = executor_ids
+        assert len(executor_ids) == len(agent_names)
+        self.agent_executor_map = {name: id_ for name, id_ in zip(agent_names, executor_ids)}
+
+    def copy(self):
         raise NotImplementedError
 
     @property
@@ -36,151 +138,25 @@ class Executor:
     @deadline.setter
     def deadline(self, deadline):
         self._deadline = deadline
+        if self.executing:
+            raise ExecutionError("Wasn't expecting to be told deadline is changing when already planning")
 
-    def __init__(self, planning_duration, *, plan=None, executing=None, stalled=None,
-            current_plan_execution_limit=Decimal("Infinity"), last_observation=quantize(-1), plan_valid=False,
-            agents):
-        self.started = False
-        self.plan = plan or MultiActionQueue()
-        self.executing = executing or {}
-        self.stalled = stalled or set()
-        self.planning_duration = planning_duration
-        self.current_plan_execution_limit = current_plan_execution_limit
-        self.last_observation = last_observation
-        self.plan_valid = plan_valid
-        self.agents = agents
-        self.id = next(self.ID_COUNTER)
+    @property
+    def has_goals(self):
+        return not self.valid_plan
 
-    def copy(self):
-        log.debug("Executor.copy()")
-        return Executor(self.planning_duration, plan=copy(self.plan),
-            executing=dict(self.executing), current_plan_execution_limit=self.current_plan_execution_limit,
-            last_observation=self.last_observation, plan_valid=self.plan_valid, agents=self.agents)
+    def next_action(self, time):
+        assert not self.valid_plan
+        if self.executing:
+            return self.executing
+        return ActionState(Plan(time, self.planning_duration))
 
-    def next_actions(self, current_time, future_time):
-        log.debug("Executor.next_action() current_time={}, future_time={}", current_time, future_time)
-        requests = []
-        for agent in self.agents.values():
-            req = self.next_action(agent, current_time)
-            if req:
-                requests.append(req)
-        return MultiRequest(requests)
+    def notify_action_starting(self, action_state: ActionState, model):
+        assert not self.executing
+        self.executing = action_state.start()
 
-    def process_results(self, results):
-        log.debug("Executor.process_results() results={}", results)
-        requests = []
-        for result in results:
-            request = self.process_result(result)
-            if request:
-                requests.append(request)
-        return MultiRequest(requests) if requests else None
-
-    def process_result(self, result):
-        if type(result.action) not in (Observe, list):
-            for agent in result.action.agents():
-                if self.match_action(self.executing[agent], result.action):
-                    del self.executing[agent]
-
-        if type(result.action) is Plan:
-            self.truncate_plan(as_start_time(self.current_plan_execution_limit))
-
-            expected_plan_end = result.action.start_time + self.get_plan_start_time_adjustment(result.action.duration)
-            self.plan.put(self.adjust_plan(result.result, expected_plan_end))
-            self.current_plan_execution_limit = Decimal("Infinity")
-            self.stalled.clear()
-            return self.get_request_for_plan_complete(expected_plan_end)
-        elif type(result.action) is GetExecutionHeuristic:
-            applicable_actions = self.plan.get_ends_before(as_start_time(self.current_plan_execution_limit))
-            self.plan = MultiActionQueue(applicable_actions + self.adjust_plan(result.result, result.time))
-            self.truncate_plan(as_start_time(self.current_plan_execution_limit))
-            self.stalled.clear()
-            return self.next_actions(result.time, self.current_plan_execution_limit)
-        elif result.result == ExecutionProblem.ReachedDeadline:
-            return self.get_request_for_reached_deadline(result.time)
-        elif result.result == ExecutionProblem.AgentStalled:
-            self.stalled |= result.action.agents()
-            return None
-        elif result.result is True:
-            if self.last_observation < result.time:
-                self.plan_valid = False
-                self.last_observation = result.time
-            return self.get_plan_request(result.time)
-        elif result.result is False:
-            return None
-        else:
-            raise ExecutionError("Unknown value for result {}".format(result))
-
-    @staticmethod
-    def match_action(action0, action1):
-        if action0 == action1 or (type(action0) is Plan and type(action1) is Plan):
-            return True
-        elif type(action0) == type(action1) and action0.start_time == action1.start_time \
-                and action0.agents() == action1.agents():
-            log.warning("Matching two actions with different end times {} and {}".format(action0, action1))
-            return True
-        return False
-
-    def get_plan_request(self, agent: Agent, time: Decimal) -> ActionRequest:
-        if agent.plan_valid or agent.executing:
-            return None
-        plan = self.get_plan_action(time)  # incorporate agent name
-        agent.current_plan_execution_limit = self.get_state_prediction_end_time(plan)
-        agent.executing = plan
-        agent.plan_valid = True
-        self.last_observation = plan.start_time  # TODO: is this needed still?
-        other_requests = self.get_additional_plan_requests(plan.start_time)
-        if other_requests:
-            return ActionRequest((plan,)) + other_requests
-        else:
-            return ActionRequest((plan,))
-
-    def update_executing_actions(self, adjusted_actions):
-        if not isinstance(adjusted_actions, Iterable):
-            return
-        for change in adjusted_actions:
-            if change.action:
-                for agent in change.agents:
-                    self.executing[agent] = change.action
-            else:
-                for agent in change.agents:
-                    self.executing.pop(agent, None)
-
-    def truncate_plan(self, deadline):
-        sub_plan = [
-            action if action.end_time < deadline else
-            action.as_partial(duration=as_start_time(deadline - action.start_time))
-            for action in self.plan.get_starts_before(deadline)
-        ]
-        self.plan = MultiActionQueue(sub_plan)
-
-    def adjust_plan(self, plan, start_time):
-        return sorted(self._adjust_plan_helper(plan, start_time), key=attrgetter("start_time", "_ordinal"))
-
-    @staticmethod
-    def _adjust_plan_helper(plan, start_time):
-        for action in plan:
-            # adjust for OPTIC starting at t = 0
-            action = action.copy_with(start_time=action.start_time + start_time)
-            yield action
-            if type(action) is Move:
-                yield Observe(action.end_time, action.agent, action.end_node)
-
-    def get_plan_action(self, time: Decimal) -> Plan:
-        raise NotImplementedError()
-
-    def get_request_for_plan_complete(self, time):
-        raise NotImplementedError()
-
-    def get_request_for_reached_deadline(self, time):
-        raise NotImplementedError()
-
-    def get_state_prediction_end_time(self, plan):
-        raise NotImplementedError()
-
-    def get_plan_start_time_adjustment(self, actual_planning_duration):
-        # should be "actual_planning_duration" mostly, except if planner is using state prediction
-        # in which case it should be self.planning_duration
-        raise NotImplementedError()
-
-    def get_additional_plan_requests(self, time):
-        raise NotImplementedError()
+    def notify_action_finishing(self, action_state: ActionState, model):
+        assert self.executing is action_state
+        self.executing = None
+        action_state = action_state.finish()
+        action_state.action.apply(model)
