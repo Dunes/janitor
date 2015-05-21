@@ -27,3 +27,6 @@ def as_end_time(value: Decimal) -> Decimal:
     if value.is_infinite():
         return value
     return value.quantize(precision, rounding=ROUND_CEILING) - increment
+
+def as_next_end_time(value: Decimal) -> Decimal:
+    return as_end_time(value) + one

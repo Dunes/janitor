@@ -18,17 +18,19 @@ log = StyleAdapter(getLogger(__name__))
 _lock = Lock()
 
 
-def synchronized(func):
-    @wraps(func)
-    def f(*args, **kwargs):
-        try:
-            if not _lock.acquire(blocking=False):
-                log.warning("Trying to run planner when another instance of planner is running")
-                _lock.acquire()
-            return func(*args, **kwargs)
-        finally:
-            _lock.release()
-    return f
+def synchronized(lock):
+    def _synchronized(func):
+        @wraps(func)
+        def f(*args, **kwargs):
+            try:
+                if not lock.acquire(blocking=False):
+                    log.warning("Trying to run planner when another instance of planner is running")
+                    lock.acquire()
+                return func(*args, **kwargs)
+            finally:
+                lock.release()
+        return f
+    return _synchronized
 
 
 class Planner(object):
@@ -43,8 +45,8 @@ class Planner(object):
 
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
-    @synchronized
-    def get_plan(self, model, duration=None, agent="all", goals=None):
+    @synchronized(_lock)
+    def get_plan(self, model, duration=None, agent="all", goals=None, tils=None):
         # problem_file = self.create_problem_file(model)
         problem_file = "/dev/stdin"
         report = True
@@ -59,7 +61,7 @@ class Planner(object):
             single_pass = True
 
         p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model, agent, goals)).start()
+        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model, agent, goals, tils)).start()
         timer = Timer(float(duration), p.terminate)
         timer.start()
 

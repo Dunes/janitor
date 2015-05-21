@@ -330,6 +330,47 @@ class ExtraClean(Action):
         return {self.agent0, self.agent1}
 
 
+class ExtraCleanPart(Action):
+
+    _format_attrs = ("start_time", "duration", "agent", "room", "partial")
+
+    def __init__(self, start_time, duration, agent, room, partial=None):
+        super().__init__(start_time, duration, partial)
+        object.__setattr__(self, "agent", agent)
+        object.__setattr__(self, "room", room)
+
+    def is_applicable(self, model):
+        known = model["nodes"][self.room]["known"]
+        return (
+            model["agents"][self.agent]["at"][1] == self.room
+            and known.get("dirty", False)
+            and not known.get("extra-dirty", True)
+        )
+
+    def apply(self, model):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        rm_obj = model["nodes"][self.room]["known"]
+        del rm_obj["dirtiness"]
+        del rm_obj["dirty"]
+        rm_obj["cleaned"] = True
+        return False
+
+    def partially_apply(self, model, deadline):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+
+        max_duration = deadline - self.start_time
+        node_state = model["nodes"][self.room]["known"]
+        partial = node_state["dirtiness"] > max_duration
+
+        if partial:
+            node_state["dirtiness"] -= max_duration
+        else:
+            duration = node_state["dirtiness"]
+            log.info("{} applied partially, but able to fully complete in {}", self, duration)
+            self.apply(model)
+
+        return False
+
 class GetExecutionHeuristic(Action):
 
     _format_attrs = ("start_time", "duration", "agent")

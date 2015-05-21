@@ -14,8 +14,8 @@
 		(dirty ?rm)
 		(extra-dirty ?rm)
 		(cleaned ?rm) ; clean is a keyword
-		
-		
+		(cleaning-window ?rm) ; used to force windows in which a room must be cleaned -- turned on an off with TILs
+
 	)
 	
 	(:functions
@@ -51,10 +51,11 @@
 						)
 	)
 	
-	(:durative-action special-clean
+	(:durative-action extra-clean-part
 		:parameters (?a ?rm)
 		:duration (= ?duration (dirtiness ?rm))
 		:condition (and (at start (extra-dirty ?rm))
+						(over all (cleaning-window ?rm))
 						(over all (at ?a ?rm))
 						(at start (agent ?a))
 						(at start (available ?a))

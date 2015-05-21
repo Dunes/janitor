@@ -5,11 +5,13 @@ from io import TextIOWrapper, RawIOBase, BufferedIOBase
 from accuracy import quantize
 import action
 from planning_exceptions import IncompletePlanException
+from accuracy import as_next_end_time
 
 _action_map = {
     "move": action.Move,
     "clean": action.Clean,
     "extra-clean": action.ExtraClean,
+    "extra-clean-part": action.ExtraCleanPart,
 }
 
 
@@ -54,12 +56,12 @@ def get_text_file_handle(filename):
         return filename
 
 
-def encode_problem_to_file(filename, model, agent, goals):
+def encode_problem_to_file(filename, model, agent, goals, tils):
     with get_text_file_handle(filename) as fh:
-        encode_problem(fh, model, agent, goals)
+        encode_problem(fh, model, agent, goals, tils)
 
 
-def encode_problem(out, model, agent, goals):
+def encode_problem(out, model, agent, goals, tils):
 
     has_metric = "metric" in model
 
@@ -69,7 +71,7 @@ def encode_problem(out, model, agent, goals):
     _encode_objects(out, chain(agent_names, model["nodes"].keys()))
 
     agent_values = model["agents"] if agent == "all" else {agent: model["agents"][agent]}
-    _encode_init(out, agent_values, model["nodes"], model["graph"], model["assumed-values"])
+    _encode_init(out, agent_values, model["nodes"], model["graph"], model["assumed-values"], tils)
 
     _encode_goal(out, goals if goals else model["goal"])
 
@@ -99,11 +101,13 @@ def _encode_objects(out, objects):
     out.write(")\n")
 
 
-def _encode_init(out, agents, nodes, graph, assumed_values):
+def _encode_init(out, agents, nodes, graph, assumed_values, tils=None):
     out.write("(:init ")
-    out.write(" (at 19 (not (agent agent1))) ")
     _encode_init_helper(out, agents, assumed_values)
     _encode_init_helper(out, nodes, assumed_values)
+    if tils:
+        for til in tils:
+            _encode_predicate(out, til.as_predicate())
     _encode_graph(out, graph)
     out.write(") ")
 
@@ -195,3 +199,17 @@ def _encode_metric(out, metric):
     out.write(" ")
     _encode_predicate(out, metric["predicate"])
     out.write(")\n")
+
+
+class CleaningWindowTil:
+
+    def __init__(self, time, room, add):
+        self.time = time
+        self.room = room
+        self.add = add
+
+    def as_predicate(self):
+        predicate = ["cleaning-window", self.room]
+        if not self.add:
+            predicate = ["not", predicate]
+        return ["at", (self.time if self.add else as_next_end_time(self.time)), predicate]
