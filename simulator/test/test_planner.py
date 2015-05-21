@@ -104,6 +104,7 @@ class TestGetPlan(unittest.TestCase):
         assert_that(result, is_not(has_item(with_agent("agent2"))))
         assert_that(result, has_item(with_room("rm1")))
         assert_that(result, has_item(with_room("rm2")))
+        assert_that(result , is_(None))
 
     def test_one_goal(self):
         goal = [["cleaned", "rm1"]]
@@ -112,3 +113,11 @@ class TestGetPlan(unittest.TestCase):
         assert_that(result, has_item(any_of(with_agent("agent1"), with_agent("agent2"))))
         assert_that(result, has_item(with_room("rm1")))
         assert_that(result, is_not(has_item(with_room("rm2"))))
+
+    def test_mini(self):
+        import pddl_parser
+        from io import StringIO
+        out = StringIO()
+        pddl_parser.encode_problem(out, self.model, "all", None)
+
+        assert_that(out.getvalue(), is_(None))

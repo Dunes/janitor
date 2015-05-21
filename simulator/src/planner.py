@@ -15,18 +15,19 @@ from logger import StyleAdapter
 log = StyleAdapter(getLogger(__name__))
 
 
-def synchronized(func):
-    lock = Lock()
+_lock = Lock()
 
+
+def synchronized(func):
     @wraps(func)
     def f(*args, **kwargs):
         try:
-            if not lock.acquire(blocking=False):
+            if not _lock.acquire(blocking=False):
                 log.warning("Trying to run planner when another instance of planner is running")
-                lock.acquire()
+                _lock.acquire()
             return func(*args, **kwargs)
         finally:
-            lock.release()
+            _lock.release()
     return f
 
 

@@ -1,5 +1,5 @@
 (define (domain janitor)
-	(:requirements :strips :fluents :durative-actions :adl :equality)
+	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality)
 
 	(:predicates
 		
@@ -51,25 +51,19 @@
 						)
 	)
 	
-	(:durative-action extra-clean
-		:parameters (?a1 ?a2 ?rm)
+	(:durative-action special-clean
+		:parameters (?a ?rm)
 		:duration (= ?duration (dirtiness ?rm))
 		:condition (and (at start (extra-dirty ?rm))
-						(at start (not (= ?a1 ?a2)))
-						(over all (at ?a1 ?rm))
-						(over all (at ?a2 ?rm))
-						(at start (agent ?a1))
-						(at start (agent ?a2))
-						(at start (available ?a1))
-						(at start (available ?a2))
+						(over all (at ?a ?rm))
+						(at start (agent ?a))
+						(at start (available ?a))
 						(at start (is-room ?rm))
 						)
 		:effect (and (at start (not (extra-dirty ?rm)))
 						(at end (cleaned ?rm))
-						(at start (not (available ?a1)))
-						(at start (not (available ?a2)))
-						(at end (available ?a1))
-						(at end (available ?a1))
+						(at start (not (available ?a)))
+						(at end (available ?a))
 						)
 	)	
 	

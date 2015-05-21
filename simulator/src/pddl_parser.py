@@ -101,6 +101,7 @@ def _encode_objects(out, objects):
 
 def _encode_init(out, agents, nodes, graph, assumed_values):
     out.write("(:init ")
+    out.write(" (at 19 (not (agent agent1))) ")
     _encode_init_helper(out, agents, assumed_values)
     _encode_init_helper(out, nodes, assumed_values)
     _encode_graph(out, graph)
