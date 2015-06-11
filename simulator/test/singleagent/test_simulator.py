@@ -24,7 +24,7 @@ class TestStartActions(unittest.TestCase):
         # given
         agent = "agent"
         executor = Mock(Executor)
-        simulator = Simulator(self.model, {"agent": executor}, planner=None)
+        simulator = Simulator(self.model, {"agent": executor})
         plan_action_state = Mock(action=Mock(Plan, **{"agents.return_value": {agent}}),
                                  name="plan_action_state")
         normal_action_state = Mock(action=Mock(**{"agents.return_value": {agent},
@@ -47,7 +47,7 @@ class TestStartActions(unittest.TestCase):
         right_executor = Mock(Executor)
         wrong_executor = Mock(Executor)
         executors = {right_agent: right_executor, wrong_agent: wrong_executor}
-        simulator = Simulator(self.model, executors, planner=None)
+        simulator = Simulator(self.model, executors)
         action_state = Mock(["action", "agents"], name="action_state")
         action_state.action.agents.return_value = {right_agent}
         action_state.action.is_applicable.return_value = True
@@ -72,7 +72,7 @@ class TestFinishActions(unittest.TestCase):
         right_executor = Mock(Executor)
         wrong_executor = Mock(Executor)
         executors = {right_agent: right_executor, wrong_agent: wrong_executor}
-        simulator = Simulator(self.model, executors, planner=None)
+        simulator = Simulator(self.model, executors)
         action_state = Mock(["action", "agents"], name="action_state")
         action_state.action.agents.return_value = {right_agent}
         action_state.action.is_applicable.return_value = True

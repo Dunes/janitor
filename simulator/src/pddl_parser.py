@@ -1,11 +1,13 @@
 from collections import Sequence
 from numbers import Number
+import re
 from itertools import dropwhile, chain
 from io import TextIOWrapper, RawIOBase, BufferedIOBase
 from accuracy import quantize
 import action
 from planning_exceptions import IncompletePlanException
 from accuracy import as_next_end_time
+
 
 _action_map = {
     "move": action.Move,
@@ -15,8 +17,11 @@ _action_map = {
 }
 
 
+line_start_pattern = re.compile(r'\d+\.\d{3}:')
+
+
 def _is_not_starting_action(line):
-    return not line.startswith("0.000: ")
+    return not line_start_pattern.match(line)
 
 
 def _is_not_plan_cost(line):
@@ -213,3 +218,6 @@ class CleaningWindowTil:
         if not self.add:
             predicate = ["not", predicate]
         return ["at", (self.time if self.add else as_next_end_time(self.time)), predicate]
+
+    def __repr__(self):
+        return "CleaningWindowTil(time={!s}, room={!r}, add={})".format(self.time, self.room, self.add)

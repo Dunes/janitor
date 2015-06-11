@@ -60,6 +60,7 @@ class Planner(object):
             report = False
             single_pass = True
 
+        encode_problem_to_file("/home/jack/Desktop/test.pddl", model, agent, goals, tils)
         p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
         Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model, agent, goals, tils)).start()
         timer = Timer(float(duration), p.terminate)
@@ -85,9 +86,9 @@ class Planner(object):
             return []
         raise RuntimeError("Illegal state")
 
-    def get_plan_and_time_taken(self, model, duration=None, agent="all"):
+    def get_plan_and_time_taken(self, model, duration=None, agent="all", goals=None, tils=None):
         start = time()
-        plan = self.get_plan(model, duration, agent)
+        plan = self.get_plan(model, duration, agent, goals, tils)
         end = time()
         return plan, quantize(end - start)
 

@@ -104,6 +104,18 @@ class Plan(Action):
         return self.plan
 
 
+class LocalPlan(Plan):
+
+    _format_attrs = ("start_time", "duration", "agent", "goals", "tils")
+
+    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, tils):
+        super(Plan, self).__init__(start_time, duration)
+        object.__setattr__(self, "agent", agent if agent else Plan.agent)
+        object.__setattr__(self, "plan", plan)
+        object.__setattr__(self, "goals", goals)
+        object.__setattr__(self, "tils", tils)
+
+
 class Stalled(Action):
 
     _format_attrs = ("start_time", "duration", "agent")
@@ -343,16 +355,18 @@ class ExtraCleanPart(Action):
         known = model["nodes"][self.room]["known"]
         return (
             model["agents"][self.agent]["at"][1] == self.room
-            and known.get("dirty", False)
-            and not known.get("extra-dirty", True)
+            and not known.get("dirty", True)
+            and known.get("extra-dirty", False)
         )
 
     def apply(self, model):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
         rm_obj = model["nodes"][self.room]["known"]
-        del rm_obj["dirtiness"]
-        del rm_obj["dirty"]
-        rm_obj["cleaned"] = True
+        rm_obj["dirtiness"] -= self.duration / 2
+        if not rm_obj["dirtiness"]:
+            del rm_obj["dirtiness"]
+            del rm_obj["dirty"]
+            rm_obj["cleaned"] = True
         return False
 
     def partially_apply(self, model, deadline):

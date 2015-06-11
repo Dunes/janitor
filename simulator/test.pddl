@@ -1,5 +1,20 @@
-(define (problem janitor-sample) (:domain janitor) (:requirements :preferences)
-(:objects  agent2 agent1 rm3 rm1 res-rm n1 n2 n3)
-(:init (available agent2 ) (= (carrying agent2 ) 0) (at agent2 n1 ) (agent agent2 ) (= (max-carry agent2 ) 9) (available agent1 ) (= (carrying agent1 ) 0) (at agent1 n1 ) (agent agent1 ) (= (max-carry agent1 ) 9) (node rm3 ) (is-room rm3 ) (= (dirtiness rm3 ) 5) (dirty rm3 ) (= (req-stock rm3 ) 9) (under-stocked rm3 ) (node rm1 ) (is-room rm1 ) (= (dirtiness rm1 ) 5) (dirty rm1 ) (= (req-stock rm1 ) 9) (under-stocked rm1 ) (node res-rm ) (is-resource-room res-rm ) (node n1 ) (node n2 ) (node n3 ) (edge n1 n2 ) (= (distance n1 n2 ) 10) (edge n2 n3 ) (= (distance n2 n3 ) 10) (edge n1 rm1 ) (= (distance n1 rm1 ) 1) (edge n2 res-rm ) (= (distance n2 res-rm ) 1) (edge n3 rm3 ) (= (distance n3 rm3 ) 1) (edge n2 n1 ) (= (distance n2 n1 ) 10) (edge n3 n2 ) (= (distance n3 n2 ) 10) (edge rm1 n1 ) (= (distance rm1 n1 ) 1) (edge res-rm n2 ) (= (distance res-rm n2 ) 1) (edge rm3 n3 ) (= (distance rm3 n3 ) 1) ) (:goal (and (cleaned rm1 ) (cleaned rm3 ) (preference stocked-rm1 (fully-stocked rm1 )  ) (preference stocked-rm3 (fully-stocked rm3 )  ) ))
-(:metric minimize (+ (total-time )  (* 100 (is-violated stocked-rm1 )  )  (* 100 (is-violated stocked-rm3 )  )  ) )
+(define (problem problem-name) (:domain janitor)
+(:objects  agent2 rm2 rm3 rm1)
+(:init 
+    (at agent2 rm2 ) (available agent2 ) (agent agent2 ) 
+    
+    (extra-dirty rm2 ) (node rm2 ) (is-room rm2 ) (= (dirtiness rm2 ) 10) 
+    (dirty rm3 ) (node rm3 ) (is-room rm3 ) (= (dirtiness rm3 ) 10) 
+    (cleaned rm1 ) (node rm1 ) (is-room rm1 ) 
+    
+    (at 10 (cleaning-window rm2 )  ) (at 21.5 (not (cleaning-window rm2 )  )  ) 
+    
+    (edge rm1 rm2 ) (= (distance rm1 rm2 ) 10) 
+    (edge rm1 rm3 ) (= (distance rm1 rm3 ) 10) 
+    (edge rm2 rm1 ) (= (distance rm2 rm1 ) 10) 
+    (edge rm2 rm3 ) (= (distance rm2 rm3 ) 10) 
+    (edge rm3 rm1 ) (= (distance rm3 rm1 ) 10) 
+    (edge rm3 rm2 ) (= (distance rm3 rm2 ) 10) ) 
+
+(:goal (and (cleaned rm2 ) ))
 )

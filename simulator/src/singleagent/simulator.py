@@ -34,10 +34,9 @@ class Simulator:
 
     ID_COUNTER = count()
 
-    def __init__(self, model, executors, planner, plan_logger=None, time=quantize(0)):
+    def __init__(self, model, executors, plan_logger=None, time=quantize(0)):
         self.model = model
         self.executors = executors
-        self.planner = planner
         self.plan_logger = plan_logger if plan_logger else DummyLogger()
         self.executed = []
         self.stalled = set()
@@ -45,13 +44,12 @@ class Simulator:
         self.start_time = self.time
         self.id = next(self.ID_COUNTER)
 
-    def copy_with(self, *, model=None, executors=None, planner=None, plan_logger=None, time=None):
+    def copy_with(self, *, model=None, executors=None, plan_logger=None, time=None):
         model = model if model else deepcopy(self.model)
         executors = executors if executors else [executor.copy() for executor in self.executors]
-        planner = planner if planner else self.planner
         plan_logger = plan_logger if plan_logger else DummyLogger()
         time = time if time else self.time
-        return Simulator(model=model, executors=executors, planner=planner, plan_logger=plan_logger,
+        return Simulator(model=model, executors=executors, plan_logger=plan_logger,
             time=time)
 
     def run(self, *, deadline=Decimal("Infinity")):
@@ -61,18 +59,20 @@ class Simulator:
             log.info("Simulator({}).run() finished as time ({}) >= deadline ({})", self.id, self.time, deadline)
             return
 
-        for executor in self.executors:
+        for executor in self.executors.values():
             executor.deadline = deadline
 
-        if not any(executor.has_goals for executor in self.executors):
+        if not any(executor.has_goals for executor in self.executors.values()):
             log.info("Simulator({}).run() finished as no-op", self.id)
             return
 
-        while self.time <= deadline and any(executor.has_goals for executor in self.executors):
-            action_states = MultiActionStateQueue(executor.next_action for executor in self.executors).get()
+        while self.time <= deadline and any(executor.has_goals for executor in self.executors.values()):
+            action_states = MultiActionStateQueue(
+                executor.next_action(self.time) for executor in self.executors.values() if executor.has_goals
+            ).get()
             self.process_action_states(action_states)
 
-        assert not any(executor.has_goals for executor in self.executors)
+        assert not any(executor.has_goals for executor in self.executors.values())
 
         log.info("Simulator({}).run() finished", self.id)
         return self.is_goal_in_model()
@@ -110,7 +110,7 @@ class Simulator:
         for action_state in plan_action_states:
             for agent in action_state.action.agents():
                 new_action_state = self.executors[agent].notify_action_starting(action_state, self.model)
-                self.plan_logger.log_plan(new_action_state.action.plan)
+                #self.plan_logger.log_plan(new_action_state.action.plan)
 
     def finish_actions(self, action_states):
         for action_state in action_states:
