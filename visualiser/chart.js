@@ -15,31 +15,32 @@ function parseData($) {
         "Move": "#8B0000",
         "Clean": "#FFA500",
         "ExtraClean": "#006400",
+        "ExtraCleanPart": "#006400",
         "Plan": "#0000FF",
+        "LocalPlan": "#0000FF",
         "Other": "#000000",
         "Partial Clean": "#ffc04d",
         "Partial ExtraClean": "#4d934d",
+        "Partial ExtraCleanPart": "#4d934d",
         "Partial Move": "#ae4d4d",
         "Partial Plan": "#8282ff",
     };
 
     var data = $("#input-data").val().trim();
-
-    data = data.replace(/[\[\]]/g, "");
-    data = data.split(/\), ?|\)/);
-    var actions = [];
-    var partial = [];
-
-    var colours = {};
-    for (var index in data) {
-        var action = data[index];
-        if (action === "") {
-            continue;
-        }
-        var components = action.split(/\(|, ?/);
-        var result = createChartElementData(components, chart_colours, colours);
-        Array.prototype.push.apply(actions, result); // extend actions by result
+    var is_json = true;
+    try {
+        data = $.parseJSON(data);
+    } catch (err) {
+        is_json = false;
     }
+
+    if (is_json) {
+        var result = actionsFromJson(data, chart_colours);
+    } else {
+        var result = actionsFromPython(data, chart_colours);
+    }
+    var actions = result.actions;
+    var colours = result.colours;
 
     actions.sort(function(x, y) {
             if (x[0] === y[0]) {
@@ -68,7 +69,7 @@ function parseData($) {
     return [actions, chartColourList];
 }
 
-function createChartElementData(components, chart_colours, colours) {
+function createChartElementDataFromPython(components, chart_colours, colours) {
 
     var dict = {};
     for (var i = 1; i < components.length; i++) {
@@ -99,7 +100,10 @@ function actionLabel(name, components, chart_colours, colours, partial) {
         label = "Move " + components.end_node;
     } else if (name === "Clean" || name === "ExtraClean") {
         label = name + " " + components.room;
+    } else if (name === "ExtraCleanPart") {
+        label = "ExtraClean " + components.room;
     }
+
 
     if (partial) {
         name = "Partial " + name;
@@ -160,4 +164,48 @@ function getAgents(obj) {
     } else {
         throw "Object does not have agents";
     }
+}
+
+function actionsFromJson(data, chart_colours) {
+    var actions = [];
+    var colours = {};
+    for (var index in data) {
+        var action = data[index];
+        var result = createChartElementDataFromJson(action, chart_colours, colours);
+        Array.prototype.push.apply(actions, result); // extend actions by result
+    }
+    return {"actions": actions, "colours": colours};
+}
+
+function createChartElementDataFromJson(action, chart_colours, colours) {
+    var result = [];
+    var agents = getAgents(action);
+    for (var j in agents) {
+        result.push([
+                agents[j],
+                actionLabel(action.type, action, chart_colours, colours, action.partial), // action name
+                secondsToMillis(action.start_time),
+                secondsToMillis(action.start_time) + secondsToMillis(action.duration)
+            ]);
+    }
+    return result;
+}
+
+function actionsFromPython(data, chart_colours) {
+    data = data.replace(/[\[\]]/g, "");
+    data = data.split(/\), ?|\)/);
+    var actions = [];
+    var partial = [];
+
+    var colours = {};
+    for (var index in data) {
+        var action = data[index];
+        if (action === "") {
+            continue;
+        }
+        var components = action.split(/\(|, ?/);
+        var result = createChartElementDataFromPython(components, chart_colours, colours);
+        Array.prototype.push.apply(actions, result); // extend actions by result
+    }
+    return {"actions": actions, "colours": colours};
 }
