@@ -203,7 +203,7 @@ class TestFullProblem(unittest.TestCase):
         self.assertTrue(simulator.is_goal_in_model())
 
 
-@unittest.skip
+#@unittest.skip
 class TestLongFullProblem(unittest.TestCase):
 
     def setUp(self):
@@ -214,7 +214,7 @@ class TestLongFullProblem(unittest.TestCase):
 
         wd = project_root
         problem_dir = join(wd, "problems/no-stock-4x4")
-        problem_file = "auto-size(4,4)-dirt(random,30,60)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(0).json"
+        problem_file = "auto-size(4,4)-dirt(random,20,40)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(0).json"
         self.problem_file = join(problem_dir, problem_file)
 
         # load model

@@ -3,12 +3,10 @@ __author__ = 'jack'
 from enum import Enum
 from copy import copy, deepcopy
 from accuracy import quantize, as_end_time, as_start_time
-from pddl_parser import unknown_value_getter
 from action import Plan, Observe, Move, Clean, ExtraClean, ExtraCleanPart, Stalled, GetExecutionHeuristic
-from action_state import ActionState, ExecutionState
+from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
-from requests import Request
 
 from collections import namedtuple, Iterable
 from priority_queue import MultiActionStateQueue
@@ -84,7 +82,8 @@ class Simulator:
         log.debug("Simulator({}).process_action_state() time={a.time}, state={a.state!s}, action_state={a_s}", self.id,
             a=first, a_s=action_states)
 
-        assert self.time <= as_start_time(first.time)
+        if self.time > as_start_time(first.time):
+            raise ValueError("action with start time in the past" + str(first.action))
         self.time = first.time
         if first.state == ExecutionState.pre_start:
             self.start_actions(action_states)
@@ -102,20 +101,18 @@ class Simulator:
                 plan_action_states.append(action_state)
             elif not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agents(), action_state.action)
-                log.error("agent state: {} node state: {}", self.model["agents"][action_state.action.agent], self.model["nodes"][action_state.action.room])
-                #self.stalled.update((a, action_state.time) for a in action_state.action.agents())
+                log.error("agent state: {}", self.model["agents"][action_state.action.agent])
+                if hasattr(action_state.action, "room"):
+                    log.error("room state: {}", self.model["nodes"][action_state.action.room])
                 # agents should never stall when they are in charge of replanning locally.
                 raise ExecutionError("agent has stalled")
             else:
                 if isinstance(action_state.action, ExtraCleanPart):
-                    try:
-                        room = self.model["nodes"][action_state.action.room]["known"]
-                        effort = action_state.action.duration
-                        if room["dirtiness"] != effort:
-                            assert getattr(action_state.action, "partial", False)
-                    except KeyError:
-                        a = 'a'
-                        raise
+                    room = self.model["nodes"][action_state.action.room]["known"]
+                    effort = action_state.action.duration
+                    if room["dirtiness"] != effort:
+                        assert getattr(action_state.action, "partial", False)
+
                 for agent in action_state.action.agents():
                     self.executors[agent].notify_action_starting(action_state, self.model)
 

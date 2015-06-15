@@ -3,7 +3,9 @@ __author__ = 'jack'
 import unittest
 from unittest.mock import MagicMock, Mock, patch, call
 
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_items, equal_to
+from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_items, equal_to, has_property
+
+from decimal import Decimal
 
 from singleagent.executor import Executor, CentralPlannerExecutor
 from action import ExtraClean, ExtraCleanPart, Move
@@ -54,3 +56,14 @@ class TestCentralPlannerExecutor(unittest.TestCase):
                                  result[0][1])
         self.assertSequenceEqual([ExtraCleanPart(10, 10, "agent1", "rm1"), plan[2]],
                                  result[1][1])
+
+    def test_adjust_plan(self):
+        # given
+        plan = [Move(Decimal(0), Decimal(10), "agent0", "rm0", "rm1")]
+
+        # when
+        new_plan = CentralPlannerExecutor.adjust_plan(plan, 10)
+
+        # then
+        assert_that(new_plan[0], has_property("start_time"), 20)
+        assert_that(new_plan[0], has_property("duration"), 30)

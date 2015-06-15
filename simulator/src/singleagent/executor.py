@@ -60,8 +60,9 @@ class Executor(metaclass=ABCMeta):
     def notify_new_knowledge(self, time, node):
         raise NotImplementedError
 
-    def adjust_plan(self, plan, start_time):
-        return sorted(self._adjust_plan_helper(plan, start_time), key=attrgetter("start_time", "_ordinal"))
+    @classmethod
+    def adjust_plan(cls, plan, start_time):
+        return sorted(cls._adjust_plan_helper(plan, start_time), key=attrgetter("start_time", "_ordinal"))
 
     @staticmethod
     def _adjust_plan_helper(plan, start_time):
@@ -244,11 +245,7 @@ class CentralPlannerExecutor(Executor):
         if not isinstance(action_state.action, Plan):
             raise ExecutionError("Have a non-plan action: " + str(action_state.action))
 
-        try:
-            new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
-        except NoPlanException:
-            a = 'a'
-            raise
+        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
         new_plan = self.adjust_plan(new_plan, action_state.time + time_taken)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
