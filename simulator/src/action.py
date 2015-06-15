@@ -77,8 +77,14 @@ class Action(object):
         return self.__class__(**attributes)
 
     def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time >= self.start_time
+            kwargs["duration"] = end_time - self.start_time
+
         if kwargs.get("duration") == 0:
             return None
+
         obj = self.copy_with(partial=True, **kwargs)
         object.__setattr__(obj, "apply", partial_func(obj.partially_apply, deadline=obj.end_time))
         return obj
@@ -290,7 +296,7 @@ class Clean(Action):
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            self.apply(model)
+            type(self).apply(self, model)
 
         return False
 
@@ -334,7 +340,7 @@ class ExtraClean(Action):
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            self.apply(model)
+            type(self).apply(self, model)
 
         return False
 
@@ -363,6 +369,7 @@ class ExtraCleanPart(Action):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
         rm_obj = model["nodes"][self.room]["known"]
         rm_obj["dirtiness"] -= self.duration / 2
+        assert not rm_obj["dirtiness"] < 0
         if not rm_obj["dirtiness"]:
             del rm_obj["dirtiness"]
             del rm_obj["dirty"]
@@ -378,10 +385,11 @@ class ExtraCleanPart(Action):
 
         if partial:
             node_state["dirtiness"] -= max_duration
+            assert not node_state["dirtiness"] < 0
         else:
             duration = node_state["dirtiness"]
             log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            self.apply(model)
+            type(self).apply(self, model)
 
         return False
 

@@ -2,9 +2,10 @@ from decimal import Decimal, ROUND_DOWN, ROUND_CEILING
 
 __all__ = ["increment", "quantize", "as_end_time", "as_start_time", "to_prev_start_time"]
 
+zero = Decimal("0")
 one = Decimal("1")
 
-precision = Decimal("0")
+precision = zero
 
 increment = Decimal("0.5")
 
