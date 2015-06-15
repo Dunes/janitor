@@ -11,14 +11,15 @@ import logging.config
 
 logging.config.fileConfig("logging.conf")
 
-import executor
 from planner import Planner
-from new_simulator import Simulator
 
 import problem_parser
 import logger
 
 log = logger.StyleAdapter(logging.getLogger())
+
+
+domain_template = "../janitor/{}-domain.pddl"
 
 
 def parser():
@@ -31,11 +32,10 @@ def parser():
     return p
 
 
-def get_domain_file(model):
-    return "../janitor/{}-domain.pddl".format(model["domain"])
+def run_old_simulator():
+    from new_simulator import Simulator
+    import executor
 
-
-def run():
     args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
@@ -43,7 +43,8 @@ def run():
 
     model = problem_parser.decode(args.problem_file)
     executor_ = executor.GreedyPlanHeuristicExecutor(args.planning_time)
-    planner = Planner(args.planning_time, domain_file=args.domain_file or get_domain_file(model))
+    planner = Planner(args.planning_time,
+                      domain_file=args.domain_file or domain_template.format(model["domain"]))
 
     with logger.Logger(log_file_name, args.log_directory) as result_logger:
         simulator = Simulator(model, executor_, planner, result_logger)
@@ -55,5 +56,49 @@ def run():
     if not result:
         exit(1)
 
+
+def run_single_agent_replan_simulator():
+    from singleagent.simulator import Simulator
+    from singleagent.executor import AgentExecutor, CentralPlannerExecutor
+
+    args = parser().parse_args()
+    log.info(args)
+    log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
+    log.info("log: {}", log_file_name)
+
+    # load model
+    model = problem_parser.decode(args.problem_file)
+
+    # create planners
+    central_planner = Planner(args.planning_time, domain_file=domain_template.format(model["domain"]))
+    local_planner = Planner(args.planning_time, domain_file=domain_template.format("janitor-single"))
+
+    # create and setup executors
+    agent_executors = [AgentExecutor(agent=agent_name, planning_time=args.planning_time)
+                       for agent_name in model["agents"]]
+    planning_executor = CentralPlannerExecutor(agent="planner",
+                                               planning_time=args.planning_time,
+                                               executor_ids=[e.id for e in agent_executors],
+                                               agent_names=[e.agent for e in agent_executors],
+                                               central_planner=central_planner,
+                                               local_planner=local_planner)
+    for e in agent_executors:
+        e.planner_id = planning_executor.id
+
+    # setup simulator
+    executors = dict({e.agent: e for e in agent_executors},
+                     planner=planning_executor)
+    simulator = Simulator(model, executors)
+
+    # run simulator
+    with logger.Logger(log_file_name, args.log_directory) as result_logger:
+        try:
+            result = simulator.run()
+        finally:
+            simulator.print_results(result_logger)
+
+    if not result:
+        exit(1)
+
 if __name__ == "__main__":
-    run()
+    run_single_agent_replan_simulator()
