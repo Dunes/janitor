@@ -11,7 +11,7 @@ from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from pddl_parser import CleaningWindowTil
-from accuracy import as_start_time, as_next_end_time
+from accuracy import as_start_time, as_next_end_time, zero
 
 log = StyleAdapter(getLogger(__name__))
 
@@ -28,6 +28,7 @@ class Executor(metaclass=ABCMeta):
         self.planning_time = planning_time
         self.id = next(self.ID_COUNTER)
         self.EXECUTORS[self.id] = self
+        self.executed = []
 
     @abstractmethod
     def copy(self):
@@ -53,7 +54,7 @@ class Executor(metaclass=ABCMeta):
 
     @abstractmethod
     def notify_action_finishing(self, action_state: ActionState, model):
-        raise NotImplementedError
+        self.executed.append(action_state.action)
 
     @abstractmethod
     def notify_new_knowledge(self, time, node):
@@ -74,10 +75,12 @@ class Executor(metaclass=ABCMeta):
 
 class AgentExecutor(Executor):
 
-    def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), planner_id):
+    def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), planner_id=None,
+                 halted=False):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.plan = plan or []
         self.planner_id = planner_id
+        self.halted = halted
 
     def copy(self):
         raise NotImplementedError
@@ -89,6 +92,7 @@ class AgentExecutor(Executor):
 
     @deadline.setter
     def deadline(self, deadline):
+        raise NotImplementedError
         self._deadline = deadline
         if self.executing:
             new_action = self.executing.action.as_partial(deadline)
@@ -104,7 +108,8 @@ class AgentExecutor(Executor):
                 if partial_action:
                     new_plan.append(partial_action)
                 break
-        self.plan = new_plan
+        # halt?
+        self.new_plan(new_plan)
 
     @property
     def has_goals(self):
@@ -117,6 +122,9 @@ class AgentExecutor(Executor):
 
     def notify_action_starting(self, action_state: ActionState, model):
         log.debug("AgentExecutor.notify_action_starting() action_state={}", action_state)
+        if self.halted:
+            log.debug("{} is halted. Abandoning {}", self.agent, action_state)
+            return
         assert not self.executing
         assert self.plan[0] == action_state.action
         del self.plan[0]
@@ -127,19 +135,24 @@ class AgentExecutor(Executor):
             try:
                 new_plan, time_taken = planner.get_plan_and_time_taken(
                     model, agent=self.agent, goals=action_.goals, tils=action_.tils)
-                plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
+                plan_action = action_.copy_with(plan=new_plan, duration=zero)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
             except NoPlanException:
-                self.EXECUTORS[self.planner_id].notify_planning_failure(self.id)
+                self.EXECUTORS[self.planner_id].notify_planning_failure(self.id, action_state.time)
         else:
             self.executing = action_state.start()
 
     def notify_action_finishing(self, action_state: ActionState, model):
+        if self.halted and action_state != self.executing:
+            log.debug("{} is halted. Abandoning {} in favour of partial action", self.agent, action_state)
+            return
+        super().notify_action_finishing(action_state, model)
         assert self.executing is action_state
         self.executing = None
         action_state = action_state.finish()
         if isinstance(action_state.action, Plan):
-            self.plan = self.adjust_plan(action_state.action.apply(model), start_time=action_state.time)
+            self.new_plan(self.adjust_plan(action_state.action.apply(model),
+                                         start_time=as_start_time(action_state.time)))
         elif action_state.action.apply(model):
             # new knowledge
             self.EXECUTORS[self.planner_id].notify_new_knowledge(action_state.time, action_state.action.node)
@@ -149,15 +162,15 @@ class AgentExecutor(Executor):
             if isinstance(action_, (Clean, ExtraCleanPart)) and action_.room == node:
                 goals = self.extract_goals(self.plan)
                 tils = self.extract_tils(self.plan, as_start_time(time))
-                self.plan = [LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                       tils=tils)]
-                if self.executing and not isinstance(self.executing.action, Observe):
-                    new_action = self.executing.action.as_partial(end_time=time)
-                    self.executing = ActionState(new_action, state=self.executing.state)
+                assert goals
+                self.halt(time)
+                self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
+                                       tils=tils)])
                 break
 
     def new_plan(self, plan):
         self.plan = plan
+        self.halted = False
 
     @staticmethod
     def extract_goals(plan):
@@ -172,6 +185,22 @@ class AgentExecutor(Executor):
                 tils.append(CleaningWindowTil(action_.start_time - time, action_.room, True))
                 tils.append(CleaningWindowTil(as_next_end_time(action_.end_time - time), action_.room, False))
         return tils
+
+    def halt(self, time):
+        """halt all actions are current time"""
+        log.debug("halting {}", self.agent)
+        self.halted = True
+        self.plan = []
+        if self.executing and not isinstance(self.executing.action, Observe):
+            log.debug("halting {} at {}", self.executing.action, time)
+            if self.executing.action.start_time == time:
+                # action never started
+                self.executing = None
+            else:
+                new_action = self.executing.action.as_partial(end_time=time)
+                if new_action.start_time != self.executing.action.start_time:
+                    assert False
+                self.executing = ActionState(new_action).start()
 
 
 class CentralPlannerExecutor(Executor):
@@ -207,7 +236,7 @@ class CentralPlannerExecutor(Executor):
         assert not self.valid_plan
         if self.executing:
             return self.executing
-        return ActionState(Plan(time, self.planning_time))
+        return ActionState(Plan(as_start_time(time), self.planning_time))
 
     def notify_action_starting(self, action_state: ActionState, model):
         assert not self.executing
@@ -215,12 +244,17 @@ class CentralPlannerExecutor(Executor):
         if not isinstance(action_state.action, Plan):
             raise ExecutionError("Have a non-plan action: " + str(action_state.action))
 
-        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
-        new_plan = self.adjust_plan(new_plan, action_state.time)
+        try:
+            new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
+        except NoPlanException:
+            a = 'a'
+            raise
+        new_plan = self.adjust_plan(new_plan, action_state.time + time_taken)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
 
     def notify_action_finishing(self, action_state: ActionState, model):
+        super().notify_action_finishing(action_state, model)
         assert self.executing is action_state
         self.executing = None
         action_state = action_state.finish()
@@ -236,8 +270,11 @@ class CentralPlannerExecutor(Executor):
         for executor_id in self.executor_ids:
             self.EXECUTORS[executor_id].notify_new_knowledge(time, node)
 
-    def notify_planning_failure(self, executor_id):
+    def notify_planning_failure(self, executor_id, time):
         self.valid_plan = False
+        # tell all agents to stop immediately
+        for e_id in self.executor_ids:
+            self.EXECUTORS[e_id].halt(time)
 
     @classmethod
     def disseminate_plan(cls, plan):
