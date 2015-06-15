@@ -6,13 +6,14 @@ try:
     from .. util.builder import ModelBuilder
 except SystemError:
     import sys
+    import importlib
     sys.path.append("..")
-    from util.builder import ModelBuilder
+    ModelBuilder = importlib.import_module("util.builder").ModelBuilder
+
 from problem_creator import ActualMinMax, Point, create_room, create_goal
 
 from decimal import Decimal
 from operator import attrgetter
-from os import getcwd
 from os.path import join, exists
 
 from action import Move, Clean, ExtraClean, Observe, Plan
@@ -23,7 +24,7 @@ from singleagent.simulator import Simulator
 
 zero = Decimal(0)
 ten = Decimal(10)
-
+project_root = "/home/jack/work/simulator/"
 
 class TestExecutorKnowledgePassing(unittest.TestCase):
 
@@ -55,7 +56,7 @@ class TestExecutorKnowledgePassing(unittest.TestCase):
         self.model["goal"] = goal
 
         # create executors
-        wd = join(getcwd(), "../..")
+        wd = project_root
         assert exists(join(wd, "../optic-cplex"))
         local_planner = Planner(ten, working_directory=wd, domain_file="../janitor/janitor-single-domain.pddl")
 
@@ -174,7 +175,7 @@ class TestFullProblem(unittest.TestCase):
         self.model["goal"] = goal
 
         # create executors
-        wd = join(getcwd(), "../..")
+        wd = project_root
         assert exists(join(wd, "../optic-cplex"))
         central_planner = Planner(ten, working_directory=wd)
         local_planner = Planner(ten, working_directory=wd, domain_file="../janitor/janitor-single-domain.pddl")
@@ -201,3 +202,51 @@ class TestFullProblem(unittest.TestCase):
         # then
         self.assertTrue(simulator.is_goal_in_model())
 
+
+@unittest.skip
+class TestLongFullProblem(unittest.TestCase):
+
+    def setUp(self):
+        import problem_parser
+
+        domain_template = "../janitor/{}-domain.pddl"
+        self.planning_time = ten
+
+        wd = project_root
+        problem_dir = join(wd, "problems/no-stock-4x4")
+        problem_file = "auto-size(4,4)-dirt(random,30,60)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(0).json"
+        self.problem_file = join(problem_dir, problem_file)
+
+        # load model
+        self.model = problem_parser.decode(self.problem_file)
+
+        # create planners
+        central_planner = Planner(self.planning_time, working_directory=wd,
+                                  domain_file=domain_template.format(self.model["domain"]))
+        local_planner = Planner(self.planning_time, working_directory=wd,
+                                domain_file=domain_template.format("janitor-single"))
+
+        # create and setup executors
+        agent_executors = [AgentExecutor(agent=agent_name, planning_time=self.planning_time)
+                           for agent_name in self.model["agents"]]
+        planning_executor = CentralPlannerExecutor(agent="planner",
+                                                   planning_time=self.planning_time,
+                                                   executor_ids=[e.id for e in agent_executors],
+                                                   agent_names=[e.agent for e in agent_executors],
+                                                   central_planner=central_planner,
+                                                   local_planner=local_planner)
+        for e in agent_executors:
+            e.planner_id = planning_executor.id
+
+        # setup simulator
+        self.executors = dict({e.agent: e for e in agent_executors},
+                              planner=planning_executor)
+
+    def test_full_problem(self):
+        simulator = Simulator(self.model, self.executors)
+
+        # when
+        simulator.run()
+
+        # then
+        self.assertTrue(simulator.is_goal_in_model())
