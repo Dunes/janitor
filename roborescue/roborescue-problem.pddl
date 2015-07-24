@@ -5,38 +5,46 @@
 		medic1 - medic
 		police1 - police
 		civ1 - civilian
-		start - building
-		finish - building
+		hospital1 hospital2 - hospital
+		building1 - building
 	)
 				
 	(:init
 	
-		(at medic1 start)
-		(at police1 start)
-		(at civ1 finish)
-		;(at civ2 finish)
+	    (started)
+	    (= (total-reward) 0)
+	
+		(at medic1 hospital1)
+		(at police1 hospital1)
+		(at civ1 building1)
+		;(at civ2 building1)
 		
 		(empty medic1)
 		(buried civ1)
 		
 		(= (buriedness civ1) 7)
+		(= (life civ1) 50)
 		
-		(edge start finish)
-		(edge finish start)
+		(blocked-edge hospital1 building1)
+		(blocked-edge building1 hospital1)
+		(blocked-edge hospital2 building1)
+		(blocked-edge building1 hospital2)
 		
-		(= (distance start finish) 10)
-		(= (distance finish start) 10)
-		
-		(blocked start finish)
-		(blocked finish start)
-		
-		(= (blockedness start finish) 5)
-		(= (blockedness finish start) 5)
+		(= (distance hospital1 building1) 50)
+		(= (distance building1 hospital1) 50)
+		(= (distance building1 hospital2) 15)
+		(= (distance hospital2 building1) 15)
+
+		(= (blockedness hospital1 building1) 5)
+		(= (blockedness building1 hospital1) 5)
+		(= (blockedness hospital2 building1) 20)
+		(= (blockedness building1 hospital2) 20)
 		
 	)
 	
 	(:goal (and
-		(at civ1 start)
-		;(at civ2 start)
+		(collected-reward civ1)
 	))
+	
+	(:metric maximize (total-reward))
 )

@@ -1,11 +1,11 @@
 (define (domain roborescue)
-	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality :typing)
+	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality :typing :action-costs)
 	(:types
 		moveable - object
 		agent civilian - moveable
 		police medic - agent
 		node - object
-		building - node
+		building hospital - node
 	)
 	
 	(:predicates
@@ -15,23 +15,44 @@
 		(empty ?m - medic)
 		
 		(edge ?n1 ?n2 - node)
-		(blocked ?n1 ?n2 - node)
-		(unblocked ?n1 ?n2 - node)
+		(blocked-edge ?n1 ?n2 - node)
 		
 		(buried ?c - civilian)
 		(unburied ?c - civilian)
-		;(alive ?c - civilian)
-		;(dead ?c - civilian)
 		
+		(rescued ?c - civilian)
+		(collected-reward ?c - civilian)
+		(started)
 
 	)
 	
 	(:functions
-		;(life ?c - civilian)
+	    (total-reward)
+	    
+		(life ?c - civilian)
 		(buriedness ?c - civilian)
 		(blockedness ?n1 ?n2 - node)
 		(distance ?n1 ?n2 - node)
 	)
+	
+	(:process civilian-life-drain
+        :parameters (?c - civilian)
+        :precondition (started)
+        :effect (increase (life ?c) (* #t 1))
+    )
+    
+    (:durative-action collect-reward
+        :parameters (?c - civilian)
+        :duration (= ?duration 0)
+        :condition (and
+            (at start (rescued ?c))
+        )
+        :effect (and
+            (at start (increase (total-reward) 10))
+            (at start (not (rescued ?c)))
+            (at start (collected-reward ?c))
+        )
+    )
 
 	(:durative-action move
 		:parameters (?a - agent ?n1 - node ?n2 - node)
@@ -39,7 +60,6 @@
 		:condition (and 
 			(at start (at ?a ?n1))
 			(at start (edge ?n1 ?n2))
-			(at start (unblocked ?n1 ?n2))
 		)
 		:effect (and 
 			(at start (not (at ?a ?n1)))
@@ -52,14 +72,13 @@
 		:duration (= ?duration (blockedness ?n1 ?n2))
 		:condition (and 
 			(over all (at ?a ?n1))
-			(at start (edge ?n1 ?n2))
-			(at start (blocked ?n1 ?n2))
+			(at start (blocked-edge ?n1 ?n2))
 		)
 		:effect (and 
-			(at end (not (blocked ?n1 ?n2)))
-			(at end (not (blocked ?n2 ?n1)))
-			(at end (unblocked ?n1 ?n2))
-			(at end (unblocked ?n2 ?n1))
+			(at start (not (blocked-edge ?n1 ?n2)))
+			(at start (not (blocked-edge ?n2 ?n1)))
+			(at end (edge ?n1 ?n2))
+			(at end (edge ?n2 ?n1))
 		)
 	)
 
@@ -80,7 +99,7 @@
 	)
 	
 	(:durative-action unload
-		:parameters (?m - medic ?c - civilian ?b - building)
+		:parameters (?m - medic ?c - civilian ?b - hospital)
 		:duration (= ?duration 1)
 		:condition (and 
 			(over all (at ?m ?b))
@@ -90,10 +109,11 @@
 			(at start (not (carrying ?m ?c)))
 			(at end (at ?c ?b))
 			(at end (empty ?m))
+			(at end (rescued ?c))
 		)
 	)
 
-	(:durative-action clear
+	(:durative-action rescue
 		:parameters (?m - medic ?c - civilian ?b - building)
 		:duration (= ?duration (buriedness ?c))
 		:condition (and 
