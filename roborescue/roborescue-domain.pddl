@@ -1,5 +1,5 @@
 (define (domain roborescue)
-	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality :typing :action-costs)
+	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality :typing :action-costs :preferences)
 	(:types
 		moveable - object
 		agent civilian - moveable
@@ -9,6 +9,8 @@
 	)
 	
 	(:predicates
+	
+		(available ?m - medic)
 		
 		(at ?m - moveable ?n - node)
 		(carrying ?m - medic ?c - civilian)
@@ -20,39 +22,18 @@
 		(buried ?c - civilian)
 		(unburied ?c - civilian)
 		
+		(alive ?c - civilian)
+		
 		(rescued ?c - civilian)
-		(collected-reward ?c - civilian)
-		(started)
 
 	)
 	
 	(:functions
-	    (total-reward)
 	    
-		(life ?c - civilian)
 		(buriedness ?c - civilian)
 		(blockedness ?n1 ?n2 - node)
 		(distance ?n1 ?n2 - node)
 	)
-	
-	(:process civilian-life-drain
-        :parameters (?c - civilian)
-        :precondition (started)
-        :effect (increase (life ?c) (* #t 1))
-    )
-    
-    (:durative-action collect-reward
-        :parameters (?c - civilian)
-        :duration (= ?duration 0)
-        :condition (and
-            (at start (rescued ?c))
-        )
-        :effect (and
-            (at start (increase (total-reward) 10))
-            (at start (not (rescued ?c)))
-            (at start (collected-reward ?c))
-        )
-    )
 
 	(:durative-action move
 		:parameters (?a - agent ?n1 - node ?n2 - node)
@@ -85,11 +66,12 @@
 	(:durative-action load
 		:parameters (?m - medic ?c - civilian ?b - building)
 		:duration (= ?duration 1)
-		:condition (and 
+		:condition (and
 			(over all (at ?m ?b))
 			(at start (at ?c ?b))
 			(at start (empty ?m))
 			(at start (unburied ?c))
+			(at start (alive ?c))
 		)
 		:effect (and 
 			(at start (not (at ?c ?b)))
@@ -104,6 +86,7 @@
 		:condition (and 
 			(over all (at ?m ?b))
 			(at start (carrying ?m ?c))
+			(over all (alive ?c))
 		)
 		:effect (and
 			(at start (not (carrying ?m ?c)))
@@ -120,10 +103,14 @@
 			(over all (at ?m ?b))
 			(at start (at ?c ?b))
 			(at start (buried ?c))
+			(at start (alive ?c))
+			(at start (available ?m))
 		)
 		:effect (and
 			(at start (not (buried ?c)))
 			(at end (unburied ?c))
+			;(at start (not (available ?m)))
+			(at end (available ?m))
 		)
 	)
 
