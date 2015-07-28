@@ -1,13 +1,14 @@
 __author__ = 'jack'
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import Mock, call
 
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_item, equal_to
+from hamcrest import assert_that, empty, is_
 
 from singleagent.simulator import Simulator
 from singleagent.executor import Executor
-from action import Plan
+from janitor.action import Plan
+
 
 class TestRun(unittest.TestCase):
     """can't think of any tests -- function quite simple"""

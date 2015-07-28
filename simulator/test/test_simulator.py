@@ -5,16 +5,15 @@ Created on 26 Jun 2014
 """
 import unittest
 from unittest.mock import MagicMock, Mock, patch, call
+from decimal import Decimal
+from queue import PriorityQueue
 
 from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_item, equal_to
 
-from decimal import Decimal
-
 import simulator
-from action import Move, ExtraClean, Action, Observe, Clean, Stalled
+from janitor.action import Move, ExtraClean, Action, Observe, Clean, Stalled
 from action_state import ExecutionState, ActionState
 from util.builder import ModelBuilder
-from queue import PriorityQueue
 from planning_exceptions import ExecutionError
 from simulator import ExecutionResult
 

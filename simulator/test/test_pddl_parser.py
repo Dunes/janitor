@@ -6,8 +6,11 @@ Created on 22 Jun 2014
 # test framework imports
 import unittest
 from unittest.mock import patch, Mock
+
 from hamcrest import assert_that, equal_to
+
 from util.functools import as_list
+
 
 # module under test
 import pddl_parser
@@ -20,7 +23,7 @@ from io import StringIO
 # imports from project for tests
 from planning_exceptions import IncompletePlanException
 from pddl_parser import decode_plan
-from action import Move, Clean
+from janitor.action import Move, Clean
 from accuracy import quantize
 
 

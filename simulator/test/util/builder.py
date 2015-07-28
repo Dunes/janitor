@@ -4,10 +4,10 @@ Created on 20 Jun 2014
 @author: jack
 """
 from inspect import getargspec
-
-from action import Move, Clean, ExtraClean
-from accuracy import quantize
 from collections import OrderedDict
+
+from janitor.action import Move, Clean, ExtraClean
+from accuracy import quantize
 
 
 class ModelBuilder(object):

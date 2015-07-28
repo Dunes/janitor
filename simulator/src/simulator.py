@@ -1,16 +1,14 @@
 import logging
-
 from math import isnan
-
-from planner import Planner
-from logger import StyleAdapter
 from collections import Iterable, namedtuple
 from queue import PriorityQueue
 from itertools import chain
 from copy import deepcopy
 from decimal import Decimal
 
-from action import Move, Observe, Plan, ExtraClean, Stalled
+from planner import Planner
+from logger import StyleAdapter
+from janitor.action import Move, Observe, Plan, ExtraClean, Stalled
 from planning_exceptions import ExecutionError
 from action_state import ActionState, ExecutionState
 from pddl_parser import unknown_value_getter

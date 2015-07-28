@@ -2,10 +2,11 @@ from heapq import heapify
 from itertools import chain
 from abc import abstractmethod, ABCMeta
 from logging import getLogger
-from action import Plan
+from collections import namedtuple
+
+from janitor.action import Plan
 from action_state import ExecutionState, ActionState
 from logger import StyleAdapter
-from collections import namedtuple
 from priority_queue import MultiActionStateQueue
 from accuracy import as_start_time
 

@@ -2,12 +2,12 @@
 
 import argparse
 from collections import namedtuple
-from problem_parser import encode
 from copy import deepcopy
 from itertools import chain
-from action import Observe
-
 from random import uniform as rand
+
+from problem_parser import encode
+from action import Observe
 from accuracy import quantize
 
 

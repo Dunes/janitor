@@ -5,19 +5,16 @@ Created on 20 Jun 2014
 """
 import unittest
 from unittest.mock import Mock, MagicMock, ANY, patch
-from hamcrest import assert_that, is_not, has_item, equal_to, less_than, greater_than
 import random
-
-import action
-from action_state import ExecutionState
-from accuracy import as_start_time, as_end_time
-
-
 from decimal import Decimal
 
+from hamcrest import assert_that, is_not, has_item, equal_to, greater_than
+
+from janitor import action
+from action_state import ExecutionState
+from accuracy import as_start_time, as_end_time
 from util.builder import ModelBuilder
 from util.matchers import has_agent, has_edge, has_node
-
 
 ZERO = Decimal("0")
 

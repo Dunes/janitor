@@ -16,7 +16,7 @@ from decimal import Decimal
 from operator import attrgetter
 from os.path import join, exists
 
-from action import Move, Clean, ExtraClean, Observe, Plan
+from janitor.action import Move, Clean, ExtraClean, Observe, Plan
 from planner import Planner
 from action_state import ActionState, ExecutionState
 from singleagent.executor import AgentExecutor, CentralPlannerExecutor

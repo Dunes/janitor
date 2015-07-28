@@ -1,14 +1,12 @@
 __author__ = 'jack'
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch, call
-
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_items, equal_to, has_property
-
 from decimal import Decimal
 
+from hamcrest import assert_that, has_length, has_items, has_property
+
 from singleagent.executor import Executor, CentralPlannerExecutor
-from action import ExtraClean, ExtraCleanPart, Move
+from janitor.action import ExtraClean, ExtraCleanPart, Move
 
 class TestDeadline(unittest.TestCase):
 

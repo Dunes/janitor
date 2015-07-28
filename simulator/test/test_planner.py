@@ -1,19 +1,18 @@
 __author__ = 'jack'
 
 import unittest
-
-import hamcrest
-from hamcrest import assert_that, contains, is_not, empty, is_, has_length, has_item, equal_to, any_of
-
 from io import StringIO
 from decimal import Decimal
-
-from accuracy import as_next_end_time
-from action import Action, Clean
-from planner import Planner, NoPlanException, synchronized
-from pddl_parser import CleaningWindowTil, _encode_predicate
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event, Lock
+
+import hamcrest
+from hamcrest import assert_that, is_not, has_item, equal_to, any_of
+
+from accuracy import as_next_end_time
+from janitor.action import Action, Clean
+from planner import Planner, NoPlanException, synchronized
+from pddl_parser import CleaningWindowTil, _encode_predicate
 
 
 class ActionMatcher(hamcrest.base_matcher.BaseMatcher):
