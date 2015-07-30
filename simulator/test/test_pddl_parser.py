@@ -22,7 +22,7 @@ from io import StringIO
 
 # imports from project for tests
 from planning_exceptions import IncompletePlanException
-from pddl_parser import decode_plan
+from pddl_parser import PlanDecoder
 from janitor.action import Move, Clean
 from accuracy import quantize
 
@@ -30,13 +30,13 @@ from accuracy import quantize
 class PddlDecodeTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.decoder = PlanDecoder({"move": Move, "clean": Clean})
 
     def tearDown(self):
         pass
 
     @patch("pddl_parser.dropwhile", new=as_list(itertools.dropwhile))
-    @patch("pddl_parser.decode_plan")
+    @patch("pddl_parser.PlanDecoder.decode_plan")
     def test_decode_plan_from_optic(self, decode_plan):
         # given
         report_incomplete_plan = Mock()
@@ -61,7 +61,7 @@ class PddlDecodeTest(unittest.TestCase):
             7.001: (move agent2 n1 n2)  [10.000]""").split("\n")[1:]
 
         # when
-        pddl_parser.decode_plan_from_optic(data_input, report_incomplete_plan)
+        self.decoder.decode_plan_from_optic(data_input, report_incomplete_plan)
 
         # then
         decode_plan.assert_called_once_with(expected_data, report_incomplete_plan)
@@ -71,7 +71,7 @@ class PddlDecodeTest(unittest.TestCase):
         report_incomplete_plan = True
 
         with self.assertRaises(IncompletePlanException):
-            list(pddl_parser.decode_plan(data_input, report_incomplete_plan))
+            list(self.decoder.decode_plan(data_input, report_incomplete_plan))
 
     def test_decode_plan_with_incomplete_input(self):
         # given
@@ -87,7 +87,7 @@ class PddlDecodeTest(unittest.TestCase):
         # then
         with self.assertRaises(IncompletePlanException):
             # when
-            list(decode_plan(data_input, report_incomplete_plan))
+            list(self.decoder.decode_plan(data_input, report_incomplete_plan))
 
     def test_decode_plan_with_complete_input(self):
         # given
@@ -100,10 +100,10 @@ class PddlDecodeTest(unittest.TestCase):
         expected_clean = Clean(quantize(1), quantize(5), "agent2", "rm1")
 
         # when
-        actual = list(decode_plan(data_input, report_incomplete_plan))
+        actual = list(self.decoder.decode_plan(data_input, report_incomplete_plan))
 
         # then
-        self.assertEquals(2, len(actual))
+        self.assertEqual(2, len(actual))
         actual_move, actual_clean = actual
         assert_that(actual_move, equal_to(expected_move))
         assert_that(actual_clean, equal_to(expected_clean))

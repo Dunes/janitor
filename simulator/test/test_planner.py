@@ -11,6 +11,7 @@ from hamcrest import assert_that, is_not, has_item, equal_to, any_of
 
 from accuracy import as_next_end_time
 from janitor.action import Action, Clean
+from janitor import plan_decoder
 from planner import Planner, NoPlanException, synchronized
 from pddl_parser import CleaningWindowTil, _encode_predicate
 
@@ -56,6 +57,7 @@ class TestGetPlan(unittest.TestCase):
 
     def setUp(self):
         self.planner = Planner(planning_time=10,
+                               decoder=plan_decoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-domain.pddl")
 
@@ -176,6 +178,7 @@ class TestSingleAgentGetPlan(unittest.TestCase):
 
     def setUp(self):
         self.planner = Planner(planning_time=10,
+                               decoder=plan_decoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
         self.model = {
@@ -239,6 +242,7 @@ class TestTilEffectsActionOrder(unittest.TestCase):
 
     def setUp(self):
         self.planner = Planner(planning_time=10,
+                               decoder=plan_decoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
         self.model = {

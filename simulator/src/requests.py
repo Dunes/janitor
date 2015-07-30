@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from logging import getLogger
 from collections import namedtuple
 
-from janitor.action import Plan
+from action import Plan
 from action_state import ExecutionState, ActionState
 from logger import StyleAdapter
 from priority_queue import MultiActionStateQueue

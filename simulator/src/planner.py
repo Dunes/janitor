@@ -1,7 +1,8 @@
 from functools import wraps
 from subprocess import Popen, PIPE
-from pddl_parser import decode_plan_from_optic, encode_problem_to_file
+from pddl_parser import encode_problem_to_file
 import tempfile
+from io import TextIOWrapper
 from os.path import join as path_join
 from threading import Timer, Thread, Lock
 from time import time
@@ -35,13 +36,14 @@ def synchronized(lock):
 
 class Planner(object):
 
-    def __init__(self, planning_time, planner_location="../optic-cplex", domain_file="../janitor/janitor-domain.pddl",
+    def __init__(self, planning_time, decoder, planner_location="../optic-cplex", domain_file="../janitor/janitor-domain.pddl",
             working_directory=".", encoding="UTF-8"):
         self.planning_time = planning_time if not isnan(planning_time) else "till_first_plan"
         self.planner_location = planner_location
         self.domain_file = domain_file
         self.working_directory = working_directory
         self.encoding = encoding
+        self.decoder = decoder
 
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
@@ -67,14 +69,16 @@ class Planner(object):
 
         plan = None
         # run loop only once when duration is 0
-        while True:
-            try:
-                plan = list(decode_plan_from_optic(self.decode(p.stdout), report_incomplete_plan=report))
-            except IncompletePlanException:
-                break
-            if single_pass:
-                break
-        timer.cancel()
+        with TextIOWrapper(p.stdout) as process_output:
+            while True:
+                try:
+                    plan = list(self.decoder.decode_plan_from_optic(
+                        process_output, report_incomplete_plan=report))
+                except IncompletePlanException:
+                    break
+                if single_pass:
+                    break
+            timer.cancel()
         p.wait(1)
 
         if plan is not None:
@@ -96,7 +100,3 @@ class Planner(object):
         fh = tempfile.NamedTemporaryFile(mode="w", prefix="problem-", suffix=".pddl", delete=False)
         encode_problem_to_file(fh, model)
         return fh.name
-
-    def decode(self, data_stream):
-        for line in data_stream:
-            yield line.decode(self.encoding)

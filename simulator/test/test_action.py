@@ -179,8 +179,8 @@ class MoveTest(unittest.TestCase):
         assert_that(model, has_edge().with_distance(to_start - movement).from_("temp_node").to("start_node"))
         assert_that(model, has_edge().with_distance(to_end + movement).from_("temp_node").to("end_node"))
 
-    @patch("action.Move.create_temp_node")
-    @patch("action.Move.is_applicable", new=Mock(return_value=True))
+    @patch("janitor.action.Move.create_temp_node")
+    @patch("janitor.action.Move.is_applicable", new=Mock(return_value=True))
     def test_partially_apply_selects_create(self, create_temp_node):
         expected = False
         deadline = object()
@@ -193,9 +193,9 @@ class MoveTest(unittest.TestCase):
         self.move.create_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
 
-    @patch("action.Move.modify_temp_node", new=Mock(name="modify_temp_node"))
-    @patch("action.Move.create_temp_node", new=Mock(name="create_temp_node"))
-    @patch("action.Move.is_applicable", new=Mock(return_value=True))
+    @patch("janitor.action.Move.modify_temp_node", new=Mock(name="modify_temp_node"))
+    @patch("janitor.action.Move.create_temp_node", new=Mock(name="create_temp_node"))
+    @patch("janitor.action.Move.is_applicable", new=Mock(return_value=True))
     def test_partially_apply_selects_modify(self):
         expected = False
         deadline = Mock()
@@ -325,7 +325,7 @@ class CleanTest(unittest.TestCase):
         known_values.__setitem__.assert_called_once_with("cleaned", ANY)
         assert_that(is_not(actual))
 
-    @patch("action.Clean.is_applicable", new=Mock(return_value=True))
+    @patch("janitor.action.Clean.is_applicable", new=Mock(return_value=True))
     def test_partially_apply(self):
         deadline = Decimal("0.6")
         duration = deadline - self.clean.start_time
@@ -383,7 +383,7 @@ class ExtraCleanTest(unittest.TestCase):
 
         assert_that(is_not(actual))
 
-    @patch("action.ExtraClean.is_applicable", new=Mock(return_value=True))
+    @patch("janitor.action.ExtraClean.is_applicable", new=Mock(return_value=True))
     def test_apply(self):
         node_value = MagicMock()
         model = ModelBuilder().with_node("room", value=node_value).model
@@ -397,7 +397,7 @@ class ExtraCleanTest(unittest.TestCase):
         known_values.__setitem__.assert_called_once_with("cleaned", ANY)
         assert_that(is_not(actual))
 
-    @patch("action.ExtraClean.is_applicable", new=Mock(return_value=True))
+    @patch("janitor.action.ExtraClean.is_applicable", new=Mock(return_value=True))
     def test_partially_apply(self):
         deadline = Decimal("0.6")
         duration = deadline - self.extra_clean.start_time
