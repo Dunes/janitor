@@ -1,6 +1,6 @@
 from functools import wraps
 from subprocess import Popen, PIPE
-from pddl_parser import encode_problem_to_file
+from problem_encoder import encode_problem_to_file
 import tempfile
 from io import TextIOWrapper
 from os.path import join as path_join

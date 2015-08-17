@@ -8,6 +8,7 @@ Created on 12 Jul 2014
 import argparse
 import decimal
 import logging.config
+import importlib
 
 logging.config.fileConfig("logging.conf")
 
@@ -68,10 +69,15 @@ def run_single_agent_replan_simulator():
 
     # load model
     model = problem_parser.decode(args.problem_file)
+    decoder = importlib.import_module(model["domain"]).plan_decoder
 
     # create planners
-    central_planner = Planner(args.planning_time, domain_file=domain_template.format(model["domain"]))
-    local_planner = Planner(args.planning_time, domain_file=domain_template.format("janitor-single"))
+    central_planner = Planner(args.planning_time,
+        decoder=decoder,
+        domain_file=domain_template.format(model["domain"]))
+    local_planner = Planner(args.planning_time,
+        decoder=decoder,
+        domain_file=domain_template.format("janitor-single"))
 
     # create and setup executors
     agent_executors = [AgentExecutor(agent=agent_name, planning_time=args.planning_time)
