@@ -13,7 +13,8 @@ from accuracy import as_next_end_time
 from janitor.action import Action, Clean
 from janitor import plan_decoder
 from planner import Planner, NoPlanException, synchronized
-from pddl_parser import CleaningWindowTil, _encode_predicate
+from pddl_parser import CleaningWindowTil
+from problem_encoder import _encode_predicate
 
 
 class ActionMatcher(hamcrest.base_matcher.BaseMatcher):
@@ -237,6 +238,7 @@ class TestSingleAgentGetPlan(unittest.TestCase):
 
         # then
         assert_that(plan, has_item(with_agent("agent1", room="ed-rm1", start_time=30)))
+
 
 class TestTilEffectsActionOrder(unittest.TestCase):
 
