@@ -16,6 +16,7 @@ from decimal import Decimal
 from operator import attrgetter
 from os.path import join, exists
 
+from janitor import plan_decoder
 from janitor.action import Move, Clean, ExtraClean, Observe, Plan
 from planner import Planner
 from action_state import ActionState, ExecutionState
@@ -25,6 +26,7 @@ from singleagent.simulator import Simulator
 zero = Decimal(0)
 ten = Decimal(10)
 project_root = "/home/jack/work/simulator/"
+
 
 class TestExecutorKnowledgePassing(unittest.TestCase):
 
@@ -58,7 +60,8 @@ class TestExecutorKnowledgePassing(unittest.TestCase):
         # create executors
         wd = project_root
         assert exists(join(wd, "../optic-cplex"))
-        local_planner = Planner(ten, working_directory=wd, domain_file="../janitor/janitor-single-domain.pddl")
+        local_planner = Planner(ten, decoder=plan_decoder, working_directory=wd,
+            domain_file="../janitor/janitor-single-domain.pddl")
 
         self.agent1_executor = AgentExecutor(agent="agent1", planning_time=ten, planner_id=None)
         self.agent2_executor = AgentExecutor(agent="agent2", planning_time=ten, planner_id=None)
@@ -177,8 +180,9 @@ class TestFullProblem(unittest.TestCase):
         # create executors
         wd = project_root
         assert exists(join(wd, "../optic-cplex"))
-        central_planner = Planner(ten, working_directory=wd)
-        local_planner = Planner(ten, working_directory=wd, domain_file="../janitor/janitor-single-domain.pddl")
+        central_planner = Planner(ten, decoder=plan_decoder, working_directory=wd)
+        local_planner = Planner(ten, decoder=plan_decoder, working_directory=wd,
+            domain_file="../janitor/janitor-single-domain.pddl")
 
         self.agent1_executor = AgentExecutor(agent="agent1", planning_time=ten, planner_id=None)
         self.agent2_executor = AgentExecutor(agent="agent2", planning_time=ten, planner_id=None)
@@ -221,10 +225,14 @@ class TestLongFullProblem(unittest.TestCase):
         self.model = problem_parser.decode(self.problem_file)
 
         # create planners
-        central_planner = Planner(self.planning_time, working_directory=wd,
-                                  domain_file=domain_template.format(self.model["domain"]))
-        local_planner = Planner(self.planning_time, working_directory=wd,
-                                domain_file=domain_template.format("janitor-single"))
+        central_planner = Planner(self.planning_time,
+            decoder=plan_decoder,
+            working_directory=wd,
+            domain_file=domain_template.format(self.model["domain"]))
+        local_planner = Planner(self.planning_time,
+            decoder=plan_decoder,
+            working_directory=wd,
+            domain_file=domain_template.format("janitor-single"))
 
         # create and setup executors
         agent_executors = [AgentExecutor(agent=agent_name, planning_time=self.planning_time)
