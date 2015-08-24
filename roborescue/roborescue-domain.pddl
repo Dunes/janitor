@@ -72,11 +72,14 @@
 			(at start (empty ?m))
 			(at start (unburied ?c))
 			(at start (alive ?c))
+			(at start (available ?m))
 		)
 		:effect (and 
 			(at start (not (at ?c ?b)))
 			(at start (not (empty ?m)))
 			(at end (carrying ?m ?c))
+			(at start (not (available ?m)))
+			(at end (available ?m))
 		)
 	)
 	
@@ -87,12 +90,15 @@
 			(over all (at ?m ?b))
 			(at start (carrying ?m ?c))
 			(over all (alive ?c))
+			(at start (available ?m))
 		)
 		:effect (and
 			(at start (not (carrying ?m ?c)))
 			(at end (at ?c ?b))
 			(at end (empty ?m))
 			(at end (rescued ?c))
+			(at start (not (available ?m)))
+			(at end (available ?m))
 		)
 	)
 
@@ -109,7 +115,7 @@
 		:effect (and
 			(at start (not (buried ?c)))
 			(at end (unburied ?c))
-			;(at start (not (available ?m)))
+			(at start (not (available ?m)))
 			(at end (available ?m))
 		)
 	)
