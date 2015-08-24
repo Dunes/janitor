@@ -6,7 +6,7 @@ from decimal import Decimal
 from logging import getLogger
 
 from accuracy import quantize, as_end_time, as_start_time
-from problem_encoder import unknown_value_getter
+from janitor.problem_encoder import unknown_value_getter
 from janitor.action import Plan, Observe, Move, Clean, ExtraClean, Stalled, GetExecutionHeuristic
 from action_state import ActionState, ExecutionState
 from planning_exceptions import ExecutionError

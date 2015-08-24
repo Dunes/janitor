@@ -1,17 +1,17 @@
 from functools import wraps
 from subprocess import Popen, PIPE
-from problem_encoder import encode_problem_to_file
 import tempfile
 from io import TextIOWrapper
 from os.path import join as path_join
 from threading import Timer, Thread, Lock
 from time import time
 from math import isnan
+from logging import getLogger
+
+from janitor.problem_encoder import encode_problem_to_file
 from planning_exceptions import NoPlanException, IncompletePlanException
 from accuracy import quantize
-from logging import getLogger
 from logger import StyleAdapter
-
 
 log = StyleAdapter(getLogger(__name__))
 

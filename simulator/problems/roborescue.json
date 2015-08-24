@@ -1,5 +1,5 @@
 {
-	"domain": "roborescue", "problem": "test",
+	"domain": "roborescue", "problem": "roborescue-problem-test",
 	"goal": {"soft-goals": [["rescued", "civ1"], ["rescued", "civ2"]]},
 	"metric": {"type": "minimize", "weights": {
 	    "total-time": 1,
@@ -63,7 +63,7 @@
  	"events": [
  	    {
  	        "time": 200,
- 	        "object": "civ1",
+ 	        "object_id": "civ1",
  	        "predicate": "alive",
  	        "becomes": false
  	    }

@@ -14,7 +14,7 @@ from janitor.action import Action, Clean
 from janitor import plan_decoder
 from planner import Planner, NoPlanException, synchronized
 from pddl_parser import CleaningWindowTil
-from problem_encoder import _encode_predicate
+from janitor.problem_encoder import _encode_predicate
 
 
 class ActionMatcher(hamcrest.base_matcher.BaseMatcher):
