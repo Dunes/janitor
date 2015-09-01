@@ -20,7 +20,7 @@ def encode_problem(out, model, agent, goals, time, events):
     _encode_objects(out, objects)
 
     object_values = _collate_objects(model["objects"]) if agent == "all" else find_object(agent, model["objects"])
-    _encode_init(out, object_values, model["graph"], model["assumed-values"], events)
+    _encode_init(out, object_values, model["graph"], model["assumed-values"], events, model, time)
 
     goals = goals if goals is not None else model["goal"]
     _encode_goal(out, goals)
@@ -54,12 +54,12 @@ def _encode_objects(out, objects):
     out.write(")\n")
 
 
-def _encode_init(out, objects, graph, assumed_values, events=None):
+def _encode_init(out, objects, graph, assumed_values, events=None, model=None, time=None):
     out.write("(:init ")
     _encode_init_helper(out, objects, assumed_values)
     if events:
         for event in events:
-            _encode_predicate(out, event.as_predicate())
+            _encode_predicate(out, event.as_predicate(time, model))
     _encode_graph(out, graph, assumed_values)
     out.write(") ")
 

@@ -14,12 +14,13 @@ class TestEvent(TestCase):
                 "known": {},
                 "unknown": {}
             }}},
+            "assumed-values": {}
         }
         event = Event(100, "civ1", "buried", becomes=True)
         expected = "at", 100, ("buried", "civ1")
 
         # when
-        actual = event.as_predicate(0, model, {})
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)
 
@@ -30,12 +31,13 @@ class TestEvent(TestCase):
                 "known": {"alive": True},
                 "unknown": {}
             }}},
+            "assumed-values": {}
         }
         event = Event(100, "civ1", "alive", becomes=False)
         expected = "at", 100, ("not", ("alive", "civ1"))
 
         # when
-        actual = event.as_predicate(0, model, {})
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)
 
@@ -46,13 +48,13 @@ class TestEvent(TestCase):
                 "known": {},
                 "unknown": {"alive": {"actual": True}}
             }}},
+            "assumed-values": {"alive": True}
         }
-        assumed_values = {"alive": True}
         event = Event(100, "civ1", "alive", becomes=False)
         expected = "at", 100, ("not", ("alive", "civ1"))
 
         # when
-        actual = event.as_predicate(0, model, assumed_values)
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)
 
@@ -63,48 +65,48 @@ class TestEvent(TestCase):
                 "known": {},
                 "unknown": {"alive": {"actual": True}}
             }}},
+            "assumed-values": {"alive": False}
         }
-        assumed_values = {"alive": False}
         event = Event(100, "civ1", "alive", becomes=False)
         expected = None
 
         # when
-        actual = event.as_predicate(0, model, assumed_values)
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)
 
     def test_edge_as_predicate_becomes_true(self):
         # given
         model = {
-            "objects": {},
             "graph": {
                 "edges": {
                     "building1 hospital1": {"known": {}}
                 }
-            }
+            },
+            "assumed-values": {}
         }
         event = Event(100, "building1 hospital1", "blocked", becomes=True)
         expected = "at", 100, ("blocked", "building1 hospital1")
 
         # when
-        actual = event.as_predicate(0, model, {})
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)
 
     def test_bidirectional_edge_as_predicate_becomes_true(self):
         # given
         model = {
-            "objects": {},
             "graph": {
                 "edges": {
                     "hospital1 building1": {"known": {}}
                 }
-            }
+            },
+            "assumed-values": {}
         }
         event = Event(100, "building1 hospital1", "blocked", becomes=True)
         expected = "at", 100, ("blocked", "building1 hospital1")
 
         # when
-        actual = event.as_predicate(0, model, {})
+        actual = event.as_predicate(0, model)
 
         self.assertEqual(expected, actual)

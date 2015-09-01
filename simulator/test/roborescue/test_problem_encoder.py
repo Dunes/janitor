@@ -81,7 +81,7 @@ class ProblemEncoderTest(TestCase):
                    "(alive civ1 ) " \
                    "(at civ1 building1 ) " \
                    "(buried civ1 ) " \
-                   "(= (buriedness civ1 ) 100) " \
+                   "(= (buriedness civ1 )  100 ) " \
                    "(at police1 hospital1 ) ) "
         self.assertEqual(expected, actual)
 
@@ -108,12 +108,12 @@ class ProblemEncoderTest(TestCase):
         actual = self.out.getvalue()
 
         # then
-        expected = "(= (distance building1 hospital1 ) 50) " \
+        expected = "(= (distance building1 hospital1 )  50 ) " \
             + "(edge building1 hospital1 ) " \
-            + "(= (blockedness building1 hospital1 ) 100) " \
-            + "(= (distance hospital1 building1 ) 50) " \
+            + "(= (blockedness building1 hospital1 )  100 ) " \
+            + "(= (distance hospital1 building1 )  50 ) " \
             + "(edge hospital1 building1 ) " \
-            + "(= (blockedness hospital1 building1 ) 100) "
+            + "(= (blockedness hospital1 building1 )  100 ) "
         self.assertEqual(expected, actual)
 
     def test_encode_graph_with_known_edge(self):
@@ -139,12 +139,12 @@ class ProblemEncoderTest(TestCase):
         actual = self.out.getvalue()
 
         # then
-        expected = "(= (distance building1 hospital1 ) 50) " \
+        expected = "(= (distance building1 hospital1 )  50 ) " \
             + "(edge building1 hospital1 ) " \
-            + "(= (blockedness building1 hospital1 ) 100) " \
-            + "(= (distance hospital1 building1 ) 50) " \
+            + "(= (blockedness building1 hospital1 )  100 ) " \
+            + "(= (distance hospital1 building1 )  50 ) " \
             + "(edge hospital1 building1 ) " \
-            + "(= (blockedness hospital1 building1 ) 100) "
+            + "(= (blockedness hospital1 building1 )  100 ) "
         self.assertEqual(expected, actual)
 
     def test_encode_graph_with_known_blocked_edge(self):
@@ -170,12 +170,12 @@ class ProblemEncoderTest(TestCase):
         actual = self.out.getvalue()
 
         # then
-        expected = "(= (distance building1 hospital1 ) 50) " \
+        expected = "(= (distance building1 hospital1 )  50 ) " \
             + "(blocked-edge building1 hospital1 ) " \
-            + "(= (blockedness building1 hospital1 ) 100) " \
-            + "(= (distance hospital1 building1 ) 50) " \
+            + "(= (blockedness building1 hospital1 )  100 ) " \
+            + "(= (distance hospital1 building1 )  50 ) " \
             + "(blocked-edge hospital1 building1 ) " \
-            + "(= (blockedness hospital1 building1 ) 100) "
+            + "(= (blockedness hospital1 building1 )  100 ) "
         self.assertEqual(expected, actual)
 
     def test_collate_objects(self):
@@ -260,17 +260,6 @@ class TestCreatePredicate(TestCase):
 
         # then
         self.assertEqual((predicate_name, object_name), actual)
-
-    def test_create_false_predicate(self):
-        predicate_name = "name"
-        value = False
-        object_name = "object"
-
-        # when
-        actual = create_predicate(predicate_name, value, object_name, include_not=True)
-
-        # then
-        self.assertEqual(("not", (predicate_name, object_name)), actual)
 
     def test_create_function_predicate(self):
         predicate_name = "name"

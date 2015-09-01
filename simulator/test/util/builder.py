@@ -6,7 +6,7 @@ Created on 20 Jun 2014
 from inspect import getargspec
 from collections import OrderedDict
 
-from janitor.action import Move, Clean, ExtraClean
+from janitor import action
 from accuracy import quantize
 
 
@@ -118,10 +118,11 @@ class ActionBuilder(object):
         return self
 
     def move(self):
-        return Move(**{key: self.params.get(key) for key in getargspec(Move).args[1:]})
+        return action.Move(**{key: self.params.get(key) for key in getargspec(action.Move).args[1:]})
 
     def clean(self):
-        return Clean(**{key: self.params.get(key) for key in getargspec(Clean).args[1:]})
+        return action.Clean(**{key: self.params.get(key) for key in getargspec(action.Clean).args[1:]})
 
     def extra_clean(self):
-        return ExtraClean(**{key: self.params.get(key) for key in getargspec(ExtraClean).args[1:]})
+        return action.ExtraClean(**{key: self.params.get(key) for key in getargspec(action.ExtraClean).args[1:]})
+

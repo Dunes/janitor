@@ -3,32 +3,50 @@ Created on 20 Jun 2014
 
 @author: jack
 """
+__author__ = 'jack'
 
 import hamcrest
 from hamcrest import anything, equal_to
+from hamcrest.core.core.isanything import IsAnything
+
+
+from roborescue.problem_encoder import find_object
 
 __all__ = ["has_agent", "has_edge", "has_node"]
 
 
-class HasAgent(hamcrest.base_matcher.BaseMatcher):
+class HasObject(hamcrest.base_matcher.BaseMatcher):
 
-    def with_agent(self, agent):
-        self.agent_name = agent
+    def with_object(self, object_id):
+        self.object_id = object_id
         return self
+
+    def _matches(self, objects):
+        try:
+            find_object(self.object_id, objects)
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def describe_to(self, description):
+        description.append("model with object {!r}".format(self.object_id))
+
+
+class HasAgent(HasObject):
 
     def at(self, at):
         self.at = at
         return self
 
     def _matches(self, model):
-        if self.agent_name in model["agents"]:
-            agent_state = model["agents"][self.agent_name]
-            if "at" in agent_state and len(agent_state["at"]) == 2:
-                return agent_state["at"][1] == self.at
+        agent_state = find_object(self.object_id, model["objects"])
+        if "at" in agent_state and len(agent_state["at"]) == 2:
+            return agent_state["at"][1] == self.at
         return False
 
     def describe_to(self, description):
-        description.append("model with agent {!r} at {!r}".format(self.agent_name, self.at))
+        description.append("model with agent {!r} at {!r}".format(self.object_id, self.at))
 
 
 class HasEdge(hamcrest.base_matcher.BaseMatcher):
@@ -49,12 +67,20 @@ class HasEdge(hamcrest.base_matcher.BaseMatcher):
         self.to_node = to_node
         return self
 
-    def _matches(self, model):
-        edge = [self.from_node, self.to_node, self.distance]
-        return edge in model["graph"]["edges"]
+    def _matches(self, edges):
+        if isinstance(self.from_node, IsAnything) and isinstance(self.to_node, IsAnything):
+            edge_id = self.from_node
+        else:
+            edge_id = " ".join((self.from_node, self.to_node))
+        try:
+            edge = edges[edge_id]
+        except KeyError:
+            return False
+        return edge["known"]["distance"] == self.distance
 
     def describe_to(self, description):
-        description.append("graph with edge {!r}".format([self.from_node, self.to_node, self.distance]))
+        description.append("graph with edge {!r} and distance {}".format(" ".join((self.from_node, self.to_node)),
+            self.distance))
 
 
 class HasNode(hamcrest.base_matcher.BaseMatcher):
@@ -92,8 +118,12 @@ def has_node(node):
     return HasNode().with_node(node)
 
 
+def has_object(object_id):
+    return HasObject().with_object(object_id)
+
+
 def has_agent(agent):
-    return HasAgent().with_agent(agent)
+    return HasAgent().with_object(agent)
 
 
 def has_edge():

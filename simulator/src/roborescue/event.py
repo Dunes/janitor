@@ -11,7 +11,7 @@ class Event:
         self.predicate = predicate
         self.becomes = becomes
 
-    def as_predicate(self, time, model, assumed_values):
+    def as_predicate(self, time, model):
         if time > self.time:
             raise ValueError("{} has expired. Current time: {}".format(self, time))
         if self.becomes is False:
@@ -22,7 +22,7 @@ class Event:
                 predicate_value = obj["known"].get(self.predicate)
                 if predicate_value is None:
                     assert isinstance(obj["unknown"][self.predicate]["actual"], bool)
-                    predicate_value = unknown_value_getter(obj["unknown"], self.predicate, assumed_values)
+                    predicate_value = unknown_value_getter(obj["unknown"], self.predicate, model["assumed-values"])
                     if predicate_value is False:
                         return None
             predicate = "not", create_predicate(self.predicate, predicate_value, self.object_id)
