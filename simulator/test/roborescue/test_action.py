@@ -553,8 +553,10 @@ class TestLoad(TestCase):
         load = ActionBuilder().load()
 
         # when
-        with self.assertRaises(NotImplementedError):
-            load.as_partial()
+        actual = load.as_partial()
+
+        # then
+        assert_that(load, equal_to(actual))
 
 
 class TestUnload(TestCase):
@@ -732,8 +734,10 @@ class TestUnload(TestCase):
         unload = ActionBuilder().unload()
 
         # when
-        with self.assertRaises(NotImplementedError):
-            unload.as_partial()
+        actual = unload.as_partial()
+
+        # then
+        assert_that(unload, equal_to(actual))
 
 
 class TestRescue(TestCase):
@@ -936,14 +940,18 @@ class ObserveTest(TestCase):
     @patch("roborescue.action.Observe.is_applicable", new=Mock(return_value=True))
     @patch("roborescue.action.Observe._check_new_knowledge", new=Mock(return_value=True))
     def test_apply_with_new_knowledge(self):
+        node = "node"
         unknown = {"k": "v"}
-        known = {}
-        model = ModelBuilder().with_assumed_values().with_node("node", unknown=unknown, known=known).model
+        known = {"at": [True, node]}
+        model = ModelBuilder().with_assumed_values().with_node(node, unknown=unknown, known=known).model
 
         actual = self.observe.apply(model)
 
-        assert_that(model["objects"], has_node("node").with_value(known={"k": "v"}, unknown={}))
-        assert_that(actual)
+        assert_that(actual, equal_to([node]))
+        node = find_object(node, model["objects"])
+        assert_that(node["known"], has_entry("k", "v"))
+        assert_that(node["known"], has_entry("k", "v"))
+        assert_that(node["unknown"], is_(empty()))
 
     @patch("roborescue.action.Observe._get_actual_value", new=Mock(side_effect=lambda x: x))
     @patch("roborescue.action.Observe.is_applicable", new=Mock(return_value=True))
@@ -992,3 +1000,30 @@ class ObserveTest(TestCase):
         assert_that(observable_object2["unknown"], is_not(empty()))
         assert_that(observable_object2["unknown"], has_entry("buried", {"actual": True}))
         assert_that(observable_object2["known"], has_entry("at", [True, other_node]))
+
+    def test_apply_observes_blocked_edges_next_to_node(self):
+        # given
+        agent = "agent1"
+        node = "building1"
+        other_node = "building2"
+        model = ModelBuilder(assumed_values={"blockedness": 0, "blocked-edge": False}) \
+            .with_agent(agent, at=node) \
+            .with_edge(node, other_node, distance=10, blockedness=20, known=False) \
+            .model
+        observe = self.observe = Observe(ZERO, agent, node)
+
+        # when
+        observe.apply(model)
+
+        # then
+        edge_id = node + " " + other_node
+        edge = model["graph"]["edges"][edge_id]
+        assert_that(edge["unknown"], is_(empty()))
+        assert_that(edge["known"], has_entry("blocked-edge", True))
+        assert_that(edge["known"], has_entry("blockedness", 20))
+
+        edge_id = other_node + " " + node
+        edge = model["graph"]["edges"][edge_id]
+        assert_that(edge["unknown"], is_(empty()))
+        assert_that(edge["known"], has_entry("blocked-edge", True))
+        assert_that(edge["known"], has_entry("blockedness", 20))

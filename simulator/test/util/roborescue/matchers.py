@@ -158,13 +158,8 @@ class HasNode(hamcrest.base_matcher.BaseMatcher):
         return is_(self.node_value).matches(node)
 
     def describe_to(self, description):
-        if not self.has_node:
-            description.append("node with name {!r}".format(self.node))
-        if not self.has_value:
-            if not self.has_node:
-                description.append(" and having value {!r}".format(self.node_value))
-            else:
-                description.append("node having value {!r}".format(self.node_value))
+        description.append("node with name {!r} and having value ".format(self.node))
+        is_(self.node_value).describe_to(description)
 
 
 def has_node(node):

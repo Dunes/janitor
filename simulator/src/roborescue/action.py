@@ -1,8 +1,12 @@
 __author__ = 'jack'
 
-from action import Action, Plan, LocalPlan, GetExecutionHeuristic, as_end_time, INSTANTANEOUS_ACTION_DURATION
+from action import Action as BaseAction, Plan, LocalPlan, GetExecutionHeuristic, as_end_time, \
+    INSTANTANEOUS_ACTION_DURATION
 from .problem_encoder import find_object
 from planning_exceptions import ExecutionError
+
+from itertools import chain
+from abc import abstractmethod
 
 from logger import StyleAdapter
 from logging import getLogger
@@ -11,6 +15,12 @@ log = StyleAdapter(getLogger(__name__))
 
 __all__ = ["Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Unblock", "Unload", "Load", "Rescue",
            "Observe"]
+
+
+class Action(BaseAction):
+    @abstractmethod
+    def is_effected_by_change(self, id_):
+        return False
 
 
 class Move(Action):
@@ -109,6 +119,9 @@ class Move(Action):
             raise NotImplementedError
         raise ExecutionError("Could not find {!r}".format(edge_key))
 
+    def is_effected_by_change(self, id_):
+        return self.start_node in id_ and self.end_node in id_
+
 
 class Unblock(Action):
 
@@ -180,11 +193,22 @@ class Load(Action):
         target = find_object(self.target, model["objects"])
         del target["known"]["at"]
 
-    def as_partial(self, *args, **kwargs):
-        raise NotImplementedError
+    def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time == self.end_time
+
+        if "duration" in kwargs:
+            assert kwargs["duration"] == self.duration
+
+        obj = self.copy_with(**kwargs)
+        return obj
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError
+
+    def is_effected_by_change(self, id_):
+        return id_ in (self.node, self.target)
 
 
 class Unload(Action):
@@ -217,11 +241,22 @@ class Unload(Action):
         target = find_object(self.target, model["objects"])
         target["known"]["at"] = [True, self.node]
 
-    def as_partial(self, *args, **kwargs):
-        raise NotImplementedError
+    def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time == self.end_time
+
+        if "duration" in kwargs:
+            assert kwargs["duration"] == self.duration
+
+        obj = self.copy_with(**kwargs)
+        return obj
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError
+
+    def is_effected_by_change(self, id_):
+        return id_ in (self.node, self.target)
 
 
 class Rescue(Action):
@@ -259,6 +294,8 @@ class Rescue(Action):
         target = find_object(self.target, model["objects"])["known"]
         target["buriedness"] -= self.duration
 
+    def is_effected_by_change(self, id_):
+        return id_ in (self.node, self.target)
 
 class Observe(Action):
 
@@ -277,28 +314,29 @@ class Observe(Action):
         return find_object(self.agent, model["objects"])["at"][1] == self.node
 
     def apply(self, model):
-        from itertools import chain
         assert self.is_applicable(model), "tried to apply action in an invalid state"
+
         # check if new knowledge
-
-        node = find_object(self.node, model["objects"])
-        unknown = node.get("unknown")
-        if unknown:
-            node["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
-            result = self._check_new_knowledge(unknown, model["assumed-values"])
-            unknown.clear()
-        else:
-            result = False
-
-        for object_ in chain.from_iterable((v.values() for v in model["objects"].values())):
+        changes = []
+        # check to see if observe any objects
+        for object_id, object_ in chain.from_iterable((v.items() for v in model["objects"].values())):
             unknown = object_.get("unknown")
             if unknown and object_["known"].get("at", self._default_at)[1] == self.node:
                 object_["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
-                single_result = self._check_new_knowledge(unknown, model["assumed-values"])
+                if self._check_new_knowledge(unknown, model["assumed-values"]):
+                    changes.append(object_id)
                 unknown.clear()
-                result |= single_result
 
-        return result
+        # check to see if observe any edges
+        for object_id, object_ in model["graph"]["edges"].items():
+            unknown = object_.get("unknown")
+            if unknown and self.node in object_id:
+                object_["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
+                if self._check_new_knowledge(unknown, model["assumed-values"]):
+                    changes.append(object_id)
+                unknown.clear()
+
+        return changes
 
     @staticmethod
     def _get_actual_value(value):
@@ -316,3 +354,6 @@ class Observe(Action):
 
     def as_partial(self, **kwargs):
         return None
+
+    def partially_apply(self, model, deadline):
+        raise NotImplementedError
