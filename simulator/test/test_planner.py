@@ -11,7 +11,7 @@ from hamcrest import assert_that, is_not, has_item, equal_to, any_of
 
 from accuracy import as_next_end_time
 from janitor.action import Action, Clean
-from janitor import plan_decoder
+from janitor import plan_decoder, problem_encoder
 from planner import Planner, NoPlanException, synchronized
 from pddl_parser import CleaningWindowTil
 from janitor.problem_encoder import _encode_predicate
@@ -38,7 +38,6 @@ def with_agent(agent, **kwargs):
     return ActionMatcher(["agent"] + list(kwargs), [agent] + list(kwargs.values()))
 
 
-
 def with_room(room):
     return ActionMatcher(["room"], [room], Clean)
 
@@ -59,6 +58,7 @@ class TestGetPlan(unittest.TestCase):
     def setUp(self):
         self.planner = Planner(planning_time=10,
                                decoder=plan_decoder,
+                               problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-domain.pddl")
 
@@ -180,6 +180,7 @@ class TestSingleAgentGetPlan(unittest.TestCase):
     def setUp(self):
         self.planner = Planner(planning_time=10,
                                decoder=plan_decoder,
+                               problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
         self.model = {
@@ -215,7 +216,7 @@ class TestSingleAgentGetPlan(unittest.TestCase):
         til = CleaningWindowTil(1, "ed-rm1", True)
 
         # when
-        plan = self.planner.get_plan(self.model, tils=[til])
+        plan = self.planner.get_plan(self.model, events=[til])
 
         # then
         assert_that(plan, has_item(with_agent("agent1", room="ed-rm1")))
@@ -227,14 +228,14 @@ class TestSingleAgentGetPlan(unittest.TestCase):
 
         # then
         with self.assertRaises(NoPlanException):
-            self.planner.get_plan(self.model, tils=[til0, til1])
+            self.planner.get_plan(self.model, events=[til0, til1])
 
     def test_delayed_til_means_delayed_action(self):
         # given
         til = CleaningWindowTil(30, "ed-rm1", True)
 
         # when
-        plan = self.planner.get_plan(self.model, tils=[til])
+        plan = self.planner.get_plan(self.model, events=[til])
 
         # then
         assert_that(plan, has_item(with_agent("agent1", room="ed-rm1", start_time=30)))
@@ -245,6 +246,7 @@ class TestTilEffectsActionOrder(unittest.TestCase):
     def setUp(self):
         self.planner = Planner(planning_time=10,
                                decoder=plan_decoder,
+                               problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
         self.model = {
@@ -284,7 +286,7 @@ class TestTilEffectsActionOrder(unittest.TestCase):
         til_end = CleaningWindowTil(Decimal(41), "ed-rm1", False)
 
         # when
-        plan = self.planner.get_plan(self.model, tils=[til_start, til_end])
+        plan = self.planner.get_plan(self.model, events=[til_start, til_end])
 
         # then
         assert_that(plan, has_item(with_agent("agent1", room="ed-rm1", start_time=20, duration=20)))
@@ -295,11 +297,12 @@ class TestTilEffectsActionOrder(unittest.TestCase):
         til_start = CleaningWindowTil(41, "ed-rm1", True)
 
         # when
-        plan = self.planner.get_plan(self.model, tils=[til_start])
+        plan = self.planner.get_plan(self.model, events=[til_start])
 
         # then
         assert_that(plan, has_item(with_agent("agent1", room="rm1", start_time=20, duration=20)))
         assert_that(plan, has_item(with_agent("agent1", room="ed-rm1", start_time=80, duration=20)))
+
 
 class TestSynchronisedWontLetTwoFunctionsRunAtSameTime(unittest.TestCase):
 

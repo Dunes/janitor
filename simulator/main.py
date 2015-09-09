@@ -106,5 +106,71 @@ def run_single_agent_replan_simulator():
     if not result:
         exit(1)
 
+
+def run_roborescue_simulator():
+    from roborescue import plan_decoder, problem_encoder
+    from roborescue.simulator import Simulator
+    from roborescue.executor import MedicExecutor, PoliceExecutor, CentralPlannerExecutor
+    domain_template = "../roborescue/{}-domain.pddl"
+
+    args = parser().parse_args()
+    log.info(args)
+    log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
+    log.info("log: {}", log_file_name)
+
+    # load model
+    model = problem_parser.decode(args.problem_file)
+    decoder = plan_decoder
+    # add bidirectionality
+    if model["graph"].get("bidirectional"):
+        edges = model["graph"]["edges"]
+        from copy import deepcopy
+        for key in list(edges):
+            new_key = " ".join(reversed(key.split(" ")))
+            edges[new_key] = deepcopy(edges[key])
+    # add agents key
+    from itertools import chain
+    model["agents"] = dict(chain(model["objects"]["police"].items(), model["objects"]["medic"].items()))
+
+    # create planners
+    central_planner = Planner(args.planning_time,
+                              decoder=decoder,
+                              problem_encoder=problem_encoder,
+                              domain_file=domain_template.format(model["domain"]))
+
+    local_planner = Planner(args.planning_time,
+                            decoder=decoder,
+                            problem_encoder=problem_encoder,
+                            domain_file=domain_template.format("roborescue-single"))
+
+    # create and setup executors
+    agent_executors = [PoliceExecutor(agent=agent_name, planning_time=args.planning_time)
+                       for agent_name in model["objects"]["police"]] \
+                      + [MedicExecutor(agent=agent_name, planning_time=args.planning_time)
+                         for agent_name in model["objects"]["medic"]]
+    planning_executor = CentralPlannerExecutor(agent="planner",
+                                               planning_time=args.planning_time,
+                                               executor_ids=[e.id for e in agent_executors],
+                                               agent_names=[e.agent for e in agent_executors],
+                                               central_planner=central_planner,
+                                               local_planner=local_planner)
+    for e in agent_executors:
+        e.planner_id = planning_executor.id
+
+    # setup simulator
+    executors = dict({e.agent: e for e in agent_executors},
+                     planner=planning_executor)
+    simulator = Simulator(model, executors)
+
+    # run simulator
+    with logger.Logger(log_file_name, args.log_directory) as result_logger:
+        try:
+            result = simulator.run()
+        finally:
+            simulator.print_results(result_logger)
+
+    if not result:
+        exit(1)
+
 if __name__ == "__main__":
-    run_single_agent_replan_simulator()
+    run_roborescue_simulator()

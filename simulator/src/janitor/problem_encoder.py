@@ -6,7 +6,7 @@ from pddl_parser import get_text_file_handle
 __author__ = 'jack'
 
 
-def encode_problem_to_file(filename, model, agent, goals, tils):
+def encode_problem_to_file(filename, model, agent, goals, time, tils):
     with get_text_file_handle(filename) as fh:
         encode_problem(fh, model, agent, goals, tils)
 

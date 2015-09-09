@@ -24,21 +24,19 @@
                 "known": {
                     "at": [true, "building1"],
                     "alive": true,
-                    "buried": true
+                    "buried": true,
+                    "buriedness": 50
                 },
-                "unknown": {
-                    "buriedness": {"max": 100, "min": 0, "actual": 50}
-                }
+                "unknown": {}
             },
             "civ2": {
                 "known": {
                     "at": [true, "building1"],
                     "alive": true,
-                    "buried": true
+                    "buried": true,
+                    "buriedness": 50
                 },
-                "unknown": {
-                    "buriedness": {"max": 100, "min": 0, "actual": 50}
-                }
+                "unknown": {}
             }
         },
         "hospital": {
@@ -68,18 +66,18 @@
                  "unknown": {}
              },
              "node1 building1": {
-                 "known": {"distance": 50},
-                 "unknown": {
-                     "blocked-edge": {"actual": true},
-                     "blockedness": {"max": 100, "min": 0, "actual": 10}
-                 }
+                 "known": {"distance": 50,
+                     "blocked-edge": true,
+                     "blockedness": 10
+                 },
+                 "unknown": {}
              },
              "building1 node1": {
-                 "known": {"distance": 50},
-                 "unknown": {
-                     "blocked-edge": {"actual": true},
-                     "blockedness": {"max": 100, "min": 0, "actual": 10}
-                 }
+                 "known": {"distance": 50,
+                     "blocked-edge": true,
+                     "blockedness": 10
+                 },
+                 "unknown": {}
              }
          }
      },

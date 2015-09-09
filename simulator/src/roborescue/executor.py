@@ -290,17 +290,9 @@ class CentralPlannerExecutor(Executor):
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
 
-    @classmethod
-    def disseminate_plan(cls, plan):
-        plan = sorted(cls.replace_extra_clean_actions(plan), key=attrgetter("agent", "start_time"))
+    @staticmethod
+    def disseminate_plan(plan):
+        plan = sorted(plan, key=attrgetter("agent", "start_time"))
         return groupby(plan, key=attrgetter("agent"))
 
-    @staticmethod
-    def replace_extra_clean_actions(plan):
-        for action_ in plan:
-            if isinstance(action_, ExtraClean):
-                for agent in action_.agents():
-                    yield ExtraCleanPart(action_.start_time, action_.duration, agent, action_.room)
-            else:
-                yield action_
 

@@ -19,14 +19,22 @@ def encode_problem(out, model, agent, goals, time, events):
     objects = {type_: list(objs) for type_, objs in model["objects"].items()}
     _encode_objects(out, objects)
 
-    object_values = _collate_objects(model["objects"]) if agent == "all" else find_object(agent, model["objects"])
+    if agent == "all":
+        object_values = _collate_objects(model["objects"])
+    else:
+        agent_type, agent_object = find_object(agent, model["objects"], return_type=True)
+        object_values = {agent_type: agent_object}
     _encode_init(out, object_values, model["graph"], model["assumed-values"], events, model, time)
 
     goals = goals if goals is not None else model["goal"]
     _encode_goal(out, goals)
 
     if has_metric:
-        _encode_metric(out, model["metric"], goals)
+        if isinstance(goals, dict):
+            goals_for_metric = goals["soft-goals"]
+        else:
+            goals_for_metric = goals
+        _encode_metric(out, model["metric"], goals_for_metric)
 
     # post-amble
     out.write(")")
@@ -110,7 +118,7 @@ def _encode_function(out, args, value):
 
 
 def _encode_graph(out, graph, assumed_values):
-    bidirectional = graph["bidirectional"]
+    bidirectional = graph.get("bidirectional", False)
     for key, values in graph["edges"].items():
         if "blocked-edge" in values["unknown"]:
             values = deepcopy(values)
@@ -144,7 +152,7 @@ def _encode_metric(out, metric, goals):
         _encode_predicate(out, ["*", str(weights["total-time"]), ["total-time"]])
     for goal_type, weight in weights.get("soft-goal-violations", {}).items():
         weight = str(weight)
-        for goal in goals["soft-goals"]:
+        for goal in goals:
             if goal[0] == goal_type:
                 _encode_predicate(out, ["*", weight, ["is-violated", "-".join(goal)]])
     out.write(") ) \n")
@@ -157,10 +165,13 @@ def _collate_objects(objects):
     return collated
 
 
-def find_object(object_id, objects):
-    for values in objects.values():
+def find_object(object_id, objects, return_type=False):
+    for object_type, values in objects.items():
         if object_id in values:
-            return values[object_id]
+            if return_type:
+                return object_type, values[object_id]
+            else:
+                return values[object_id]
     raise KeyError("object {!r} not found".format(object_id))
 
 

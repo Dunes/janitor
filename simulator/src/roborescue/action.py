@@ -1,6 +1,6 @@
 __author__ = 'jack'
 
-from action import Action as BaseAction, Plan, LocalPlan, GetExecutionHeuristic, as_end_time, \
+from action import Action, Plan, LocalPlan, GetExecutionHeuristic, as_end_time, \
     INSTANTANEOUS_ACTION_DURATION
 from .problem_encoder import find_object
 from planning_exceptions import ExecutionError
@@ -15,12 +15,6 @@ log = StyleAdapter(getLogger(__name__))
 
 __all__ = ["Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Unblock", "Unload", "Load", "Rescue",
            "Observe"]
-
-
-class Action(BaseAction):
-    @abstractmethod
-    def is_effected_by_change(self, id_):
-        return False
 
 
 class Move(Action):
@@ -240,6 +234,7 @@ class Unload(Action):
         del agent["carrying"]
         target = find_object(self.target, model["objects"])
         target["known"]["at"] = [True, self.node]
+        target["known"]["rescued"] = True
 
     def as_partial(self, end_time=None, **kwargs):
         if end_time is not None:
@@ -296,6 +291,7 @@ class Rescue(Action):
 
     def is_effected_by_change(self, id_):
         return id_ in (self.node, self.target)
+
 
 class Observe(Action):
 

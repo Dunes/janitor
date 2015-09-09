@@ -4,11 +4,10 @@ import tempfile
 from io import TextIOWrapper
 from os.path import join as path_join
 from threading import Timer, Thread, Lock
-from time import time
+from time import time as _time
 from math import isnan
 from logging import getLogger
 
-from janitor.problem_encoder import encode_problem_to_file
 from planning_exceptions import NoPlanException, IncompletePlanException
 from accuracy import quantize
 from logger import StyleAdapter
@@ -36,19 +35,20 @@ def synchronized(lock):
 
 class Planner(object):
 
-    def __init__(self, planning_time, decoder, planner_location="../optic-cplex", domain_file="../janitor/janitor-domain.pddl",
-            working_directory=".", encoding="UTF-8"):
+    def __init__(self, planning_time, decoder, problem_encoder, domain_file, planner_location="../optic-cplex",
+                 working_directory=".", encoding="UTF-8"):
         self.planning_time = planning_time if not isnan(planning_time) else "till_first_plan"
         self.planner_location = planner_location
         self.domain_file = domain_file
         self.working_directory = working_directory
         self.encoding = encoding
         self.decoder = decoder
+        self.problem_encoder = problem_encoder
 
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     @synchronized(_lock)
-    def get_plan(self, model, duration=None, agent="all", goals=None, tils=None):
+    def get_plan(self, model, duration=None, agent="all", goals=None, time=0, events=None):
         # problem_file = self.create_problem_file(model)
         problem_file = "/dev/stdin"
         report = True
@@ -63,7 +63,8 @@ class Planner(object):
             single_pass = True
 
         p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-        Thread(target=encode_problem_to_file, name="problem-writer", args=(p.stdin, model, agent, goals, tils)).start()
+        Thread(target=self.problem_encoder.encode_problem_to_file, name="problem-writer",
+               args=(p.stdin, model, agent, goals, time, events)).start()
         timer = Timer(float(duration), p.terminate)
         timer.start()
 
@@ -84,19 +85,19 @@ class Planner(object):
         if plan is not None:
             return plan
         if report:
+            self.create_problem_file(model, agent, goals, time, events)
             raise NoPlanException()
         if single_pass:
             return []
         raise RuntimeError("Illegal state")
 
     def get_plan_and_time_taken(self, model, duration=None, agent="all", goals=None, tils=None):
-        start = time()
+        start = _time()
         plan = self.get_plan(model, duration, agent, goals, tils)
-        end = time()
+        end = _time()
         return plan, quantize(end - start)
 
-    @staticmethod
-    def create_problem_file(model):
+    def create_problem_file(self, model, agent, goals, time, events):
         fh = tempfile.NamedTemporaryFile(mode="w", prefix="problem-", suffix=".pddl", delete=False)
-        encode_problem_to_file(fh, model)
+        self.problem_encoder.encode_problem_to_file(fh, model, agent, goals, time, events)
         return fh.name
