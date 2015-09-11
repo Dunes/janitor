@@ -12,18 +12,31 @@ function createChart($, google) {
 function parseData($) {
 
     var chart_colours = {
+    	// generic actions
         "Move": "#8B0000",
-        "Clean": "#FFA500",
-        "ExtraClean": "#006400",
-        "ExtraCleanPart": "#006400",
         "Plan": "#0000FF",
         "LocalPlan": "#0000FF",
         "Other": "#000000",
+        // partial generic actions
+ 		"Partial Move": "#ae4d4d",
+        "Partial Plan": "#8282ff",
+ 
+        // janitor actions
+        "Clean": "#FFA500",
+        "ExtraClean": "#006400",
+        "ExtraCleanPart": "#006400",
+		// partial janitor actions
         "Partial Clean": "#ffc04d",
         "Partial ExtraClean": "#4d934d",
         "Partial ExtraCleanPart": "#4d934d",
-        "Partial Move": "#ae4d4d",
-        "Partial Plan": "#8282ff",
+
+        // roborescue actions
+        "Unblock": "#FFA500",
+        "Rescue": "#006400",
+		// partial roborescue actions
+        "Partial Unblock": "#ffc04d",
+        "Partial Rescue": "#4d934d",
+
     };
 
     var data = $("#input-data").val().trim();
@@ -102,6 +115,10 @@ function actionLabel(name, components, chart_colours, colours, partial) {
         label = name + " " + components.room;
     } else if (name === "ExtraCleanPart") {
         label = "ExtraClean " + components.room;
+    } else if (name == "Rescue") {
+    	label = "Rescue " + components.target
+    } else if (name == "Unblock") {
+    	label = "Unblock " + components.end_node
     }
 
 
