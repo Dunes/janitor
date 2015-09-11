@@ -114,15 +114,14 @@ class Simulator:
         # sort so central planner is last
         plan_action_states = sorted(plan_action_states, key=lambda as_: "planner" == as_.action.agent)
         for action_state in plan_action_states:
-            for agent in action_state.action.agents():
-                new_action_state = self.executors[agent].notify_action_starting(action_state, self.model)
-                #self.plan_logger.log_plan(new_action_state.action.plan)
+            agent = action_state.action.agent
+            new_action_state = self.executors[agent].notify_action_starting(action_state, self.model)
+            # self.plan_logger.log_plan(new_action_state.action.plan)
 
     def finish_actions(self, action_states):
         for action_state in action_states:
             if not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agent, action_state.action)
-                #self.stalled.update((a, action_state.time) for a in action_state.action.agents())
                 # agents should never stall when they are in charge of replanning locally.
                 raise ExecutionError("agent has stalled")
             else:

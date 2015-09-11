@@ -5,25 +5,20 @@ from copy import deepcopy
 __author__ = 'jack'
 
 
-def encode_problem_to_file(filename, model, agent, goals, time, events):
+def encode_problem_to_file(filename, model, agent, goals, metric, time, events):
     with get_text_file_handle(filename) as fh:
-        encode_problem(fh, model, agent, goals, time, events)
+        encode_problem(fh, model, agent, goals, metric, time, events)
 
 
-def encode_problem(out, model, agent, goals, time, events):
+def encode_problem(out, model, agent, goals, metric, time, events):
 
-    has_metric = "metric" in model
-
+    has_metric = metric is not None
     _encode_preamble(out, "problem-name", model["domain"], has_metric)
 
     objects = {type_: list(objs) for type_, objs in model["objects"].items()}
     _encode_objects(out, objects)
 
-    if agent == "all":
-        object_values = _collate_objects(model["objects"])
-    else:
-        agent_type, agent_object = find_object(agent, model["objects"], return_type=True)
-        object_values = {agent_type: agent_object}
+    object_values = _collate_objects(model["objects"], agent=agent)
     _encode_init(out, object_values, model["graph"], model["assumed-values"], events, model, time)
 
     goals = goals if goals is not None else model["goal"]
@@ -34,7 +29,7 @@ def encode_problem(out, model, agent, goals, time, events):
             goals_for_metric = goals["soft-goals"]
         else:
             goals_for_metric = goals
-        _encode_metric(out, model["metric"], goals_for_metric)
+        _encode_metric(out, metric, goals_for_metric)
 
     # post-amble
     out.write(")")
@@ -118,16 +113,7 @@ def _encode_function(out, args, value):
 
 
 def _encode_graph(out, graph, assumed_values):
-    bidirectional = graph.get("bidirectional", False)
-    for key, values in graph["edges"].items():
-        if "blocked-edge" in values["unknown"]:
-            values = deepcopy(values)
-            values["known"]["edge"] = True
-            del values["unknown"]["blocked-edge"]
-        _encode_init_helper(out, {key: values}, assumed_values)
-        if bidirectional:
-            node0, node1 = key.split()
-            _encode_init_helper(out, {node1 + " " + node0: values}, assumed_values)
+    _encode_init_helper(out, graph["edges"], assumed_values)
 
 
 def _encode_goal(out, goals):
@@ -158,10 +144,18 @@ def _encode_metric(out, metric, goals):
     out.write(") ) \n")
 
 
-def _collate_objects(objects):
+def _collate_objects(objects, agent):
     collated = {}
-    for value in objects.values():
-        collated.update(value)
+    if agent == "all":
+        for value in objects.values():
+            collated.update(value)
+    else:
+        collated[agent] = find_object(agent, objects)
+        for type_, value in objects.items():
+            if type_ in ("medic", "police"):
+                continue
+            else:
+                collated.update(value)
     return collated
 
 

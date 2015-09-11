@@ -353,3 +353,28 @@ class Observe(Action):
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError
+
+
+class EventAction(Action):
+
+    _format_attrs = ("time", "events")
+
+    def __init__(self, time, events):
+        super().__init__(as_end_time(time), INSTANTANEOUS_ACTION_DURATION)
+        object.__setattr__(self, "agent", "event_executor")
+        object.__setattr__(self, "events", events)
+
+    def is_applicable(self, model):
+        return True
+
+    def apply(self, model):
+        changes = set()
+        for e in self.events:
+            changes.update(e.apply(model))
+        return list(changes)
+
+    def as_partial(self, **kwargs):
+        return None
+
+    def partially_apply(self, model, deadline):
+        raise NotImplementedError

@@ -32,11 +32,11 @@ class PlanDecoder:
     def __init__(self, action_map):
         self.action_map = action_map
 
-    def decode_plan_from_optic(self, data_input, report_incomplete_plan=True):
+    def decode_plan_from_optic(self, data_input, time, report_incomplete_plan=True):
         # read until first action
-        return self.decode_plan(dropwhile(_is_not_starting_action, data_input), report_incomplete_plan)
+        return self.decode_plan(dropwhile(_is_not_starting_action, data_input), time, report_incomplete_plan)
 
-    def decode_plan(self, data_input, report_incomplete_plan=True):
+    def decode_plan(self, data_input, time, report_incomplete_plan=True):
         line = None
         for line in data_input:
             if line == "\n":
@@ -44,7 +44,7 @@ class PlanDecoder:
             if line[-1] != "\n":
                 raise IncompletePlanException("action not terminated properly")
             items = line.split(" ")
-            start_time = quantize(items[0][:-1])
+            start_time = quantize(items[0][:-1]) + time
             duration = quantize(items[-1][1:-2])
             action_name = items[1].strip("()")
             arguments = tuple(i.strip("()") for i in items[2:-2])

@@ -48,23 +48,24 @@ class Planner(object):
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     @synchronized(_lock)
-    def get_plan(self, model, duration=None, agent="all", goals=None, time=0, events=None):
+    def get_plan(self, model, *, duration, agent, goals, metric, time, events):
+        log.debug("Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration, agent,
+            goals, metric, time, events)
         # problem_file = self.create_problem_file(model)
+        self.create_problem_file(model, agent, goals, metric, time, events)
         problem_file = "/dev/stdin"
         report = True
-        args = self.planner_location, self.domain_file, problem_file
+        args = [self.planner_location, self.domain_file, problem_file]
         single_pass = False
-        if duration is None:
-            duration = self.planning_time
-        elif duration == 0:
-            duration = 2.
+        if duration == 0:
+            duration += 2
             args = self.planner_location, "-N", self.domain_file, problem_file
             report = False
             single_pass = True
 
         p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
         Thread(target=self.problem_encoder.encode_problem_to_file, name="problem-writer",
-               args=(p.stdin, model, agent, goals, time, events)).start()
+               args=(p.stdin, model, agent, goals, metric, time, events)).start()
         timer = Timer(float(duration), p.terminate)
         timer.start()
 
@@ -74,7 +75,7 @@ class Planner(object):
             while True:
                 try:
                     plan = list(self.decoder.decode_plan_from_optic(
-                        process_output, report_incomplete_plan=report))
+                        process_output, time=time + duration, report_incomplete_plan=report))
                 except IncompletePlanException:
                     break
                 if single_pass:
@@ -85,19 +86,21 @@ class Planner(object):
         if plan is not None:
             return plan
         if report:
-            self.create_problem_file(model, agent, goals, time, events)
-            raise NoPlanException()
+            raise NoPlanException
         if single_pass:
             return []
         raise RuntimeError("Illegal state")
 
-    def get_plan_and_time_taken(self, model, duration=None, agent="all", goals=None, tils=None):
+    def get_plan_and_time_taken(self, model, *, duration, agent, goals, metric, time, events):
         start = _time()
-        plan = self.get_plan(model, duration, agent, goals, tils)
+        plan = self.get_plan(model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events)
         end = _time()
         return plan, quantize(end - start)
 
-    def create_problem_file(self, model, agent, goals, time, events):
-        fh = tempfile.NamedTemporaryFile(mode="w", prefix="problem-", suffix=".pddl", delete=False)
-        self.problem_encoder.encode_problem_to_file(fh, model, agent, goals, time, events)
+    def create_problem_file(self, model, agent, goals, metric, time, events):
+        import datetime
+        now = datetime.datetime.utcnow().time().isoformat()
+        prefix = "{}-{}-{}-{}-".format(model["domain"], agent, time, now)
+        fh = tempfile.NamedTemporaryFile(mode="w", prefix=prefix, suffix=".pddl", delete=False)
+        self.problem_encoder.encode_problem_to_file(fh, model, agent, goals, metric, time, events)
         return fh.name

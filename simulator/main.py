@@ -110,7 +110,7 @@ def run_single_agent_replan_simulator():
 def run_roborescue_simulator():
     from roborescue import plan_decoder, problem_encoder
     from roborescue.simulator import Simulator
-    from roborescue.executor import MedicExecutor, PoliceExecutor, CentralPlannerExecutor
+    from roborescue.executor import EventExecutor, MedicExecutor, PoliceExecutor, CentralPlannerExecutor
     domain_template = "../roborescue/{}-domain.pddl"
 
     args = parser().parse_args()
@@ -141,25 +141,25 @@ def run_roborescue_simulator():
     local_planner = Planner(args.planning_time,
                             decoder=decoder,
                             problem_encoder=problem_encoder,
-                            domain_file=domain_template.format("roborescue-single"))
+                            domain_file=domain_template.format(model["domain"]))
 
     # create and setup executors
     agent_executors = [PoliceExecutor(agent=agent_name, planning_time=args.planning_time)
                        for agent_name in model["objects"]["police"]] \
                       + [MedicExecutor(agent=agent_name, planning_time=args.planning_time)
                          for agent_name in model["objects"]["medic"]]
-    planning_executor = CentralPlannerExecutor(agent="planner",
-                                               planning_time=args.planning_time,
-                                               executor_ids=[e.id for e in agent_executors],
-                                               agent_names=[e.agent for e in agent_executors],
-                                               central_planner=central_planner,
-                                               local_planner=local_planner)
+    event_executor = EventExecutor(events=model["events"])
+    planning_executor = CentralPlannerExecutor(
+        agent="planner", planning_time=args.planning_time, executor_ids=[e.id for e in agent_executors],
+        agent_names=[e.agent for e in agent_executors], central_planner=central_planner, local_planner=local_planner,
+        event_executor=event_executor)
+
     for e in agent_executors:
         e.planner_id = planning_executor.id
 
     # setup simulator
     executors = dict({e.agent: e for e in agent_executors},
-                     planner=planning_executor)
+                     planner=planning_executor, event_executor=event_executor)
     simulator = Simulator(model, executors)
 
     # run simulator

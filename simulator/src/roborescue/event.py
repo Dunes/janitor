@@ -1,6 +1,12 @@
 __author__ = 'jack'
 
+from logging import getLogger
+from logger import StyleAdapter
+
 from .problem_encoder import find_object, create_predicate, unknown_value_getter
+
+
+log = StyleAdapter(getLogger(__name__))
 
 
 class Event:
@@ -30,6 +36,19 @@ class Event:
             predicate = create_predicate(self.predicate, self.becomes, self.object_id)
 
         return "at", self.time - time, predicate
+
+    def apply(self, model):
+        obj = find_object(self.object_id, model["objects"])
+        if self.predicate in obj:
+            values = obj
+        elif self.predicate in obj["known"]:
+            values = obj["known"]
+        else:
+            values = obj["unknown"]
+
+        values[self.predicate] = self.becomes
+
+        return self.object_id
 
     def __repr__(self):
         return "Event(time={time}, object_id={object_id!r}, predicate={predicate!r}, becomes={becomes!r})" \

@@ -112,14 +112,14 @@ class Plan(Action):
 
 class LocalPlan(Plan):
 
-    _format_attrs = ("start_time", "duration", "agent", "goals", "tils")
+    _format_attrs = ("start_time", "duration", "agent", "goals", "events")
 
-    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, tils):
+    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, events):
         super(Plan, self).__init__(start_time, duration)
         object.__setattr__(self, "agent", agent if agent else Plan.agent)
         object.__setattr__(self, "plan", plan)
         object.__setattr__(self, "goals", goals)
-        object.__setattr__(self, "tils", tils)
+        object.__setattr__(self, "events", events)
 
 
 class Stalled(Action):

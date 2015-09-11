@@ -7,8 +7,7 @@ from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 
-from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue
-from .event import Event
+from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction
 from action_state import ActionState, ExecutionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
@@ -63,17 +62,59 @@ class Executor(metaclass=ABCMeta):
         raise NotImplementedError
 
     @classmethod
-    def adjust_plan(cls, plan, start_time):
-        return sorted(cls._adjust_plan_helper(plan, start_time), key=attrgetter("start_time", "_ordinal"))
+    def adjust_plan(cls, plan):
+        return sorted(cls._adjust_plan_helper(plan), key=attrgetter("start_time", "_ordinal"))
 
     @staticmethod
-    def _adjust_plan_helper(plan, start_time):
+    def _adjust_plan_helper(plan):
         for action in plan:
-            # adjust for OPTIC starting at t = 0
-            action = action.copy_with(start_time=action.start_time + start_time)
             yield action
             if type(action) is Move:
                 yield Observe(action.end_time, action.agent, action.end_node)
+
+
+class EventExecutor(Executor):
+    def __init__(self, *, events):
+        super().__init__(agent="event_executor", planning_time=None, deadline=None)
+        time = attrgetter("time")
+        events = sorted(events, key=time)
+        event_actions = []
+        for t, evts in groupby(events, key=time):
+            event_actions.append(EventAction(time=t, events=tuple(evts)))
+        self.event_actions = event_actions
+        self.events = events
+
+    def copy(self):
+        raise NotImplementedError
+
+    def deadline(self):
+        return self._deadline
+
+    @property
+    def has_goals(self):
+        return self.executing or bool(self.event_actions)
+
+    def next_action(self, time):
+        if self.executing:
+            return self.executing
+        action = self.event_actions[0]
+        return ActionState(action)
+
+    def notify_action_starting(self, action_state: ActionState, model):
+        self.executing = action_state.start()
+        del self.event_actions[0]
+        action_state.action.apply(model)
+        for e in action_state.action.events:
+            self.events.remove(e)
+
+    def notify_action_finishing(self, action_state: ActionState, model):
+        super().notify_action_finishing(action_state, model)
+        assert self.executing is action_state
+        action_state.finish()
+        self.executing = None
+
+    def notify_new_knowledge(self, time, node):
+        pass
 
 
 class AgentExecutor(Executor):
@@ -116,7 +157,8 @@ class AgentExecutor(Executor):
             action_ = action_state.action
             try:
                 new_plan, time_taken = planner.get_plan_and_time_taken(
-                    model, agent=self.agent, goals=action_.goals, tils=action_.tils)
+                    model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
+                    metric=None, time=action_state.time, events=action_.events)
                 plan_action = action_.copy_with(plan=new_plan, duration=zero)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
             except NoPlanException:
@@ -133,8 +175,7 @@ class AgentExecutor(Executor):
         self.executing = None
         action_state = action_state.finish()
         if isinstance(action_state.action, Plan):
-            self.new_plan(self.adjust_plan(action_state.action.apply(model),
-                                         start_time=as_start_time(action_state.time)))
+            self.new_plan(self.adjust_plan(action_state.action.apply(model)))
         else:
             changes = action_state.action.apply(model)
             if changes:
@@ -146,11 +187,11 @@ class AgentExecutor(Executor):
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
                     goals = self.extract_goals(self.plan)
-                    tils = self.extract_tils(self.plan, as_start_time(time))
+                    events = self.extract_events(self.plan, as_start_time(time))
                     assert goals
                     self.halt(time)
                     self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                           tils=tils)])
+                                           events=events)])
                     break
 
     def new_plan(self, plan):
@@ -164,7 +205,7 @@ class AgentExecutor(Executor):
 
     @staticmethod
     @abstractmethod
-    def extract_tils(plan, time):
+    def extract_events(plan, time):
         raise NotImplementedError
 
     def halt(self, time):
@@ -195,7 +236,7 @@ class PoliceExecutor(AgentExecutor):
         return goals
 
     @staticmethod
-    def extract_tils(plan, time):
+    def extract_events(plan, time):
         return []
 
 
@@ -217,18 +258,19 @@ class MedicExecutor(AgentExecutor):
         return goals
 
     @staticmethod
-    def extract_tils(plan, time):
+    def extract_events(plan, time):
         return []
 
 
 class CentralPlannerExecutor(Executor):
 
     def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
-                 central_planner, local_planner):
+                 central_planner, local_planner, event_executor):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.valid_plan = False
         self.central_planner = central_planner
         self.local_planner = local_planner
+        self.event_executor = event_executor if event_executor else EventExecutor(events=())
         self.executor_ids = executor_ids
         assert len(executor_ids) == len(agent_names)
         self.agent_executor_map = {name: id_ for name, id_ in zip(agent_names, executor_ids)}
@@ -262,8 +304,11 @@ class CentralPlannerExecutor(Executor):
         if not isinstance(action_state.action, Plan):
             raise ExecutionError("Have a non-plan action: " + str(action_state.action))
 
-        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
-        new_plan = self.adjust_plan(new_plan, action_state.time + time_taken)
+        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
+            model, duration=self.central_planner.planning_time, agent="all", goals=model["goal"],
+            metric=model["metric"], time=action_state.time, events=self.event_executor.events
+        )
+        new_plan = self.adjust_plan(new_plan)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
 

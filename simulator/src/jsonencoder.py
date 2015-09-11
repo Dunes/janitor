@@ -5,6 +5,7 @@ from functools import partial
 from simplejson import JSONEncoder, dumps
 
 from action import Action
+from roborescue.event import Event
 
 __all__ = ["json_dumps", "ActionEncoder"]
 
@@ -18,6 +19,8 @@ class ActionEncoder(JSONEncoder):
             d.pop("goals", None)
             d.pop("plan", None)
             return d
+        elif isinstance(o, Event):
+            return vars(o)
         return super().default(o)
 
 
