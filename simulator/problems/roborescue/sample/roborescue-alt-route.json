@@ -1,0 +1,76 @@
+{
+    "domain": "roborescue", "problem": "roborescue-problem-test",
+    "goal": {"soft-goals": [["rescued", "civ1"]]},
+    "metric": {"type": "minimize", "weights": {
+        "total-time": 1,
+        "soft-goal-violations": {"rescued": 1000}
+    }},
+    "assumed-values": {"edge": true, "blocked-edge": false, "blockedness": "max", "buriedness": "max"},
+    "objects": {
+        "police": {
+            "police1": {
+                "at": [true, "hospital1"]
+            }
+        },
+        "medic": {
+            "medic1": {
+                "at": [true, "hospital1"],
+                "available": true,
+                "empty": true
+            }
+        },
+        "civilian": {
+            "civ1": {
+                "known": {
+                    "at": [true, "building1"],
+                    "alive": true,
+                    "buried": true
+                },
+                "unknown": {
+                    "buriedness": {"max": 100, "min": 0, "actual": 50}
+                }
+            }
+        },
+        "hospital": {
+            "hospital1": {}
+        },
+        "building": {
+            "building1": {},
+            "node1": {},
+            "alt-route": {}
+        }
+    }, 
+     "graph": {
+     	 "bidirectional": true,
+         "edges": {
+             "hospital1 node1": {
+                 "known": {
+                     "distance": 50,
+                     "edge": true
+                 },
+                 "unknown": {}
+             },
+             "node1 building1": {
+                 "known": {"distance": 50},
+                 "unknown": {
+                     "blocked-edge": {"actual": true},
+                     "edge": {"actual": false},
+                     "blockedness": {"max": 100, "min": 0, "actual": 10}
+                 }
+             },
+             "node1 alt-route": {
+                 "known": {"distance": 50},
+                 "unknown": {
+                     "edge": {"actual": true}
+                 }
+             },
+             "alt-route building1": {
+                 "known": {"distance": 50},
+                 "unknown": {
+                     "edge": {"actual": true},
+                     "blocked-edge": {"actual": false}
+                 }
+             }
+         }
+     }
+}

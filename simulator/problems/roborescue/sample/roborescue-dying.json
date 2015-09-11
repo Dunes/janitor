@@ -1,0 +1,69 @@
+{
+    "domain": "roborescue", "problem": "roborescue-problem-test",
+    "goal": {"soft-goals": [["rescued", "civ1"], ["rescued", "civ2"]]},
+    "metric": {"type": "minimize", "weights": {
+        "total-time": 1,
+        "soft-goal-violations": {"rescued": 1000}
+    }},
+    "assumed-values": {"edge": true, "blocked-edge": false, "blockedness": "max", "buriedness": "max"},
+    "objects": {
+        "police": {
+            "police1": {
+                "at": [true, "hospital1"]
+            }
+        },
+        "medic": {
+            "medic1": {
+                "at": [true, "hospital1"],
+                "available": true,
+                "empty": true
+            }
+        },
+        "civilian": {
+            "civ1": {
+                "known": {
+                    "at": [true, "building1"],
+                    "alive": true,
+                    "buried": true,
+                    "buriedness": 50
+                },
+                "unknown": {}
+            },
+            "civ2": {
+                "known": {
+                    "at": [true, "building1"],
+                    "alive": true,
+                    "buried": true,
+                    "buriedness": 50
+                },
+                "unknown": {}
+            }
+        },
+        "hospital": {
+            "hospital1": {}
+        },
+        "building": {
+            "building1": {}
+        }
+    }, 
+    "graph": {
+        "bidirectional": true,
+        "edges": {
+            "hospital1 building1": {
+                "known": {
+                    "distance": 50,
+                    "edge": true
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "events": [
+        {
+            "time": 200,
+            "object_id": "civ1",
+            "predicate": "alive",
+            "becomes": false
+        }
+    ]
+}

@@ -49,46 +49,50 @@
             "node1": {}
         }
     }, 
-     "graph": {
-         "edges": {
-             "hospital1 node1": {
-                 "known": {
-                     "distance": 50,
-                     "blocked-edge": true,
-                     "blockedness": 10
-                 },
-                 "unknown": {}
-             },
-             "node1 hospital1": {
-                 "known": {
-                     "distance": 50,
-                     "blocked-edge": true,
-                     "blockedness": 10
-                 },
-                 "unknown": {}
-             },
-             "node1 building1": {
-                 "known": {"distance": 50},
-                 "unknown": {
-                     "blocked-edge": {"actual": true},
-                     "blockedness": {"max": 100, "min": 0, "actual": 10}
-                 }
-             },
-             "building1 node1": {
-                 "known": {"distance": 50},
-                 "unknown": {
-                     "blocked-edge": {"actual": true},
-                     "blockedness": {"max": 100, "min": 0, "actual": 10}
-                 }
-             }
-         }
-     },
-     "events": [
-         {
-             "time": 200,
-             "object_id": "civ1",
-             "predicate": "alive",
-             "becomes": false
-         }
-     ]
+    "graph": {
+        "edges": {
+            "hospital1 node1": {
+                "known": {
+                    "distance": 50,
+                    "blocked-edge": true,
+                    "edge": false,
+                    "blockedness": 10
+                },
+                "unknown": {}
+            },
+            "node1 hospital1": {
+                "known": {
+                    "distance": 50,
+                    "blocked-edge": true,
+                    "edge": false,
+                    "blockedness": 10
+                },
+                "unknown": {}
+            },
+            "node1 building1": {
+                "known": {"distance": 50},
+                "unknown": {
+                    "blocked-edge": {"actual": true},
+                    "edge": {"actual": false},
+                    "blockedness": {"max": 100, "min": 0, "actual": 10}
+                }
+            },
+            "building1 node1": {
+                "known": {"distance": 50},
+                "unknown": {
+                    "blocked-edge": {"actual": true},
+                    "edge": {"actual": false},
+                    "blockedness": {"max": 100, "min": 0, "actual": 10}
+                }
+            }
+        }
+    },
+    "events": [
+        {
+            "time": 350,
+            "object_id": "civ1",
+            "predicate": "alive",
+            "becomes": false
+        }
+    ]
 }
