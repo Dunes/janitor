@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="jquery/1.10.2/jquery.min.js"></script>
+-        <script type="text/javascript" src="jquery/1.10.2/jquery.min.js"></script>
         <!--<script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
             'version':'1','packages':['timeline']}]}"></script>-->
         <script type="text/javascript" src="layout.js"></script>
+        <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-		<div id="canvas-container" style="border">
+		<div id="canvas-container" class="input">
 			<svg id="canvas" width="12cm" height="12cm" viewBox="0 0 1200 1200"
 		 xmlns="http://www.w3.org/2000/svg" version="1.1">
 				<desc>Example rect01 - rectangle with sharp corners</desc>
@@ -15,16 +16,31 @@
 		    		fill="none" stroke="blue" stroke-width="2"/>
 			</svg>
 		</div>
-		
-		<div>
-            <list>
-                <li>
-                    <textarea id="input-data"></textarea>
-                </li>
-                <li><button onclick="drawLayout($)">Display</button></li>
-            </list>
+    	<div class="input">
+    		<h1>Object Data</h1>
+    		<form id="object-data-form">
+			    <table>
+			    	<thead>
+			    		<tr><td>attribute</td><td>value</td></tr>
+			    	</thead>
+			    	<tbody id="object-data">
+			    		<tr><td>id</td><td><select name="id"><option value="none">---</option></select></td></tr>
+			    	</tbody>
+			    </table>
+			    <button onclick="saveObject(); return false;">Save</button>
+			    <button onclick="exportModel(); return false;">Export</button>
+	        </form>
         </div>
-        <p id="error-log"></p>
+		<div class="input">
+	        <h1>Model Input</h1>
+	        <list>
+	            <li>
+	                <textarea id="input-model"></textarea>
+	            </li>
+	            <li><button onclick="displayModel();">Display</button></li>
+	        </list>
+	        <p id="error-log"></p>
+	    </div>
 <!--
         <svg width="12cm" height="4cm" viewBox="0 0 1200 400"
      xmlns="http://www.w3.org/2000/svg" version="1.1">

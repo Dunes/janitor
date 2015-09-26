@@ -1,4 +1,6 @@
-ELEMENT_CONSTS = {
+"use strict";
+
+var ELEMENT_CONSTS = {
 	node: {
 		width: 30,
 		height: 30,
@@ -38,20 +40,190 @@ ELEMENT_CONSTS = {
 }
 
 
-function drawLayout($) {
-    try {
-        var data = parseData($, $("#input-data").val().trim());
-        var elements = createElements(data);
-        $("#canvas").html(elements);
-        // hack to force refresh of svg canvas
-        $("#canvas-container").html($("#canvas-container").html());
+var OBJECT_TYPES = ["medic", "police", "civilian", "building", "hospital"];
+
+
+var OBJECT_FIELD_CREATOR = {
+	default_: function (key, value) {
+		if (value === true || value === false) {
+			return $("<input>", {type: "checkbox", name: key, checked: value})
+		} 
+		return $("<input>", {name: key, value: value});
+	},
+	id: function (key, value) {
+		return null;
+	},
+	at: function (key, value) {
+		var current_node = value[1];
+		var locations = $.extend({}, model.objects.building, model.objects.hospital);
+		return $("<select>", {name: "at"}).html($.map(locations, function (node, node_id) {
+			var o = $("<option>", {value: node_id, selected: current_node === node_id}).html(node_id);
+			return o;
+		}));
+	},
+	type: function (key, value) {
+		return null;
+		return $("<span>", {name: "type"}).html($.map(OBJECT_TYPES, function (type) {
+			return [$("<input>", {
+				type: "radio", 
+				name: "type", 
+				value: type, 
+				checked: type === value
+				}), type];
+		}));
+	}
+}
+
+
+var OBJECT_FIELD_SAVER = {
+	set: function(object, key, value) {
+		if (object.hasOwnProperty(key)) {
+			object[key] = value;
+		} else if (object.known && object.known.hasOwnProperty(key)) {
+			object.known[key] = value;
+		} else if (object.unknown && object.known.hasOwnProperty(key)) {
+			object.unknown[key].actual = value;
+		} else {
+			throw "cannot serialise `" + key + "` " + object;
+		}
+	},
+	at: function(object, key, value) {
+		this.set(object, key, [true, value]);
+	}
+};
+OBJECT_FIELD_SAVER.available = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.empty = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.alive = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.buried = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.buriedness = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.edge = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.blockedness = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER.distance = OBJECT_FIELD_SAVER.set;
+OBJECT_FIELD_SAVER["blocked-edge"] = OBJECT_FIELD_SAVER.set;
+
+
+var model = null;
+
+
+function saveObject() {
+	try {
+		var selected_id = $("#id-selector").val();
+		var model_object = findModelObject(selected_id, model);
+		$.each($("#object-data-form")[0], function (_i, value) {
+			if (!value.name || value.name === "id") {
+				return;
+			}
+			var new_value = value.type === "checkbox" ? value.checked : value.value;
+			OBJECT_FIELD_SAVER[value.name](model_object, value.name, new_value);
+		});
+		drawLayout(model);
+	} catch (err) {
+		$("#error-log").html(err);
+	}
+}
+
+function exportModel() {
+	try {
+		$("#input-model").val(JSON.stringify(model, null, '    '));
     } catch (err) {
         $("#error-log").html(err);
     }
 }
 
-function parseData($, data_string) {;
-	var data = $.parseJSON(data_string);
+function displayModel() {
+    try {
+		model = JSON.parse($("#input-model").val().trim());
+		createObjectDataForm(model);
+		drawLayout(model);
+    } catch (err) {
+        $("#error-log").html(err);
+    }
+}
+
+function displayObjectData(selected_id) {
+	if (selected_id === undefined) {
+		selected_id = $("#id-selector").val();
+	} else {
+		$("#id-selector").val(selected_id);
+	}
+	var objects = createObjects(model);
+	var selected = objects.filter(function (obj) {return obj.id === selected_id;})[0];
+	var selector_row = $("#object-data").children().first();
+	var data_rows = wrapFormElementsInTableRows(createObjectDataFormFields(selected, objects));
+	$("#object-data").html($.merge([selector_row], data_rows));	
+}
+
+function drawLayout(data) {
+    $("#canvas").html(createElements(parseData(data)));
+    // hack to force refresh of svg canvas
+    $("#canvas-container").html($("#canvas-container").html());
+}
+
+function createObjects(data) {
+	var objects = $.map(OBJECT_TYPES, function(type) {
+		return $.map(data.objects[type], function(value, key) {
+			if (value.hasOwnProperty("known")) {
+				value = $.extend({}, value.known, extractUnknownActualValues(value.unknown));
+			}
+			return $.extend({id: key, type: type}, value);
+		});
+	});
+	var edges = $.map(data.graph.edges, function (value, key) {
+		var parts = key.split(" ");
+		parts.sort();
+		var sorted_key = parts.join(" ");
+		if (key !== sorted_key) {
+			return null;
+		}
+		return $.extend({id: key, type: "edge"}, value.known, extractUnknownActualValues(value.unknown));
+	});
+	
+	var sorter = function (x, y) {x.id.localeCompare(y.id);};
+	objects.sort(sorter);
+	edges.sort(sorter);
+	$.merge(objects, edges);
+	
+	return objects;
+}
+
+function createObjectDataForm(data) {
+	var objects = createObjects(data);
+	var form_inputs = $.merge(
+		[createObjectDataFormSelector(objects)],
+		createObjectDataFormFields(objects[0], objects)
+	);
+	
+	$("#object-data").html(wrapFormElementsInTableRows(form_inputs));
+}
+
+function wrapFormElementsInTableRows(form_inputs) {
+	return $.map(form_inputs, function (value) {
+		return $("<tr>").html([$("<td>").append(value.attr("name")), $("<td>").html(value)]);
+	});
+}
+
+function createObjectDataFormSelector(objects) {
+	return $("<select>", {name: "id", id: "id-selector", onchange: "displayObjectData();"}).html(
+		$.map(objects, function (value) {
+			return $("<option>", {value: value.id}).html(value.id);
+	}));
+}
+
+function createObjectDataFormFields(object, objects) {
+
+	var form_elements = $.map(object, function (value, key) {
+		var field_creator = OBJECT_FIELD_CREATOR[key];
+		if (field_creator === undefined) {
+			field_creator = OBJECT_FIELD_CREATOR.default_;
+		}
+		return field_creator(key, value, objects);
+	});
+	form_elements.sort(function (x, y) {x.attr("name").localeCompare(y.attr("name"));});
+	
+	return form_elements;
+}
+
+function parseData(data) {
 	return {	
 		nodes: parseNodes(data.objects.building, data.objects.hospital),
 		agents: parseAgents(data.objects.medic, data.objects.police, data.objects.civilian),
@@ -101,7 +273,7 @@ function parseAgents(medics, police, civilians) {
 		agents[key] = new Agent("police", value.at[1]);
 	});
 	$.each(civilians, function (key, value) {
-		var value = $.extend({}, value.known, value.unknown);
+		var value = $.extend({}, value.known, extractUnknownActualValues(value.unknown));
 		agents[key] = new Agent("civilian", value.at[1]);
 	});
 	return agents;
@@ -123,7 +295,7 @@ function parseEdges(edges) {
 }
 
 function parseEdge(from, to, edge) {
-	var combined = $.extend({}, edge.known, edge.unknown);
+	var combined = $.extend({}, edge.known, extractUnknownActualValues(edge.unknown));
 	return new Edge(from, to, combined.distance, combined["blocked-edge"] === true, combined.blockedness);
 }
 
@@ -173,13 +345,22 @@ Map.prototype.getNodeY = function (y) {
 function createNodeElements(nodes, map) {
 	var elements = {};
 	$.each(nodes, function (key, value) {
+		var x = map.getNodeX(value.position.x);
+		var y = map.getNodeY(value.position.y);
+	
 		var e = $("<rect>");
-		e.attr("x", map.getNodeX(value.position.x));
-		e.attr("y", map.getNodeY(value.position.y));
+		e.attr("x", x);
+		e.attr("y", y);
 		e.attr("width", map.node.width);
 		e.attr("height", map.node.height);
 		e.attr("fill", map.node.colour[value.type]);
+		e.attr("onclick", "displayObjectData('"+key+"');");
 		elements[key] = e;	
+		
+		elements[key+"-id"] = createTextElement(key, 
+			x + map.node.width / 2, 
+			y - map.node.height * 1.5, 
+			map);
 	});
 	return elements;
 }
@@ -201,6 +382,7 @@ function createEdgeElements(edges, nodes, map) {
 		e.attr("y2", y2);
 		e.attr("stroke-width", map.edge.width);
 		e.attr("stroke", value.blocked ? map.edge.colour.blocked : map.edge.colour.unblocked);
+		e.attr("onclick", "displayObjectData('"+key+"');");
 		edge_elements[key] = e;
 		
 		var distance = createTextElement("distance: " + value.distance, 
@@ -234,13 +416,12 @@ function createAgentElements(agents, nodes, map) {
 	var agent_elements = {};
 	var node_population = {};
 	$.each(nodes, function(key, value) {
-		node_population[key] = 0;
+		node_population[key] = [];
 	});
 	
-	$.each(agents, function (key, value) {
-		
+	$.each(agents, function (key, value) {		
 		var node_pos = nodes[value.node].position;
-		var x = map.getNodeX(node_pos.x) + map.node.width + map.agent.radius + node_population[value.node] * (map.agent.radius * 2 + map.agent.gap);
+		var x = map.getNodeX(node_pos.x) + map.node.width + map.agent.radius + node_population[value.node].length * (map.agent.radius * 2 + map.agent.gap);
 		var y = map.getNodeY(node_pos.y) + map.node.height + map.agent.radius;
 		
 		var e = $("<circle>");
@@ -248,11 +429,19 @@ function createAgentElements(agents, nodes, map) {
 		e.attr("cy", y);
 		e.attr("r", map.agent.radius);
 		e.attr("fill", map.agent.colour[value.type]);
-		
+		e.attr("onclick", "displayObjectData('"+key+"');");
 		agent_elements[key] = e;
 		
-		node_population[value.node] += 1;
+		node_population[value.node].push(key);
 	});
+	
+	$.each(node_population, function (key, value) {
+		var node_pos = nodes[key].position;
+		var x = map.getNodeX(node_pos.x) + map.node.width / 2;
+		var y = map.getNodeY(node_pos.y) + map.agent.radius * 3;
+		agent_elements[key+"-agents"] = createTextElement(value.join(", "), x, y, map);
+	});
+	
 	return agent_elements;
 }
 
@@ -292,4 +481,22 @@ Edge.prototype.toString = function() {
 function Agent(type, node) {
 	this.type = type;
 	this.node = node;
+}
+
+function extractUnknownActualValues(unknowns) {
+	var actuals = {};
+	$.each(unknowns, function (key, value) {
+		actuals[key] = value.actual;
+	});
+	return actuals;
+}
+
+function findModelObject(object_id, model) {
+	var object_sources = [model.objects.medic, model.objects.police, 
+		model.objects.civilian, model.objects.hospital, model.objects.building, 
+		model.graph.edges];
+	var [result] = object_sources.filter(function (value) {
+		return value[object_id];
+	});
+	return result[object_id];
 }
