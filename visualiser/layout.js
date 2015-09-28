@@ -50,7 +50,10 @@ var OBJECT_FIELD_CREATOR = {
 		} 
 		return $("<input>", {name: key, value: value});
 	},
-	id: function (key, value) {
+	id: function () {
+		return null;
+	},
+	type: function () {
 		return null;
 	},
 	at: function (key, value) {
@@ -61,34 +64,38 @@ var OBJECT_FIELD_CREATOR = {
 			return o;
 		}));
 	},
-	type: function (key, value) {
-		return null;
-		return $("<span>", {name: "type"}).html($.map(OBJECT_TYPES, function (type) {
-			return [$("<input>", {
-				type: "radio", 
-				name: "type", 
-				value: type, 
-				checked: type === value
-				}), type];
-		}));
+	edge: function (key, value) {
+		return $("<input>", {type: "checkbox", name: "blocked", checked: !value})
 	}
 }
+OBJECT_FIELD_CREATOR["blocked-edge"] = function() {return null;};
 
 
 var OBJECT_FIELD_SAVER = {
-	set: function(object, key, value) {
+	set: function(object, key, value, create, known) {
 		if (object.hasOwnProperty(key)) {
 			object[key] = value;
 		} else if (object.known && object.known.hasOwnProperty(key)) {
 			object.known[key] = value;
 		} else if (object.unknown && object.unknown.hasOwnProperty(key)) {
 			object.unknown[key].actual = value;
+		} else if (create) {
+			if (known) {
+				object.known[key] = value;
+			} else {
+				object.unknown = {actual: value};
+			}
 		} else {
 			throw "cannot serialise `" + key + "` " + object;
 		}
 	},
 	at: function(object, key, value) {
 		this.set(object, key, [true, value]);
+	},
+	blocked: function (object, key, value) {
+		var known = object.known.edge || object.known["blocked-edge"];
+		this.set(object, "edge", !value, true, known);
+		this.set(object, "blocked-edge", value, true, known);
 	}
 };
 OBJECT_FIELD_SAVER.available = OBJECT_FIELD_SAVER.set;
@@ -96,10 +103,8 @@ OBJECT_FIELD_SAVER.empty = OBJECT_FIELD_SAVER.set;
 OBJECT_FIELD_SAVER.alive = OBJECT_FIELD_SAVER.set;
 OBJECT_FIELD_SAVER.buried = OBJECT_FIELD_SAVER.set;
 OBJECT_FIELD_SAVER.buriedness = OBJECT_FIELD_SAVER.set;
-OBJECT_FIELD_SAVER.edge = OBJECT_FIELD_SAVER.set;
 OBJECT_FIELD_SAVER.blockedness = OBJECT_FIELD_SAVER.set;
 OBJECT_FIELD_SAVER.distance = OBJECT_FIELD_SAVER.set;
-OBJECT_FIELD_SAVER["blocked-edge"] = OBJECT_FIELD_SAVER.set;
 
 
 var model = null;
@@ -109,14 +114,19 @@ function saveObject() {
 	try {
 		var data = extractDataFromForm($("#object-data-form")[0]);
 		var selected_id = $("#id-selector").val();
-		saveObjectImpl(data, findModelObject(selected_id, model));
+		var model_object = findModelObject(selected_id, model);
+		saveObjectImpl(data, model_object);
 		if (selected_id.contains(" ")) {
 			var building_ids = selected_id.split(" ");
 			building_ids.reverse();
 			var reverse_id = building_ids.join(" ");
-			saveObjectImpl(data, findModelObject(reverse_id, model));
+			var reverse_model_object = findModelObject(reverse_id, model);
+			saveObjectImpl(data, reverse_model_object);
+			correctBlockedness(model_object, reverse_model_object);
 		}
 		drawLayout(model);
+		displayObjectData(selected_id);
+		
 	} catch (err) {
 		logError(err);
 	}
@@ -202,7 +212,7 @@ function createObjects(data) {
 		return $.extend({id: key, type: "edge"}, value.known, extractUnknownActualValues(value.unknown));
 	});
 	
-	var sorter = function (x, y) {x.id.localeCompare(y.id);};
+	var sorter = function (x, y) {return x.id.localeCompare(y.id);};
 	objects.sort(sorter);
 	edges.sort(sorter);
 	$.merge(objects, edges);
@@ -523,6 +533,27 @@ function findModelObject(object_id, model) {
 		return value[object_id];
 	});
 	return result[object_id];
+}
+
+function correctBlockedness(edge, reverse_edge) {
+	var is_edge = edge.known.edge || edge.unknown.edge.actual;
+	if (is_edge) {
+		// delete blockedness values
+		delete edge.known.blockedness;
+		delete edge.unknown.blockedness;
+		delete reverse_edge.known.blockedness;
+		delete reverse_edge.unknown.blockedness;
+	} else {
+		// add blockness if not there
+		if (edge.known["blocked-edge"] && edge.known.blockedness === undefined) {
+			// edge-ness is known
+			edge.known.blockedness = 0;
+			reverse_edge.known.blockedness = 0;
+		} else if (edge.unknown["blocked-edge"].actual && edge.unknown.blockedness === undefined) {
+			edge.unknown.blockedness = {min: 0, max: 100, actual: 0};
+			reverse_edge.unknown.blockedness = {min: 0, max: 100, actual: 0};
+		}
+	}
 }
 
 function logError(err) {
