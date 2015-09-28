@@ -10,7 +10,7 @@
 	
 	(:predicates
 	
-		(available ?m - medic)
+		(available ?m - moveable)
 		
 		(at ?m - moveable ?n - node)
 		(carrying ?m - medic ?c - civilian)
@@ -53,13 +53,16 @@
 		:duration (= ?duration (blockedness ?n1 ?n2))
 		:condition (and 
 			(over all (at ?a ?n1))
+			(at start (available ?a))
 			(at start (blocked-edge ?n1 ?n2))
 		)
 		:effect (and 
 			(at start (not (blocked-edge ?n1 ?n2)))
 			(at start (not (blocked-edge ?n2 ?n1)))
+			(at start (not (available ?a)))
 			(at end (edge ?n1 ?n2))
 			(at end (edge ?n2 ?n1))
+			(at end (available ?a))
 		)
 	)
 
