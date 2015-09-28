@@ -176,7 +176,9 @@ function displayObjectData(selected_id) {
 }
 
 function drawLayout(data) {
-    $("#canvas").html(createElements(parseData(data)));
+	var canvas = $("#canvas");
+	var bounding_box = $("#bounding-box");
+	$("#canvas").empty().append(bounding_box).append(createElements(parseData(data)));
     // hack to force refresh of svg canvas
     $("#canvas-container").html($("#canvas-container").html());
 }
@@ -351,8 +353,8 @@ function Map(data) {
 	this.width = width + 1;
 	this.height = height + 1;
 	this.border = {
-		width: this.dimensions.width / (2 * this.width),
-		height: this.dimensions.height / (2 * this.height)
+		width: 40, //this.dimensions.width / (2 * this.width),
+		height: 40 //this.dimensions.height / (2 * this.height)
 	};
 }
 
