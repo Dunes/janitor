@@ -95,7 +95,7 @@ def create_problem(output, size, buriedness, blockedness, blocked_percentage, ci
             "type": "minimize",
             "weights": {
                 "total-time": 1,
-                "soft-goal-violations": {"rescued": 1000000}
+                "soft-goal-violations": {"rescued": 100000}
             }
         },
     }
