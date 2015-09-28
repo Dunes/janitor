@@ -168,6 +168,7 @@ def run_roborescue_simulator():
             result = simulator.run()
         finally:
             simulator.print_results(result_logger)
+            problem_parser.encode("temp_problems/final_model.json", simulator.model)
 
     if not result:
         exit(1)
