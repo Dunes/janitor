@@ -11,6 +11,6 @@ def decode(filename):
     return obj
 
 
-def encode(filename, obj):
+def encode(filename, obj, **kwargs):
     with open(filename, mode="w") as fh:
-        simplejson.dump(obj, fh, use_decimal=True)
+        simplejson.dump(obj, fh, use_decimal=True, **kwargs)
