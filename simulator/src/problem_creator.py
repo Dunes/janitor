@@ -1,21 +1,23 @@
 #! /usr/bin/env python
 
 import argparse
+import re
 from collections import namedtuple
 from copy import deepcopy
 from itertools import chain
-from random import uniform as rand
+from random import randint as rand, choice, sample
 
 from problem_parser import encode
-from action import Observe
+from roborescue.action import Observe
 from accuracy import quantize
+from decimal import Decimal
 
 
 class Point(namedtuple("Point", "x y")):
     pass
 
 
-class ActualMinMax(namedtuple("ActualMinMax", "actual min max")):
+class MinMax(namedtuple("MinMax", "min max")):
     pass
 
 
@@ -36,9 +38,9 @@ class TupleAction(argparse.Action):
         return self.maintype(*(self.subtype(i) for i in values.split(",")))
 
 
-class ActualMinMaxAction(TupleAction):
+class MinMaxAction(TupleAction):
     def __init__(self, **kwargs):
-        super(ActualMinMaxAction, self).__init__(ActualMinMax, float, **kwargs)
+        super(MinMaxAction, self).__init__(MinMax, int, **kwargs)
 
     def __call__(self, parser_, namespace, values, option_string=None):
         v = self.create(values)
@@ -58,172 +60,151 @@ def parser():
     p = argparse.ArgumentParser(description="Creates problems from parameters")
     p.add_argument("--output", "-o", required=True)
     p.add_argument("--size", "-s", required=True, action=PointAction, help="the size of the map grid, specified as x,y")
-    p.add_argument("--dirtiness", "-d", required=True, action=ActualMinMaxAction)
-    p.add_argument("--extra-dirty-rooms", "-ed", required=False, nargs="*", action=PointAction)
-    p.add_argument("--assume-clean", default=False)
-    p.add_argument("--empty-rooms", "-er", nargs="+", action=PointAction, required=True)
-    p.add_argument("--edge-length", "-el", default=10, type=int)
+    p.add_argument("--buriedness", "-bu", required=True, action=MinMaxAction)
+    p.add_argument("--blockedness", "-bo", required=True, action=MinMaxAction)
+    p.add_argument("--blocked-percentage", "-bo%", required=True, type=Decimal)
+    p.add_argument("--civilians", "-c", required=True, type=int)
+    p.add_argument("--edge-length", "-el", default=100, type=int)
 
-    p.add_argument("--agents", "-a", required=True, type=int)
-    p.add_argument("--agent-start", "-as", required=True, action=PointAction)
+    p.add_argument("--medics", "-m", required=True, type=int)
+    p.add_argument("--police", "-p", required=True, type=int)
+    p.add_argument("--hospitals", "-ho", nargs="+", action=PointAction)
 
     p.add_argument("--problem-name", "-pn", required=True)
     p.add_argument("--domain", "-dn", required=True)
     return p
 
 
-def create_problem(output, size, dirtiness, assume_clean, empty_rooms, edge_length, agents, agent_start, problem_name,
-                   domain, extra_dirty_rooms):
-    assume_dirty = not assume_clean
+def create_problem(output, size, buriedness, blockedness, blocked_percentage, civilians, edge_length,
+                   medics, police, hospitals, problem_name, domain):
+
     problem = {
         "problem": problem_name,
         "domain": domain,
         "assumed-values": {
-            "dirty": assume_dirty,
-            "cleaned": assume_clean,
-            "dirtiness": ("max" if assume_dirty else 0),
-            "extra-dirty": False,
-        }
+            "edge": True,
+            "blocked-edge": False,
+            "blockedness": "max",
+            "buriedness": "max"
+        },
+        "objects": create_objects(civilians, buriedness, medics, police, size, hospitals),
+        "graph": create_graph(size, hospitals, edge_length, blockedness, blocked_percentage),
+        "events": [],
+        "goal": {"soft-goals": [["rescued", "civ{}".format(i)] for i in range(civilians)]},
+        "metric": {
+            "type": "minimize",
+            "weights": {
+                "total-time": 1,
+                "soft-goal-violations": {"rescued": 1000000}
+            }
+        },
     }
-
-    problem["nodes"] = create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness)
-    problem["graph"], grid = create_graph(size, empty_rooms, extra_dirty_rooms, edge_length)
-    problem["agents"] = create_agents(agents, grid[agent_start.x][agent_start.y])
-    problem["goal"] = create_goal(size, empty_rooms, extra_dirty_rooms)
-    problem["metric"] = create_metric()
 
     # start problem such that agents have observed starting location
-    for agent_name, agent in problem["agents"].items():
-        rm = agent["at"][1]
-        Observe(None, agent_name, rm).apply(problem)
+    for agent_name, agent in chain(problem["objects"]["medic"].items(), problem["objects"]["police"].items()):
+        node = agent["at"][1]
+        Observe(quantize(0), agent_name, node).apply(problem)
 
-    encode(output, problem)
-
-
-def create_nodes(size, empty_rooms, extra_dirty_rooms, dirtiness):
-    num_empty_rooms = len(empty_rooms)
-    num_extra_dirty_rooms = len(extra_dirty_rooms)
-    total_normal_rooms = size.x * size.y - num_empty_rooms - num_extra_dirty_rooms
-
-    if set(empty_rooms).intersection(extra_dirty_rooms):
-        raise ValueError("rooms cannot be both empty rooms and extra dirty: {}".format(
-                         set(empty_rooms).intersection(extra_dirty_rooms)))
-
-    empty_rms = (
-        ("empty-rm{}".format(i), {"node": True})
-        for i in range(1, num_empty_rooms + 1)
-    )
-
-    extra_dirty_rms = (
-        ("rm-ed{}".format(i), create_room(dirtiness, extra_dirty=True)) for i in range(1, num_extra_dirty_rooms + 1)
-    )
-
-    rooms = (
-        ("rm{}".format(i), create_room(dirtiness, extra_dirty=False)) for i in range(1, total_normal_rooms + 1)
-    )
-
-    return dict(chain(empty_rms, rooms, extra_dirty_rms))
+    encode(output, problem, sort_keys=True, indent=4)
 
 
-def create_graph(size, empty_rooms, extra_dirty_rooms, edge_length):
-    empty_room_num = 1
-    extra_dirty_room_num = 1
-    room_num = 1
+def create_objects(civilians, buriedness, medics, police, size, hospitals):
+    hospital_names = create_hospital_names(hospitals)
+    hospital_objects = {name: {} for name in hospital_names}
+    building_names = create_building_names(size, hospitals)
+    building_objects = {name: {} for name in building_names}
+    police_objects = {"police{}".format(i):
+                          {
+                              "at": [True, choice(hospital_names)],
+                              "available": True
+                          }
+                      for i in range(police)}
+    medic_objects = {"medic{}".format(i):
+                         {
+                             "at": [True, choice(hospital_names)],
+                             "available": True,
+                             "empty": True
+                         }
+                     for i in range(medics)}
+    civilian_objects = {"civ{}".format(i):
+                            {
+                                "known": {"at": [True, choice(building_names)], "alive": True, "buried": True},
+                                "unknown": {"buriedness": {
+                                    "max": buriedness.max,
+                                    "min": buriedness.min,
+                                    "actual": rand(buriedness.min, buriedness.max)
+                                }}
+                            }
+                        for i in range(civilians)}
 
-    grid = []
-    for x in range(size.x):
-        column = []
-        for y in range(size.y):
-            if (x, y) in empty_rooms:
-                column.append("empty-rm{}".format(empty_room_num))
-                empty_room_num += 1
-            elif (x, y) in extra_dirty_rooms:
-                column.append("rm-ed{}".format(extra_dirty_room_num))
-                extra_dirty_room_num += 1
-            else:
-                column.append("rm{}".format(room_num))
-                room_num += 1
-        grid.append(column)
+    return {
+        "medic": medic_objects,
+        "police": police_objects,
+        "civilian": civilian_objects,
+        "hospital": hospital_objects,
+        "building": building_objects
+    }
 
-    edges = []
+
+def create_graph(size, hospitals, edge_length, blockedness, blocked_percentage):
+
+    hospital_names = create_hospital_names(hospitals)
+    building_names = create_building_names(size, hospitals)
+    grid = [[None] * size.y for _ in range(size.x)]
+    for name in hospital_names + building_names:
+        x, y = (int(s) for s in re.findall("[0-9]+", name))
+        grid[x][y] = name
+
+    edges = {}
+    default_edge = {"known": {"distance": edge_length}, "unknown": {}}
     for x, column in enumerate(grid):
-        for y, room in enumerate(column):
+        for y, node in enumerate(column):
             if x - 1 >= 0:
-                edges.append([room, grid[x - 1][y], edge_length])
+                id_ = "{} {}".format(node, grid[x - 1][y])
+                edges[id_] = deepcopy(default_edge)
             if x + 1 < size.x:
-                edges.append([room, grid[x + 1][y], edge_length])
+                id_ = "{} {}".format(node, grid[x + 1][y])
+                edges[id_] = deepcopy(default_edge)
             if y - 1 >= 0:
-                edges.append([room, grid[x][y - 1], edge_length])
+                id_ = "{} {}".format(node, grid[x][y - 1])
+                edges[id_] = deepcopy(default_edge)
             if y + 1 < size.y:
-                edges.append([room, grid[x][y + 1], edge_length])
+                id_ = "{} {}".format(node, grid[x][y + 1])
+                edges[id_] = deepcopy(default_edge)
 
-    return (
-        {
-            "bidirectional": False,
-            "edges": edges
-        }, grid)
-
-
-def create_agents(agents, room):
-    agent = create_agent(room)
-    return dict(
-        ("agent{}".format(i), deepcopy(agent))
-        for i in range(1, agents + 1))
-
-
-def create_agent(room):
-    return {
-        "agent": True,
-        "available": True,
-        "at": [True, room]
-    }
-
-
-def create_goal(size, empty_rooms, extra_dirty_rooms):
-    num_rooms = (size.x * size.y) - len(empty_rooms) - len(extra_dirty_rooms)
-    room_ids = chain(
-        ("rm{}".format(i) for i in range(1, num_rooms + 1)),
-        ("rm-ed{}".format(i) for i in range(1, len(extra_dirty_rooms) + 1))
-    )
-    return {
-        "hard-goals": [
-            ["cleaned", rm_id] for rm_id in room_ids
-        ]
-    }
-
-
-def create_metric():
-    return {
-        "type": "minimize",
-        "predicate": ["total-time"]
-    }
-
-
-def create_room(dirtiness, extra_dirty):
-    dirty_value = dirtiness.actual if dirtiness.actual != "random" else quantize(rand(dirtiness.min, dirtiness.max))
-    has_dirtiness = 0 < (dirty_value if dirty_value not in ("max", "min") else getattr(dirtiness, dirty_value))
-    return {
-        "known": {
-            "node": True,
-            "is-room": True
-        },
-        "unknown": {
-            "extra-dirty": {
-                "actual": extra_dirty and has_dirtiness
-            },
-            "dirtiness": {
-                "min": dirtiness.min,
-                "max": dirtiness.max,
-                "actual": dirty_value
-            },
-            "dirty": {
-                "actual": not extra_dirty and has_dirtiness
-            },
-            "cleaned": {
-                "actual": dirtiness.actual == 0
+    unique_edges = set(tuple(sorted(edge_id.split())) for edge_id in edges)
+    blocked_edges = sample(list(unique_edges), int(round(len(unique_edges) * blocked_percentage)))
+    unblocked_edges = list(unique_edges.difference(blocked_edges))
+    for edge_pair in blocked_edges:
+        unknown_edge_data = {
+            "edge": {"actual": False},
+            "blocked-edge": {"actual": True},
+            "blockedness": {
+                "max": blockedness.max,
+                "min": blockedness.min,
+                "actual": rand(blockedness.min, blockedness.max)
             }
         }
+        edges[" ".join(edge_pair)]["unknown"] = unknown_edge_data
+        edges[" ".join(reversed(edge_pair))]["unknown"] = deepcopy(unknown_edge_data)
+    for edge_pair in unblocked_edges:
+        unknown_edge_data = {"edge": {"actual": True}}
+        edges[" ".join(edge_pair)]["unknown"] = unknown_edge_data
+        edges[" ".join(reversed(edge_pair))]["unknown"] = deepcopy(unknown_edge_data)
+
+    return {
+        "bidirectional": False,
+        "edges": edges
     }
+
+
+def create_hospital_names(hospitals):
+    return ["hospital{}-{}".format(x, y) for x, y in hospitals]
+
+
+def create_building_names(size, hospitals):
+    coords = [(x, y) for x in range(size.x) for y in range(size.y)]
+    return ["building{}-{}".format(x, y) for x, y in coords if (x, y) not in hospitals]
 
 
 if __name__ == "__main__":
