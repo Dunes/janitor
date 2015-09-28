@@ -10,7 +10,7 @@ var ELEMENT_CONSTS = {
 		}
 	},
 	edge: {
-		width: 5,
+		width: 10,
 		colour: {
 			blocked: "red",
 			unblocked: "aqua",
@@ -81,7 +81,7 @@ var OBJECT_FIELD_SAVER = {
 			object[key] = value;
 		} else if (object.known && object.known.hasOwnProperty(key)) {
 			object.known[key] = value;
-		} else if (object.unknown && object.known.hasOwnProperty(key)) {
+		} else if (object.unknown && object.unknown.hasOwnProperty(key)) {
 			object.unknown[key].actual = value;
 		} else {
 			throw "cannot serialise `" + key + "` " + object;
@@ -107,26 +107,48 @@ var model = null;
 
 function saveObject() {
 	try {
+		var data = extractDataFromForm($("#object-data-form")[0]);
 		var selected_id = $("#id-selector").val();
-		var model_object = findModelObject(selected_id, model);
-		$.each($("#object-data-form")[0], function (_i, value) {
-			if (!value.name || value.name === "id") {
-				return;
-			}
-			var new_value = value.type === "checkbox" ? value.checked : value.value;
-			OBJECT_FIELD_SAVER[value.name](model_object, value.name, new_value);
-		});
+		saveObjectImpl(data, findModelObject(selected_id, model));
+		if (selected_id.contains(" ")) {
+			var building_ids = selected_id.split(" ");
+			building_ids.reverse();
+			var reverse_id = building_ids.join(" ");
+			saveObjectImpl(data, findModelObject(reverse_id, model));
+		}
 		drawLayout(model);
 	} catch (err) {
-		$("#error-log").html(err);
+		logError(err);
 	}
+}
+
+function extractDataFromForm(form) {
+	return $.map(form.elements, function (value) {
+		if (!value.name || value.name === "id") {
+			return null;
+		}
+		if (value.type === "checkbox") {
+			var new_value = value.checked;
+		} else if (isFinite(value.value)) {
+			var new_value = parseFloat(value.value);
+		} else {
+			var new_value = value.value;
+		}
+		return {name: value.name, value: new_value};			
+	});
+}
+
+function saveObjectImpl(data, model_object) {
+	$.each(data, function(_i, item) {
+		OBJECT_FIELD_SAVER[item.name](model_object, item.name, item.value);
+	});
 }
 
 function exportModel() {
 	try {
 		$("#input-model").val(JSON.stringify(model, null, '    '));
     } catch (err) {
-        $("#error-log").html(err);
+    	logError(err);
     }
 }
 
@@ -136,7 +158,7 @@ function displayModel() {
 		createObjectDataForm(model);
 		drawLayout(model);
     } catch (err) {
-        $("#error-log").html(err);
+        logError(err);
     }
 }
 
@@ -499,4 +521,10 @@ function findModelObject(object_id, model) {
 		return value[object_id];
 	});
 	return result[object_id];
+}
+
+function logError(err) {
+	var p = $("#error-log").empty()
+		.append($("<p>").text(err.name + " at line: "+err.lineNumber+" of "+err.fileName))
+		.append($("<p>").text(err.message));
 }
