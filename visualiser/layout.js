@@ -536,7 +536,7 @@ function findModelObject(object_id, model) {
 }
 
 function correctBlockedness(edge, reverse_edge) {
-	var is_edge = edge.known.edge || edge.unknown.edge.actual;
+	var is_edge = edge.known.edge || (edge.unknown.edge && edge.unknown.edge.actual);
 	if (is_edge) {
 		// delete blockedness values
 		delete edge.known.blockedness;
@@ -549,7 +549,7 @@ function correctBlockedness(edge, reverse_edge) {
 			// edge-ness is known
 			edge.known.blockedness = 0;
 			reverse_edge.known.blockedness = 0;
-		} else if (edge.unknown["blocked-edge"].actual && edge.unknown.blockedness === undefined) {
+		} else if ((edge.unknown["blocked-edge"] && edge.unknown["blocked-edge"].actual) && edge.unknown.blockedness === undefined) {
 			edge.unknown.blockedness = {min: 0, max: 100, actual: 0};
 			reverse_edge.unknown.blockedness = {min: 0, max: 100, actual: 0};
 		}
