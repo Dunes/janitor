@@ -1,3 +1,46 @@
 div.input {
 	float:left;
 }
+
+div {
+    margin: 5px;
+}
+
+body {
+    font-size: 100%;
+    margin: 0px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+button {
+    margin-top: 0.5em;
+}
+
+thead {
+    border-bottom: 0.1em solid black;
+}
+
+th:first-child, td:first-child {
+    border-right: 0.1em dashed black;
+}
+
+td {
+    padding: 0 0.1em;
+}
+
+th {
+    padding: 0 0.1em;
+    font-weight: normal;
+}
+
+th::first-letter {
+    font-size: 1.4em;
+    text-transform: capitalize;
+}
+
+svg {
+    border: 1px solid blue;
+}

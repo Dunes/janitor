@@ -186,9 +186,7 @@ function displayObjectData(selected_id) {
 }
 
 function drawLayout(data) {
-	var canvas = $("#canvas");
-	var bounding_box = $("#bounding-box");
-	$("#canvas").empty().append(bounding_box).append(createElements(parseData(data)));
+	$("#canvas").html(createElements(parseData(data)));
     // hack to force refresh of svg canvas
     $("#canvas-container").html($("#canvas-container").html());
 }
