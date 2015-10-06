@@ -9,7 +9,7 @@ from logging import getLogger
 from fractions import Fraction
 
 from accuracy import quantize, as_end_time, as_start_time
-from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue
+from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue, EventAction
 from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
@@ -84,7 +84,7 @@ class Simulator:
             a=first, a_s=action_states)
 
         if self.time > as_start_time(first.time):
-            raise ValueError("action with start time in the past" + str(first.action))
+            raise ValueError("action with start time in the past " + str(first.action))
         self.time = first.time
         if first.state == ExecutionState.pre_start:
             self.start_actions(action_states)
@@ -160,16 +160,18 @@ class Simulator:
         time_waiting_for_actions_to_finish = self.get_time_waiting_for_actions_to_finish()
         time_waiting_for_planner_to_finish = self.get_time_waiting_for_planner_to_finish()
 
+        time_taken = max(as_start_time(a.end_time) for a in self.executed if not isinstance(a, EventAction))
+
         log.info("Goal achieved: {}", goal_achieved)
         log.info("Planner called: {}", planner_called)
-        log.info("Total time taken: {}", self.time)
+        log.info("Total time taken: {}", time_taken)
         log.info("Time spent planning: {}", time_planning)
         log.info("time_waiting_for_actions_to_finish {}", time_waiting_for_actions_to_finish)
         log.info("time_waiting_for_planner_to_finish {}", time_waiting_for_planner_to_finish)
 
         logger.log_property("goal_achieved", goal_achieved)
         logger.log_property("planner_called", planner_called)
-        logger.log_property("end_simulation_time", self.time)
+        logger.log_property("end_simulation_time", time_taken)
         logger.log_property("total_time_planning", time_planning)
         logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
         logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)

@@ -159,7 +159,7 @@ class AgentExecutor(Executor):
                 # subtract planning time to create "instantaneous" plan
                 new_plan, time_taken = planner.get_plan_and_time_taken(
                     model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
-                    metric=None, time=action_state.time - planner.planning_time, events=action_.events)
+                    metric=None, time=action_state.time - planner.planning_time, events=action_.local_events + model["events"])
                 plan_action = action_.copy_with(plan=new_plan, duration=zero)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
             except NoPlanException:
@@ -184,16 +184,23 @@ class AgentExecutor(Executor):
                 self.EXECUTORS[self.planner_id].notify_new_knowledge(action_state.time, changes)
 
     def notify_new_knowledge(self, time, changes):
+        if not self.plan:
+            return
         for change in changes:
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
                     goals = self.extract_goals(self.plan)
                     events = self.extract_events(self.plan, as_start_time(time))
-                    assert goals
-                    self.halt(time)
-                    self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                           events=events)])
-                    break
+                    if not goals:
+                        log.warning("{} has actions, but none are goal orientated -- not bothering to replan for "
+                                    "these goals", self.agent)
+                        self.plan = []
+                        return
+                    else:
+                        self.halt(time)
+                        self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
+                                           local_events=events)])
+                        return
 
     def new_plan(self, plan):
         self.plan = plan
@@ -210,7 +217,7 @@ class AgentExecutor(Executor):
         raise NotImplementedError
 
     def halt(self, time):
-        """halt all actions are current time"""
+        """halt all actions at current time"""
         log.debug("halting {}", self.agent)
         self.halted = True
         self.plan = []
@@ -322,6 +329,7 @@ class CentralPlannerExecutor(Executor):
 
         # disseminate plan
         for agent, sub_plan in self.disseminate_plan(plan):
+            sub_plan = list(sub_plan)
             self.EXECUTORS[self.agent_executor_map[agent]].new_plan(list(sub_plan))
 
         self.valid_plan = True

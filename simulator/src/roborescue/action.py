@@ -35,7 +35,7 @@ class Move(Action):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
         find_object(self.agent, model["objects"])["at"][1] = self.end_node
         if self.start_node.startswith("temp"):
-            del model["objects"]["node"][self.start_node]
+            del model["objects"]["building"][self.start_node]
             del model["graph"]["edges"][self.start_node + " " + self.end_node]
         return False
 
@@ -66,11 +66,11 @@ class Move(Action):
 
     def create_temp_node(self, model, deadline):
         temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
-        if temp_node_name in model["objects"]["node"] or \
+        if temp_node_name in model["objects"]["building"] or \
                 temp_node_name in model["graph"]["edges"]:
             log.error("tried to insert {}, but already initialised", temp_node_name)
-            assert False
-        model["objects"]["node"][temp_node_name] = {}
+            raise ValueError("tried to insert {}, but already initialised".format(temp_node_name))
+        model["objects"]["building"][temp_node_name] = {}
         # set up edges -- only allow movement out of node
         distance_moved = deadline - self.start_time
         distance_remaining = self.get_edge_length(model, self.start_node, self.end_node) - distance_moved
@@ -144,6 +144,8 @@ class Unblock(Action):
         del edge["blockedness"]
         del edge["blocked-edge"]
         inverse_edge["edge"] = True
+        if "blockedness" not in inverse_edge:
+            pass
         del inverse_edge["blockedness"]
         del inverse_edge["blocked-edge"]
 
