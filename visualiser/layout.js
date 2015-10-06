@@ -556,6 +556,13 @@ function correctBlockedness(edge, reverse_edge) {
 
 function logError(err) {
 	var p = $("#error-log").empty()
-		.append($("<p>").text(err.name + " at line: "+err.lineNumber+" of "+err.fileName))
-		.append($("<p>").text(err.message));
+		.append($("<p>").append($("<strong>").text(err.name)).append(" at line: "+err.lineNumber+" of "+err.fileName))
+		.append($("<p>").append($("<strong>").text("message: ")).append(err.message));
+	p.append($("<p>")
+	    .append($("<strong>").text("Stacktrace:"))
+	    .append($("<list>")
+	        .append($.map(err.stack.split(/\n/), function (item) {
+	            return $("<li>").text(item);
+	        }))
+	));
 }
