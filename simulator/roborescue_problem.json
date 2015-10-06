@@ -1,0 +1,516 @@
+{
+    "assumed-values": {
+        "blocked-edge": false,
+        "blockedness": "max",
+        "buriedness": "max",
+        "edge": true
+    },
+    "domain": "roborescue",
+    "events": [],
+    "goal": {
+        "soft-goals": [
+            [
+                "rescued",
+                "civ0"
+            ],
+            [
+                "rescued",
+                "civ1"
+            ],
+            [
+                "rescued",
+                "civ2"
+            ],
+            [
+                "rescued",
+                "civ3"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": {
+            "building0-1 building0-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building0-1 building1-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building0-1 hospital0-0": {
+                "known": {
+                    "blocked-edge": false,
+                    "distance": 100,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building0-2 building0-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building0-2 building1-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building1-0 building1-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building1-0 building2-0": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building1-0 hospital0-0": {
+                "known": {
+                    "blocked-edge": false,
+                    "distance": 100,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building1-1 building0-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building1-1 building1-0": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building1-1 building1-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building1-1 building2-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building1-2 building0-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building1-2 building1-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building1-2 building2-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building2-0 building1-0": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": false
+                    },
+                    "edge": {
+                        "actual": true
+                    }
+                }
+            },
+            "building2-0 building2-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "edge": {
+                        "actual": false
+                    },
+                    "blockedness": {
+                        "min": 0,
+                        "max": 100,
+                        "actual": 30
+                    }
+                }
+            },
+            "building2-1 building1-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building2-1 building2-0": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "edge": {
+                        "actual": false
+                    },
+                    "blockedness": {
+                        "min": 0,
+                        "max": 100,
+                        "actual": 30
+                    }
+                }
+            },
+            "building2-1 building2-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "edge": {
+                        "actual": false
+                    },
+                    "blockedness": {
+                        "min": 0,
+                        "max": 100,
+                        "actual": 30
+                    }
+                }
+            },
+            "building2-2 building1-2": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "blockedness": {
+                        "actual": 30,
+                        "max": 0,
+                        "min": 0
+                    },
+                    "edge": {
+                        "actual": false
+                    }
+                }
+            },
+            "building2-2 building2-1": {
+                "known": {
+                    "distance": 100
+                },
+                "unknown": {
+                    "blocked-edge": {
+                        "actual": true
+                    },
+                    "edge": {
+                        "actual": false
+                    },
+                    "blockedness": {
+                        "min": 0,
+                        "max": 100,
+                        "actual": 30
+                    }
+                }
+            },
+            "hospital0-0 building0-1": {
+                "known": {
+                    "blocked-edge": false,
+                    "distance": 100,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "hospital0-0 building1-0": {
+                "known": {
+                    "blocked-edge": false,
+                    "distance": 100,
+                    "edge": true
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "metric": {
+        "type": "minimize",
+        "weights": {
+            "soft-goal-violations": {
+                "rescued": 100000
+            },
+            "total-time": 1
+        }
+    },
+    "objects": {
+        "building": {
+            "building0-1": {},
+            "building0-2": {},
+            "building1-0": {},
+            "building1-1": {},
+            "building1-2": {},
+            "building2-0": {},
+            "building2-1": {},
+            "building2-2": {}
+        },
+        "civilian": {
+            "civ0": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building1-2"
+                    ],
+                    "buried": true
+                },
+                "unknown": {
+                    "buriedness": {
+                        "actual": 53,
+                        "max": 100,
+                        "min": 50
+                    }
+                }
+            },
+            "civ1": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building1-2"
+                    ],
+                    "buried": true
+                },
+                "unknown": {
+                    "buriedness": {
+                        "actual": 72,
+                        "max": 100,
+                        "min": 50
+                    }
+                }
+            },
+            "civ2": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building2-1"
+                    ],
+                    "buried": true
+                },
+                "unknown": {
+                    "buriedness": {
+                        "actual": 61,
+                        "max": 100,
+                        "min": 50
+                    }
+                }
+            },
+            "civ3": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building2-1"
+                    ],
+                    "buried": true
+                },
+                "unknown": {
+                    "buriedness": {
+                        "actual": 92,
+                        "max": 100,
+                        "min": 50
+                    }
+                }
+            }
+        },
+        "hospital": {
+            "hospital0-0": {}
+        },
+        "medic": {
+            "medic0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true,
+                "empty": true
+            },
+            "medic1": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true,
+                "empty": true
+            }
+        },
+        "police": {
+            "police0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true
+            },
+            "police1": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true
+            }
+        }
+    },
+    "problem": "placeholder-name"
+}
