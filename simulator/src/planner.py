@@ -2,7 +2,7 @@ from functools import wraps
 from subprocess import Popen, PIPE
 import tempfile
 from io import TextIOWrapper
-from os.path import join as path_join
+from os.path import join as path_join, basename, splitext
 from threading import Timer, Thread, Lock
 from time import time as _time
 from math import isnan
@@ -51,9 +51,8 @@ class Planner(object):
     def get_plan(self, model, *, duration, agent, goals, metric, time, events):
         log.debug("Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration, agent,
             goals, metric, time, events)
-        # problem_file = self.create_problem_file(model)
-        self.create_problem_file(model, agent, goals, metric, time, events)
-        problem_file = "/dev/stdin"
+        problem_file = self.create_problem_file(model, agent, goals, metric, time, events)
+        # problem_file = "/dev/stdin"
         report = True
         args = [self.planner_location, self.domain_file, problem_file]
         single_pass = False
@@ -63,9 +62,9 @@ class Planner(object):
             report = False
             single_pass = True
 
-        p = Popen(args, stdin=PIPE, stdout=PIPE, cwd=self.working_directory)
-        Thread(target=self.problem_encoder.encode_problem_to_file, name="problem-writer",
-               args=(p.stdin, model, agent, goals, metric, time, events)).start()
+        p = Popen(args, stdin=None, stdout=PIPE, cwd=self.working_directory)
+        # Thread(target=self.problem_encoder.encode_problem_to_file, name="problem-writer",
+        #        args=(p.stdin, model, agent, goals, metric, time, events)).start()
         timer = Timer(float(duration), p.terminate)
         timer.start()
 
@@ -84,6 +83,9 @@ class Planner(object):
         p.wait(1)
 
         if plan is not None:
+            root, ext = splitext(basename(problem_file))
+            with open("logs/roborescue/plans/{}.plan".format(root), "w") as f:
+                f.write(repr(plan))
             return plan
         if report:
             raise NoPlanException
@@ -95,7 +97,7 @@ class Planner(object):
         start = _time()
         plan = self.get_plan(model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events)
         end = _time()
-        return plan, quantize(end - start)
+        return plan, min(quantize(end - start), duration)
 
     def create_problem_file(self, model, agent, goals, metric, time, events):
         import datetime

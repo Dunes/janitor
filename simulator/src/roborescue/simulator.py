@@ -1,5 +1,3 @@
-__author__ = 'jack'
-
 from enum import Enum
 from copy import deepcopy
 from collections import namedtuple, Iterable
@@ -15,6 +13,8 @@ from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
 from priority_queue import MultiActionStateQueue
 from jsonencoder import json_dumps
+
+__author__ = 'jack'
 
 log = StyleAdapter(getLogger(__name__))
 

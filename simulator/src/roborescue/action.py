@@ -36,7 +36,9 @@ class Move(Action):
         find_object(self.agent, model["objects"])["at"][1] = self.end_node
         if self.start_node.startswith("temp"):
             del model["objects"]["building"][self.start_node]
-            del model["graph"]["edges"][self.start_node + " " + self.end_node]
+            edge_ids = [edge_id for edge_id in model["graph"]["edges"] if edge_id.startswith(self.start_node)]
+            for edge_id in edge_ids:
+                del model["graph"]["edges"][edge_id]
         return False
 
     def partially_apply(self, model, deadline):

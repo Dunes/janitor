@@ -138,16 +138,17 @@ def run_roborescue_simulator():
                               problem_encoder=problem_encoder,
                               domain_file=domain_template.format(model["domain"]))
 
-    local_planner = Planner(args.planning_time,
+    local_planner = Planner(decimal.Decimal(10),
                             decoder=decoder,
                             problem_encoder=problem_encoder,
                             domain_file=domain_template.format(model["domain"]))
 
     # create and setup executors
-    agent_executors = [PoliceExecutor(agent=agent_name, planning_time=args.planning_time)
-                       for agent_name in model["objects"]["police"]] \
-                      + [MedicExecutor(agent=agent_name, planning_time=args.planning_time)
-                         for agent_name in model["objects"]["medic"]]
+    police_executors = [PoliceExecutor(agent=agent_name, planning_time=local_planner.planning_time)
+                       for agent_name in model["objects"]["police"]]
+    medic_executors = [MedicExecutor(agent=agent_name, planning_time=local_planner.planning_time)
+                       for agent_name in model["objects"]["medic"]]
+    agent_executors = police_executors + medic_executors
     event_executor = EventExecutor(events=model["events"])
     planning_executor = CentralPlannerExecutor(
         agent="planner", planning_time=args.planning_time, executor_ids=[e.id for e in agent_executors],

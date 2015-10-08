@@ -258,10 +258,10 @@ class MedicExecutor(AgentExecutor):
             if isinstance(action_, Unload) and action_.target not in rescued:
                 goals.append(["rescued", action_.target])
                 rescued.add(action_.target)
-        for action_ in plan:
-            if isinstance(action_, Rescue) and action_.target not in rescued:
-                goals.append(["unburied", action_.target])
-                rescued.add(action_.target)
+        # for action_ in plan:
+        #     if isinstance(action_, Rescue) and action_.target not in rescued:
+        #         goals.append(["unburied", action_.target])
+        #         rescued.add(action_.target)
 
         return goals
 
@@ -271,6 +271,8 @@ class MedicExecutor(AgentExecutor):
 
 
 class CentralPlannerExecutor(Executor):
+
+    planning_possible = True
 
     def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
                  central_planner, local_planner, event_executor):
@@ -298,7 +300,15 @@ class CentralPlannerExecutor(Executor):
 
     @property
     def has_goals(self):
-        return not self.valid_plan
+        # has a goal if no valid plan and still unobtained goals that are possible
+        if not self.valid_plan:
+            return True
+        if not self.planning_possible:
+            return False
+        if not any(self.EXECUTORS[id_].has_goals for id_ in self.executor_ids):
+            self.valid_plan = False
+            return True
+        return False
 
     def next_action(self, time):
         assert not self.valid_plan
@@ -312,10 +322,15 @@ class CentralPlannerExecutor(Executor):
         if not isinstance(action_state.action, Plan):
             raise ExecutionError("Have a non-plan action: " + str(action_state.action))
 
-        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
-            model, duration=self.central_planner.planning_time, agent="all", goals=model["goal"],
-            metric=model["metric"], time=action_state.time, events=self.event_executor.events
-        )
+        try:
+            new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
+                model, duration=self.central_planner.planning_time, agent="all", goals=model["goal"],
+                metric=model["metric"], time=action_state.time, events=self.event_executor.events
+            )
+        except NoPlanException:
+            new_plan, time_taken = [], self.central_planner.planning_time
+            self.planning_possible = False
+
         new_plan = self.adjust_plan(new_plan)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
