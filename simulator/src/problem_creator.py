@@ -81,12 +81,7 @@ def create_problem(output, size, buriedness, blockedness, blocked_percentage, ci
     problem = {
         "problem": problem_name,
         "domain": domain,
-        "assumed-values": {
-            "edge": True,
-            "blocked-edge": False,
-            "blockedness": "max",
-            "buriedness": "max"
-        },
+        "assumed-values": {},
         "objects": create_objects(civilians, buriedness, medics, police, size, hospitals),
         "graph": create_graph(size, hospitals, edge_length, blockedness, blocked_percentage),
         "events": [],
@@ -126,16 +121,15 @@ def create_objects(civilians, buriedness, medics, police, size, hospitals):
                              "empty": True
                          }
                      for i in range(medics)}
-    civilian_objects = {"civ{}".format(i):
-                            {
-                                "known": {"at": [True, choice(building_names)], "alive": True, "buried": True},
-                                "unknown": {"buriedness": {
-                                    "max": buriedness.max,
-                                    "min": buriedness.min,
-                                    "actual": rand(buriedness.min, buriedness.max)
-                                }}
-                            }
-                        for i in range(civilians)}
+    civilian_objects = {"civ{}".format(i): {
+        "known": {
+            "at": [True, choice(building_names)],
+            "alive": True,
+            "buried": True,
+            "buriedness": rand(buriedness.min, buriedness.max)
+        },
+        "unknown": {}
+    } for i in range(civilians)}
 
     return {
         "medic": medic_objects,
@@ -176,21 +170,17 @@ def create_graph(size, hospitals, edge_length, blockedness, blocked_percentage):
     blocked_edges = sample(list(unique_edges), int(round(len(unique_edges) * blocked_percentage)))
     unblocked_edges = list(unique_edges.difference(blocked_edges))
     for edge_pair in blocked_edges:
-        unknown_edge_data = {
-            "edge": {"actual": False},
-            "blocked-edge": {"actual": True},
-            "blockedness": {
-                "max": blockedness.max,
-                "min": blockedness.min,
-                "actual": rand(blockedness.min, blockedness.max)
-            }
+        edge_data = {
+            "edge": False,
+            "blocked-edge": True,
+            "blockedness": rand(blockedness.min, blockedness.max)
         }
-        edges[" ".join(edge_pair)]["unknown"] = unknown_edge_data
-        edges[" ".join(reversed(edge_pair))]["unknown"] = deepcopy(unknown_edge_data)
+        edges[" ".join(edge_pair)]["known"].update(edge_data)
+        edges[" ".join(reversed(edge_pair))]["known"].update(edge_data)
     for edge_pair in unblocked_edges:
-        unknown_edge_data = {"edge": {"actual": True}}
-        edges[" ".join(edge_pair)]["unknown"] = unknown_edge_data
-        edges[" ".join(reversed(edge_pair))]["unknown"] = deepcopy(unknown_edge_data)
+        edge_data = {"edge": True}
+        edges[" ".join(edge_pair)]["known"].update(edge_data)
+        edges[" ".join(reversed(edge_pair))]["known"].update(edge_data)
 
     return {
         "bidirectional": False,
