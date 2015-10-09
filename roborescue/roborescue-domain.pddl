@@ -68,7 +68,7 @@
 
 	(:durative-action load
 		:parameters (?m - medic ?c - civilian ?b - building)
-		:duration (= ?duration 1)
+		:duration (= ?duration 30)
 		:condition (and
 			(over all (at ?m ?b))
 			(at start (at ?c ?b))
@@ -88,7 +88,7 @@
 	
 	(:durative-action unload
 		:parameters (?m - medic ?c - civilian ?b - hospital)
-		:duration (= ?duration 1)
+		:duration (= ?duration 30)
 		:condition (and 
 			(over all (at ?m ?b))
 			(at start (carrying ?m ?c))
