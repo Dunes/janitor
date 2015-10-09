@@ -51,7 +51,7 @@ class Planner(object):
     def get_plan(self, model, *, duration, agent, goals, metric, time, events):
         log.debug("Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration, agent,
             goals, metric, time, events)
-        problem_file = self.create_problem_file(model, agent, goals, metric, time, events)
+        problem_file = self.create_problem_file(model, agent, goals, metric, time + duration, events)
         # problem_file = "/dev/stdin"
         report = True
         args = [self.planner_location, self.domain_file, problem_file]
