@@ -1,6 +1,7 @@
 import simplejson
 from roborescue.event import Event
 from decimal import Decimal
+from jsonencoder import ActionEncoder
 
 
 def decode(filename):
@@ -13,4 +14,4 @@ def decode(filename):
 
 def encode(filename, obj, **kwargs):
     with open(filename, mode="w") as fh:
-        simplejson.dump(obj, fh, use_decimal=True, **kwargs)
+        simplejson.dump(obj, fh, use_decimal=True, cls=ActionEncoder, **kwargs)
