@@ -1,72 +1,76 @@
-__author__ = 'jack'
-
 from logging import getLogger
 from logger import StyleAdapter
+from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 
-from .problem_encoder import find_object, create_predicate, unknown_value_getter
+from .problem_encoder import find_object, create_predicate
 
 
 log = StyleAdapter(getLogger(__name__))
+__author__ = 'jack'
 
 
-class Event:
+Predicate = namedtuple("Predicate", "name becomes")
 
-    def __init__(self, time, object_id, predicate, becomes=True):
+
+class Event(metaclass=ABCMeta):
+
+    def __init__(self, time, id_, predicates, hidden=False):
         self.time = time
-        self.object_id = object_id
-        self.predicate = predicate
-        self.becomes = becomes
+        self.id_ = id_
+        self.predicates = predicates
+        self.hidden = hidden
 
-    def as_predicate(self, time, model):
+    @abstractmethod
+    def find_object(self, model):
+        raise NotImplementedError
+
+    def get_predicates(self, time, model):
         if time > self.time:
             raise ValueError("{} has expired. Current time: {}".format(self, time))
-        if self.becomes is False:
-            obj = find_object_or_edge(self.object_id, model)
-            if "known" not in obj:
-                predicate_value = obj[self.predicate]
-            else:
-                predicate_value = obj["known"].get(self.predicate)
-                if predicate_value is None:
-                    assert isinstance(obj["unknown"][self.predicate]["actual"], bool)
-                    predicate_value = unknown_value_getter(obj["unknown"], self.predicate, model["assumed-values"])
-                    if predicate_value is False:
-                        return None
-            predicate = "not", create_predicate(self.predicate, predicate_value, self.object_id)
-        else:
-            predicate = create_predicate(self.predicate, self.becomes, self.object_id)
+        if self.hidden:
+            raise TypeError("{} is hidden".format(self))
 
-        return "at", self.time - time, predicate
+        pddl_predicates = []
+        for p in self.predicates:
+            if p.becomes is False:
+                obj = self.find_object(model)
+                predicate_value = obj["known"][p.name]
+                predicate = "not", create_predicate(p.name, predicate_value, self.id_)
+            else:
+                predicate = create_predicate(p.name, p.becomes, self.id_)
+
+            pddl_predicates.append(("at", self.time - time, predicate))
+        return pddl_predicates
 
     def apply(self, model):
-        obj = find_object(self.object_id, model["objects"])
-        if self.predicate in obj:
-            values = obj
-        elif self.predicate in obj["known"]:
-            values = obj["known"]
-        else:
-            values = obj["unknown"]
-
-        values[self.predicate] = self.becomes
-
-        return self.object_id
+        obj = self.find_object(model)
+        values = obj["known"]
+        for p in self.predicates:
+            values[p.name] = p.becomes
+        return self.id_
 
     def __repr__(self):
-        return "Event(time={time}, object_id={object_id!r}, predicate={predicate!r}, becomes={becomes!r})" \
+        return "Event(time={time}, id_={id_!r}, predicates={predicates}, hidden={hidden})" \
             .format_map(vars(self))
 
 
-def find_object_or_edge(id_, model):
-    if " " not in id_:
-        return find_object(id_, model["objects"])
+class ObjectEvent(Event):
+    def find_object(self, model):
+        return find_object(self.id_, model["objects"])
+
+
+class EdgeEvent(Event):
+    def find_object(self, model):
+        return model["graph"]["edges"][self.id_]
+
+
+def decode_event(attributes: dict) -> Event:
+    predicates = [Predicate(**p) for p in attributes["predicates"]]
+    type_name = attributes["type"]
+    if type_name == "object":
+        return ObjectEvent(attributes["time"], attributes["id"], predicates, attributes.get("hidden", False))
+    elif type_name == "edge":
+        return EdgeEvent(attributes["time"], attributes["id"], predicates, attributes.get("hidden", False))
     else:
-        return find_edge(id_, model["graph"])
-
-
-def find_edge(edge_id, graph):
-    try:
-        return graph["edges"][edge_id]
-    except KeyError:
-        if not graph.get("bidirectional"):
-            raise
-    reverse_id = " ".join(reversed(edge_id.split(" ")))
-    return graph["edges"][reverse_id]
+        raise ValueError("unknown event type: " + type_name)
