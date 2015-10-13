@@ -1,12 +1,10 @@
-__author__ = 'jack'
-
 from functools import partial
-
 from simplejson import JSONEncoder, dumps
 
 from action import Action
 from roborescue.event import Event
 
+__author__ = 'jack'
 __all__ = ["json_dumps", "ActionEncoder"]
 
 
@@ -20,7 +18,9 @@ class ActionEncoder(JSONEncoder):
             d.pop("plan", None)
             return d
         elif isinstance(o, Event):
-            return vars(o)
+            d = dict(vars(o), id=o.id_, type=o.type)
+            d.pop("id_")
+            return d
         return super().default(o)
 
 

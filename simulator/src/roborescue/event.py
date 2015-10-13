@@ -56,11 +56,15 @@ class Event(metaclass=ABCMeta):
 
 
 class ObjectEvent(Event):
+    type = "object"
+
     def find_object(self, model):
         return find_object(self.id_, model["objects"])
 
 
 class EdgeEvent(Event):
+    type = "edge"
+
     def find_object(self, model):
         return model["graph"]["edges"][self.id_]
 
