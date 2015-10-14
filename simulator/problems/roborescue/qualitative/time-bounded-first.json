@@ -3,16 +3,18 @@
     "domain": "roborescue",
     "events": [
         {
+        	"type": "object",
             "time": 1080,
-            "object_id": "civ0",
-            "predicate": "alive",
-            "becomes": false
+            "id": "civ0",
+            "hidden": false,
+            "predicates": [{"name": "alive", "becomes": false}]
         },
         {
+        	"type": "object",
             "time": 1080,
-            "object_id": "civ1",
-            "predicate": "alive",
-            "becomes": false
+            "id": "civ1",
+            "hidden": false,
+            "predicates": [{"name": "alive", "becomes": false}]
         }
     ],
     "goal": {
