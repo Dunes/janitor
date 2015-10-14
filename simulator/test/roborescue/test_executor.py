@@ -1,13 +1,9 @@
-__author__ = 'jack'
-
 import unittest
 from decimal import Decimal
 
 from hamcrest import assert_that, has_length, has_items, has_property
 
 from roborescue.executor import AgentExecutor, CentralPlannerExecutor
-from roborescue.action import __author__
-
 
 class TestAgentExecutor(unittest.TestCase):
     pass

@@ -1,4 +1,4 @@
-__author__ = 'jack'
+
 
 from logging import getLogger
 from operator import attrgetter
@@ -14,6 +14,7 @@ from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 
 
+__author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
 
 
@@ -30,6 +31,10 @@ class Executor(metaclass=ABCMeta):
         self.id = next(self.ID_COUNTER)
         self.EXECUTORS[self.id] = self
         self.executed = []
+
+    @property
+    def central_executor(self):
+        return self.EXECUTORS[self.central_executor_id]
 
     @abstractmethod
     def copy(self):
@@ -74,15 +79,18 @@ class Executor(metaclass=ABCMeta):
 
 
 class EventExecutor(Executor):
-    def __init__(self, *, events):
+    def __init__(self, *, events, central_executor_id=None):
         super().__init__(agent="event_executor", planning_time=None, deadline=None)
+        self.central_executor_id = central_executor_id
         time = attrgetter("time")
-        events = sorted(events, key=time)
-        event_actions = []
-        for t, evts in groupby(events, key=time):
-            event_actions.append(EventAction(time=t, events=tuple(evts)))
-        self.event_actions = event_actions
-        self.events = events
+        self.events = sorted(events, key=time)
+        self.event_actions = []
+        for t, evts in groupby(self.events, key=time):
+            self.event_actions.append(EventAction(time=t, events=tuple(evts)))
+
+    @property
+    def known_events(self):
+        return [e for e in self.events if not e.hidden]
 
     def copy(self):
         raise NotImplementedError
@@ -103,9 +111,10 @@ class EventExecutor(Executor):
     def notify_action_starting(self, action_state: ActionState, model):
         self.executing = action_state.start()
         del self.event_actions[0]
-        action_state.action.apply(model)
+        changes = action_state.action.apply(model)
         for e in action_state.action.events:
             self.events.remove(e)
+        self.central_executor.notify_new_knowledge(action_state.time, changes)
 
     def notify_action_finishing(self, action_state: ActionState, model):
         super().notify_action_finishing(action_state, model)
@@ -119,11 +128,11 @@ class EventExecutor(Executor):
 
 class AgentExecutor(Executor):
 
-    def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), planner_id=None,
+    def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), central_executor_id=None,
                  halted=False):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.plan = plan or []
-        self.planner_id = planner_id
+        self.central_executor_id = central_executor_id
         self.halted = halted
 
     def copy(self):
@@ -153,17 +162,18 @@ class AgentExecutor(Executor):
         del self.plan[0]
 
         if isinstance(action_state.action, LocalPlan):
-            planner = self.EXECUTORS[self.planner_id].local_planner
+            planner = self.central_executor.local_planner
             action_ = action_state.action
             try:
                 # subtract planning time to create "instantaneous" plan
                 new_plan, time_taken = planner.get_plan_and_time_taken(
                     model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
-                    metric=None, time=action_state.time - planner.planning_time, events=action_.local_events + model["events"])
+                    metric=None, time=action_state.time - planner.planning_time,
+                    events=action_.local_events + self.central_executor.event_executor.known_events)
                 plan_action = action_.copy_with(plan=new_plan, duration=zero)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
             except NoPlanException:
-                self.EXECUTORS[self.planner_id].notify_planning_failure(self.id, action_state.time)
+                self.central_executor.notify_planning_failure(self.id, action_state.time)
         else:
             self.executing = action_state.start()
 
@@ -181,7 +191,7 @@ class AgentExecutor(Executor):
             changes = action_state.action.apply(model)
             if changes:
                 # new knowledge
-                self.EXECUTORS[self.planner_id].notify_new_knowledge(action_state.time, changes)
+                self.central_executor.notify_new_knowledge(action_state.time, changes)
 
     def notify_new_knowledge(self, time, changes):
         if not self.plan:
@@ -325,7 +335,7 @@ class CentralPlannerExecutor(Executor):
         try:
             new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
                 model, duration=self.central_planner.planning_time, agent="all", goals=model["goal"],
-                metric=model["metric"], time=action_state.time, events=self.event_executor.events
+                metric=model["metric"], time=action_state.time, events=self.event_executor.known_events
             )
         except NoPlanException:
             new_plan, time_taken = [], self.central_planner.planning_time

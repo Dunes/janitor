@@ -155,8 +155,9 @@ def run_roborescue_simulator():
         agent_names=[e.agent for e in agent_executors], central_planner=central_planner, local_planner=local_planner,
         event_executor=event_executor)
 
+    event_executor.central_executor_id = planning_executor.id
     for e in agent_executors:
-        e.planner_id = planning_executor.id
+        e.central_executor_id = planning_executor.id
 
     # setup simulator
     executors = dict({e.agent: e for e in agent_executors},

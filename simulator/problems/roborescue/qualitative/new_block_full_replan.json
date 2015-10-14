@@ -3,40 +3,26 @@
     "domain": "roborescue",
     "events": [
         {
+        	"type": "edge",
             "time": 60,
-            "object_id": "building0-1 building0-2",
-            "predicate": "edge",
-            "becomes": false
+            "id": "building0-1 building0-2",
+            "hidden": true,
+            "predicates": [
+            	{"name": "edge", "becomes": false},
+            	{"name": "blocked-edge", "becomes": true},
+            	{"name": "blockedness", "becomes": 120}
+            ]
         },
         {
+        	"type": "edge",
             "time": 60,
-            "object_id": "building0-1 building0-2",
-            "predicate": "blocked-edge",
-            "becomes": true
-        },
-        {
-            "time": 60,
-            "object_id": "building0-1 building0-2",
-            "predicate": "blockedness",
-            "becomes": 120
-        },
-        {
-            "time": 60,
-            "object_id": "building0-2 building0-1",
-            "predicate": "edge",
-            "becomes": false
-        },
-        {
-            "time": 60,
-            "object_id": "building0-2 building0-1",
-            "predicate": "blocked-edge",
-            "becomes": true
-        },
-        {
-            "time": 60,
-            "object_id": "building0-2 building0-1",
-            "predicate": "blockedness",
-            "becomes": 120
+            "id": "building0-2 building0-1",
+            "hidden": true,
+            "predicates": [
+            	{"name": "edge", "becomes": false},
+            	{"name": "blocked-edge", "becomes": true},
+            	{"name": "blockedness", "becomes": 120}
+            ]
         }
     ],
     "goal": {

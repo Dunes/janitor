@@ -60,11 +60,16 @@ def _encode_objects(out, objects):
 def _encode_init(out, objects, graph, assumed_values, events=None, model=None, time=None):
     out.write("(:init ")
     _encode_init_helper(out, objects, assumed_values)
-    if events:
-        for event in events:
-            _encode_predicate(out, event.as_predicate(time, model))
+    _encode_events(out, events, time, model)
     _encode_graph(out, graph, assumed_values)
     out.write(") ")
+
+
+def _encode_events(out, events, time, model):
+    if events:
+        for event in events:
+            for pred in event.get_predicates(time, model):
+                _encode_predicate(out, pred)
 
 
 def _encode_init_helper(out, items, assumed_values):

@@ -374,11 +374,11 @@ class EventAction(Action):
     def apply(self, model):
         changes = set()
         for e in self.events:
-            changes.update(e.apply(model))
+            changes.add(e.apply(model))
         return list(changes)
 
     def as_partial(self, **kwargs):
-        return None
+        return TypeError("Should not ask event to partially apply")
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError
