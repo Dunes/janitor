@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import argparse
 import re
@@ -68,7 +68,7 @@ def parser():
 
     p.add_argument("--medics", "-m", required=True, type=int)
     p.add_argument("--police", "-p", required=True, type=int)
-    p.add_argument("--hospitals", "-ho", nargs="+", action=PointAction)
+    p.add_argument("--hospitals", "-ho", required=True, nargs="+", action=PointAction)
 
     p.add_argument("--problem-name", "-pn", required=True)
     p.add_argument("--domain", "-dn", required=True)
