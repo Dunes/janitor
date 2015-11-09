@@ -4,8 +4,8 @@
     "events": [
         {
         	"type": "edge",
-            "time": 60,
-            "id": "building0-1 building0-2",
+            "time": 90,
+            "id": "hospital0-0 building0-1",
             "hidden": true,
             "predicates": [
             	{"name": "edge", "becomes": false},
@@ -15,8 +15,8 @@
         },
         {
         	"type": "edge",
-            "time": 60,
-            "id": "building0-2 building0-1",
+            "time": 90,
+            "id": "building0-1 hospital0-0",
             "hidden": true,
             "predicates": [
             	{"name": "edge", "becomes": false},
