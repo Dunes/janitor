@@ -237,7 +237,7 @@ class AgentExecutor(Executor):
                 # action never started
                 self.executing = None
             else:
-                new_action = self.executing.action.as_partial(end_time=time)
+                new_action = self.executing.action.as_partial(end_time=as_start_time(time))
                 if new_action.start_time != self.executing.action.start_time:
                     assert False
                 self.executing = ActionState(new_action).start()

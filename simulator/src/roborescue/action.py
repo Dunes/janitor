@@ -29,7 +29,8 @@ class Move(Action):
 
     def is_applicable(self, model):
         return find_object(self.agent, model["objects"])["at"][1] == self.start_node \
-            and model["graph"]["edges"][self.start_node + " " + self.end_node]["known"].get("edge")
+            and (model["graph"]["edges"][self.start_node + " " + self.end_node]["known"].get("edge") or
+                 self.partial)
 
     def apply(self, model):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
@@ -42,7 +43,6 @@ class Move(Action):
         return False
 
     def partially_apply(self, model, deadline):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
         # create temp node
         continued_partial_move = self.start_node.startswith("temp")
         if continued_partial_move:
@@ -74,43 +74,41 @@ class Move(Action):
             raise ValueError("tried to insert {}, but already initialised".format(temp_node_name))
         model["objects"]["building"][temp_node_name] = {}
         # set up edges -- only allow movement out of node
+        edge = self.get_edge(model, self.start_node, self.end_node)
         distance_moved = deadline - self.start_time
-        distance_remaining = self.get_edge_length(model, self.start_node, self.end_node) - distance_moved
+        distance_remaining = edge["known"]["distance"] - distance_moved
+        blocked = not edge["known"].get("edge", False)
         model["graph"]["edges"].update(self._create_temp_edge_pair(temp_node_name, self.start_node, self.end_node,
-            distance_moved, distance_remaining))
+            distance_moved, distance_remaining, blocked))
         # move agent to temp node
         find_object(self.agent, model["objects"])["at"][1] = temp_node_name
-        # create partial action representing move
-        action = Move(self.start_time, distance_moved, self.agent, self.start_node, temp_node_name, partial=True)
-        return action
 
     @staticmethod
-    def _create_temp_edge_pair(temp_node, start_node, end_node, moved, remaining):
-        return (
-            (" ".join((temp_node, end_node)), {
+    def _create_temp_edge_pair(temp_node, start_node, end_node, moved, remaining, blocked):
+        if not blocked or remaining < moved:
+            yield (" ".join((temp_node, end_node)), {
                 "known": {
                     "distance": remaining,
                     "edge": True,
                 },
                 "unknown": {}
-            }),
-            (" ".join((temp_node, start_node)), {
-                "known": {
-                    "distance": moved,
-                    "edge": True,
-                },
-                "unknown": {}
-            }),
-        )
+            })
+            if remaining < moved:
+                return
+        yield (" ".join((temp_node, start_node)), {
+            "known": {
+                "distance": moved,
+                "edge": True,
+            },
+            "unknown": {}
+        })
 
-    def get_edge_length(self, model, start_node, end_node):
+    def get_edge(self, model, start_node, end_node):
         edge_key = " ".join((start_node, end_node))
         try:
-            edge = model["graph"]["edges"][edge_key]
+            return model["graph"]["edges"][edge_key]
         except KeyError:
             pass
-        else:
-            return edge["known"]["distance"]
         if model["graph"]["bidirectional"]:
             raise NotImplementedError
         raise ExecutionError("Could not find {!r}".format(edge_key))
