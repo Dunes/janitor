@@ -204,6 +204,56 @@ class TestMove(TestCase):
         self.move.modify_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
 
+    def test_partial_move_when_edge_becomes_blocked_and_less_than_half_moved(self):
+        # given
+        agent = "agent1"
+        node = "building1"
+        other_node = "building2"
+        start_time = ZERO
+        distance = Decimal(10)
+        model = ModelBuilder() \
+            .with_agent(agent, at=node) \
+            .with_node(node, type="building") \
+            .with_node(other_node, type="building") \
+            .with_edge(node, other_node, distance=distance, blockedness=20) \
+            .model
+        move = Move(start_time, distance, agent, node, other_node).as_partial(end_time=Decimal(4))
+
+        # when
+        move.apply(model)
+
+        # then
+        temp_node_id = "temp-{}-{}-{}".format(agent, node, other_node)
+        assert_that(find_object(agent, model["objects"])["at"][1], equal_to(temp_node_id))
+        assert_that(model["objects"], has_object(temp_node_id))
+        assert_that(model["graph"]["edges"], has_edge(temp_node_id, node))
+        assert_that(model["graph"]["edges"], is_not(has_edge(temp_node_id, other_node)))
+
+    def test_partial_move_when_edge_becomes_blocked_and_more_than_half_moved(self):
+        # given
+        agent = "agent1"
+        node = "building1"
+        other_node = "building2"
+        start_time = ZERO
+        distance = Decimal(10)
+        model = ModelBuilder() \
+            .with_agent(agent, at=node) \
+            .with_node(node, type="building") \
+            .with_node(other_node, type="building") \
+            .with_edge(node, other_node, distance=distance, blockedness=20) \
+            .model
+        move = Move(start_time, distance, agent, node, other_node).as_partial(end_time=Decimal(6))
+
+        # when
+        move.apply(model)
+
+        # then
+        temp_node_id = "temp-{}-{}-{}".format(agent, node, other_node)
+        assert_that(find_object(agent, model["objects"])["at"][1], equal_to(temp_node_id))
+        assert_that(model["objects"], has_object(temp_node_id))
+        assert_that(model["graph"]["edges"], has_edge(temp_node_id, other_node))
+        assert_that(model["graph"]["edges"], is_not(has_edge(temp_node_id, node)))
+
 
 class TestUnblock(TestCase):
 

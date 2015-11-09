@@ -17,6 +17,8 @@ __all__ = ["has_agent", "has_edge", "has_node"]
 
 class HasObject(hamcrest.base_matcher.BaseMatcher):
 
+    object_id = None
+
     def with_object(self, object_id):
         self.object_id = object_id
         return self
