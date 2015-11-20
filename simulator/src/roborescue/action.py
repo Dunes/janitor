@@ -359,7 +359,7 @@ class Observe(Action):
 
 class EventAction(Action):
 
-    _format_attrs = ("time", "events")
+    _format_attrs = ("start_time", "events")
 
     def __init__(self, time, events):
         super().__init__(as_end_time(time), INSTANTANEOUS_ACTION_DURATION)
@@ -377,6 +377,28 @@ class EventAction(Action):
 
     def as_partial(self, **kwargs):
         return TypeError("Should not ask event to partially apply")
+
+    def partially_apply(self, model, deadline):
+        raise NotImplementedError
+
+
+class Allocate(Action):
+
+    _format_attrs = ("agent", "start_time")
+
+    def __init__(self, time, goals):
+        super().__init__(as_end_time(time), INSTANTANEOUS_ACTION_DURATION)
+        object.__setattr__(self, "agent", "task_allocator_executor")
+        object.__setattr__(self, "goals", goals)
+
+    def is_applicable(self, model):
+        return True
+
+    def apply(self, model):
+        pass
+
+    def as_partial(self, **kwargs):
+        return TypeError("Should not ask allocate to partially apply")
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError

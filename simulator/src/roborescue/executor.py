@@ -1,5 +1,3 @@
-
-
 from logging import getLogger
 from operator import attrgetter
 from decimal import Decimal
@@ -7,11 +5,12 @@ from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 
-from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction
+from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
+from priority_queue import PriorityQueue
 
 
 __author__ = 'jack'
@@ -344,6 +343,94 @@ class CentralPlannerExecutor(Executor):
         new_plan = self.adjust_plan(new_plan)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
+
+    def notify_action_finishing(self, action_state: ActionState, model):
+        super().notify_action_finishing(action_state, model)
+        assert self.executing is action_state
+        self.executing = None
+        action_state = action_state.finish()
+        plan = action_state.action.apply(model)
+
+        # disseminate plan
+        for agent, sub_plan in self.disseminate_plan(plan):
+            sub_plan = list(sub_plan)
+            self.EXECUTORS[self.agent_executor_map[agent]].new_plan(list(sub_plan))
+
+        self.valid_plan = True
+
+    def notify_new_knowledge(self, time, node):
+        for executor_id in self.executor_ids:
+            self.EXECUTORS[executor_id].notify_new_knowledge(time, node)
+
+    def notify_planning_failure(self, executor_id, time):
+        self.valid_plan = False
+        # tell all agents to stop immediately
+        for e_id in self.executor_ids:
+            self.EXECUTORS[e_id].halt(time)
+
+    @staticmethod
+    def disseminate_plan(plan):
+        plan = sorted(plan, key=attrgetter("agent", "start_time"))
+        return groupby(plan, key=attrgetter("agent"))
+
+
+class TaskAllocatorExecutor(Executor):
+
+    planning_possible = True
+
+    def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
+                 central_planner, local_planner, event_executor):
+        super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
+        self.valid_plan = False
+        self.central_planner = central_planner
+        self.local_planner = local_planner
+        self.event_executor = event_executor if event_executor else EventExecutor(events=())
+        self.executor_ids = executor_ids
+        assert len(executor_ids) == len(agent_names)
+        self.agent_executor_map = {name: id_ for name, id_ in zip(agent_names, executor_ids)}
+
+    def copy(self):
+        raise NotImplementedError
+
+    @property
+    def deadline(self):
+        return self._deadline
+
+    @deadline.setter
+    def deadline(self, deadline):
+        if self.executing:
+            raise ExecutionError("Wasn't expecting to be told deadline is changing when already planning")
+        self._deadline = deadline
+
+    @property
+    def has_goals(self):
+        # has a goal if no valid plan and still unobtained goals that are possible
+        if not self.valid_plan:
+            return True
+        if not self.planning_possible:
+            return False
+        if not any(self.EXECUTORS[id_].has_goals for id_ in self.executor_ids):
+            self.valid_plan = False
+            return True
+        return False
+
+    def next_action(self, time):
+        raise NotImplementedError("need to compute goals")
+        assert not self.valid_plan
+        if self.executing:
+            return self.executing
+        return ActionState(Allocate(as_start_time(time), goals))
+
+    def notify_action_starting(self, action_state: ActionState, model):
+        assert not self.executing
+
+        if not isinstance(action_state.action, Allocate):
+            raise ExecutionError("Have a non-allocate action: " + str(action_state.action))
+
+        goals = PriorityQueue(action_state.action.goals)
+        while goals:
+            pass
+
 
     def notify_action_finishing(self, action_state: ActionState, model):
         super().notify_action_finishing(action_state, model)

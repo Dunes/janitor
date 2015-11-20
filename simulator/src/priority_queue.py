@@ -3,6 +3,7 @@ from functools import partial
 from heapq import heapify, heappop, heappush
 from copy import copy
 from operator import attrgetter
+from itertools import count
 
 
 class AbstractBaseQueue:
@@ -66,6 +67,11 @@ class PriorityQueue(AbstractBaseQueue):
         super().__init__(list(sequence))
         heapify(self.queue)
 
+    def __new__(cls, sequence=(), key=None):
+        if key is not None:
+            return object.__new__(KeyBasedPriorityQueue)
+        return object.__new__(cls)
+
     def append(self, item):
         heappush(self.queue, item)
 
@@ -75,6 +81,39 @@ class PriorityQueue(AbstractBaseQueue):
 
     def pop(self):
         return heappop(self.queue)
+
+
+class KeyBasedPriorityQueue(PriorityQueue):
+
+    def __init__(self, sequence=(), key=lambda x: x):
+        super().__init__(())
+        self._unique_id = count()
+        self.key = key
+        self.extend(sequence)
+
+    def __new__(cls, sequence=(), key=None):
+        if key is not None:
+            return object.__new__(KeyBasedPriorityQueue)
+        return object.__new__(cls)
+
+    def append(self, item):
+        super().append((self.key(item), next(self._unique_id), item))
+
+    def extend(self, iterable):
+        super().extend((self.key(item), next(self._unique_id), item) for item in iterable)
+
+    def pop(self):
+        return super().pop()[2]
+
+    def peek(self):
+        return super().peek()[2]
+
+    def values(self):
+        for key, id_, item in super().values():
+            yield item
+
+    def __copy__(self):
+        return KeyBasedPriorityQueue(self.values(), self.key)
 
 
 class MultiQueue:
