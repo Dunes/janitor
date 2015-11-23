@@ -1,59 +1,141 @@
-import unittest
-from decimal import Decimal
+from unittest import TestCase
+from unittest.mock import patch, Mock
+from hamcrest import assert_that, equal_to, contains_inanyorder
 
-from hamcrest import assert_that, has_length, has_items, has_property
+from operator import attrgetter
 
-from roborescue.executor import AgentExecutor, CentralPlannerExecutor
-
-class TestAgentExecutor(unittest.TestCase):
-    pass
+from roborescue.executor import TaskAllocatorExecutor, AgentExecutor
+from roborescue.goal import Goal, Bid
 
 
-class TestCentralPlannerExecutor(unittest.TestCase):
+class TestTaskAllocatorExecutor(TestCase):
 
-    def test_replace_extra_clean_actions_with_extra_clean(self):
+    @patch.object(TaskAllocatorExecutor, "EXECUTORS", new_callable=dict)
+    def test__executors(self, executor_cache):
         # given
-        start_time = 0
-        duration = 10
-        agent0 = "agent0"
-        agent1 = "agent1"
-        room = "room"
-        plan = [ExtraClean(start_time, duration, agent0, agent1, room)]
-
-        # when
-        new_plan = list(CentralPlannerExecutor.replace_extra_clean_actions(plan))
+        ids = [next(TaskAllocatorExecutor.ID_COUNTER) for _ in range(3)]
+        names = list("abc")
+        executor_cache.update(zip(ids, names))
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
+            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
 
         # then
-        assert_that(new_plan, has_length(2))
-        assert_that(new_plan, has_items(ExtraCleanPart(start_time, duration, agent0, room),
-                                  ExtraCleanPart(start_time, duration, agent1, room)))
+        assert_that(list(executor._executors), contains_inanyorder(*names))
 
-    def test_disseminate_plan(self):
+    @patch.object(TaskAllocatorExecutor, "EXECUTORS", new_callable=dict)
+    def test_executor_by_name(self, executor_cache):
         # given
-        plan = [Move(0, 10, "agent0", "rm0", "rm1"),
-                ExtraClean(10, 10, "agent1", "agent0", "rm1"),
-                Move(20, 10, "agent1", "rm1", "rm0")]
-
-        # when
-        result = CentralPlannerExecutor.disseminate_plan(plan)
-        result = [(agent, list(sub_plan)) for agent, sub_plan in result]
+        ids = [next(TaskAllocatorExecutor.ID_COUNTER) for _ in range(3)]
+        names = list("abc")
+        executors = list("xyz")
+        executor_cache.update(zip(ids, executors))
+        e = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
+            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
 
         # then
-        self.assertEqual("agent0", result[0][0])
-        self.assertEqual("agent1", result[1][0])
+        for name, executor in zip(names, executors):
+            with self.subTest(name=name, executor=executor):
+                assert_that(e.executor_by_name(name), equal_to(executor))
 
-        self.assertSequenceEqual([plan[0], ExtraCleanPart(10, 10, "agent0", "rm1")],
-                                 result[0][1])
-        self.assertSequenceEqual([ExtraCleanPart(10, 10, "agent1", "rm1"), plan[2]],
-                                 result[1][1])
 
-    def test_adjust_plan(self):
+class TestTaskAllocatorExecutorComputeAllocation(TestCase):
+
+    def set_up_executors(self, num_executors):
+        ids = range(num_executors)
+        names = [chr(ord("A") + i) for i in ids]
+        executors = [Mock(autospec=AgentExecutor, id=i, agent=name) for i, name in zip(ids, names)]
+
+        allocator = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
+            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
+        allocator.id = -1
+        TaskAllocatorExecutor.EXECUTORS.update((e.id, e) for e in executors + [allocator])
+
+        return allocator, executors
+
+    def test_allocate_goals_in_deadline_order(self):
         # given
-        plan = [Move(Decimal(0), Decimal(10), "agent0", "rm0", "rm1")]
+        allocator, (executor,) = self.set_up_executors(1)
+        goals = [Goal(predicate="a", deadline=1), Goal(predicate="b", deadline=0)]
+        bids = {g: Bid(name=executor.agent, value=0, goal=g, requirements=(), computation_time=0) for g in goals}
+        executor.generate_bid.side_effect = bids.__getitem__
 
         # when
-        new_plan = CentralPlannerExecutor.adjust_plan(plan, 10)
+        allocation, _ = allocator.compute_allocation(goals)
 
         # then
-        assert_that(new_plan[0], has_property("start_time"), 20)
-        assert_that(new_plan[0], has_property("duration"), 30)
+        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("goal.deadline"))))
+
+    def test_ignore_duplicated_goals(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        goals = first_goal, second_goal = [Goal(predicate="a", deadline=0), Goal(predicate="a", deadline=1)]
+        bids = {g: Bid(name=executor.agent, value=0, goal=g, requirements=(), computation_time=0) for g in goals}
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation(goals)
+
+        # then
+        assert_that(allocation, equal_to([bids[first_goal]]))
+
+    def test_allocates_sub_tasks(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        primary_goal, secondary_goal = [Goal(predicate="a", deadline=0), Goal(predicate="b", deadline=1)]
+        bids = {
+            primary_goal: Bid(name=executor.agent, value=0, goal=primary_goal, requirements=(secondary_goal,),
+                              computation_time=0),
+            secondary_goal: Bid(name=executor.agent, value=0, goal=secondary_goal, requirements=(), computation_time=0)
+        }
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation([primary_goal])
+
+        # then
+        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("goal.deadline"))))
+
+    def test_reconisder_task_if_earlier_deadline(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        primary_goal, secondary_goal = [Goal(predicate="a", deadline=1), Goal(predicate="a", deadline=0)]
+        bids = {
+            primary_goal: Bid(name=executor.agent, value=0, goal=primary_goal, requirements=(secondary_goal,),
+                              computation_time=0),
+            secondary_goal: Bid(name=executor.agent, value=0, goal=secondary_goal, requirements=(), computation_time=0)
+        }
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation([primary_goal])
+
+        # then
+        assert_that(allocation, equal_to([bids[secondary_goal]]))
+
+    def test_assigns_goals_to_best_bidder(self):
+        # given
+        allocator, executors = self.set_up_executors(2)
+        goal = Goal(predicate="a", deadline=0)
+        bids = [Bid(name=e.agent, value=e.id * 10, goal=goal, requirements=(), computation_time=0) for e in executors]
+        executors[0].generate_bid.return_value = bids[0]
+        executors[1].generate_bid.return_value = bids[1]
+
+        # when
+        allocation, _ = allocator.compute_allocation([goal])
+
+        # then
+        assert_that(allocation, equal_to([max(bids, key=attrgetter("value"))]))
+
+    def test_compute_computation_time(self):
+        # given
+        allocator, executors = self.set_up_executors(2)
+        goal = Goal(predicate="a", deadline=0)
+        bids = [Bid(name=e.agent, value=0, goal=goal, requirements=(), computation_time=e.id * 10) for e in executors]
+        executors[0].generate_bid.return_value = bids[0]
+        executors[1].generate_bid.return_value = bids[1]
+
+        # when
+        _, time_taken = allocator.compute_allocation([goal])
+
+        # then
+        assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))

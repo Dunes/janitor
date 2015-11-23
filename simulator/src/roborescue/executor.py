@@ -4,6 +4,7 @@ from decimal import Decimal
 from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
+from collections import defaultdict
 
 from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
@@ -11,6 +12,7 @@ from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
+from roborescue.goal import Goal, Bid
 
 
 __author__ = 'jack'
@@ -298,6 +300,11 @@ class CentralPlannerExecutor(Executor):
         raise NotImplementedError
 
     @property
+    def _executors(self):
+        for executor_id in self.executor_ids:
+            yield self.EXECUTORS[executor_id]
+
+    @property
     def deadline(self):
         return self._deadline
 
@@ -314,7 +321,7 @@ class CentralPlannerExecutor(Executor):
             return True
         if not self.planning_possible:
             return False
-        if not any(self.EXECUTORS[id_].has_goals for id_ in self.executor_ids):
+        if not any(e.has_goals for e in self._executors):
             self.valid_plan = False
             return True
         return False
@@ -342,7 +349,7 @@ class CentralPlannerExecutor(Executor):
 
         new_plan = self.adjust_plan(new_plan)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
-        self.executing = ActionState(plan_action, plan_action.start_time).start()
+        self.executing = ActionState(plan_action).start()
 
     def notify_action_finishing(self, action_state: ActionState, model):
         super().notify_action_finishing(action_state, model)
@@ -359,14 +366,14 @@ class CentralPlannerExecutor(Executor):
         self.valid_plan = True
 
     def notify_new_knowledge(self, time, node):
-        for executor_id in self.executor_ids:
-            self.EXECUTORS[executor_id].notify_new_knowledge(time, node)
+        for e in self._executors:
+            e.notify_new_knowledge(time, node)
 
     def notify_planning_failure(self, executor_id, time):
         self.valid_plan = False
         # tell all agents to stop immediately
-        for e_id in self.executor_ids:
-            self.EXECUTORS[e_id].halt(time)
+        for e in self._executors:
+            e.halt(time)
 
     @staticmethod
     def disseminate_plan(plan):
@@ -393,6 +400,14 @@ class TaskAllocatorExecutor(Executor):
         raise NotImplementedError
 
     @property
+    def _executors(self):
+        for executor_id in self.executor_ids:
+            yield self.EXECUTORS[executor_id]
+
+    def executor_by_name(self, name):
+        return self.EXECUTORS[self.agent_executor_map[name]]
+
+    @property
     def deadline(self):
         return self._deadline
 
@@ -409,7 +424,7 @@ class TaskAllocatorExecutor(Executor):
             return True
         if not self.planning_possible:
             return False
-        if not any(self.EXECUTORS[id_].has_goals for id_ in self.executor_ids):
+        if not any(e.has_goals for e in self._executors):
             self.valid_plan = False
             return True
         return False
@@ -426,11 +441,9 @@ class TaskAllocatorExecutor(Executor):
 
         if not isinstance(action_state.action, Allocate):
             raise ExecutionError("Have a non-allocate action: " + str(action_state.action))
-
-        goals = PriorityQueue(action_state.action.goals)
-        while goals:
-            pass
-
+        allocation, computation_time = self.compute_allocation(action_state.action.goals)
+        action_ = action_state.action.copy_with(allocation=allocation, duration=computation_time)
+        self.executing = ActionState(action_).start()
 
     def notify_action_finishing(self, action_state: ActionState, model):
         super().notify_action_finishing(action_state, model)
@@ -455,6 +468,36 @@ class TaskAllocatorExecutor(Executor):
         # tell all agents to stop immediately
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
+
+    def compute_allocation(self, goals):
+        goals = PriorityQueue(goals, key=attrgetter("deadline"))
+        allocation = {}
+        computation_time = 0
+
+        while goals:
+            goal = goals.pop()
+            if goal.predicate in allocation and allocation[goal.predicate].goal.deadline <= goal.deadline:
+                # goal already has an earlier deadline than this one
+                continue
+            bids = [e.generate_bid(goal) for e in self._executors]
+
+            # parallel computation -- only take longest
+            computation_time += max(b.computation_time for b in bids)
+            winner = max(bids, key=attrgetter("value"))
+
+            previous_winner = allocation.get(winner.goal.predicate)
+            if previous_winner and previous_winner.name != winner.name:
+                # notify loser it is no longer the best bidder
+                self.executor_by_name(previous_winner.name).notify_losing_previous_bid(previous_winner)
+
+            # notify winner of winning bid
+            allocation[winner.goal.predicate] = winner
+            self.executor_by_name(winner.name).notify_winning_bid(winner)
+
+            # add additional goals if not already met
+            goals.extend(winner.requirements)
+
+        return sorted(allocation.values(), key=attrgetter("goal.deadline")), computation_time
 
     @staticmethod
     def disseminate_plan(plan):
