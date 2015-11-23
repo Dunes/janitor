@@ -139,3 +139,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
         # then
         assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))
+
+    def test_notify_if_loses_bid_to_when_rebid_with_a_new_deadline(self):
+        # is this desired behaviour? surely still check that goal is achieved at a given deadline?
+        self.fail()
