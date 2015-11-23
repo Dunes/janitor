@@ -28,13 +28,16 @@ class AbstractBaseQueue:
         return self.queue[0]
 
     def empty(self):
-        return not self.queue
+        return not self
 
     def values(self):
         return iter(self.queue)
 
     def clear(self):
         self.queue.clear()
+
+    def __bool__(self):
+        return bool(self.queue)
 
     def __copy__(self):
         new = type(self)()
@@ -67,8 +70,8 @@ class PriorityQueue(AbstractBaseQueue):
         super().__init__(list(sequence))
         heapify(self.queue)
 
-    def __new__(cls, sequence=(), key=None):
-        if key is not None:
+    def __new__(cls, sequence=(), **kwargs):
+        if "key" in kwargs:
             return object.__new__(KeyBasedPriorityQueue)
         return object.__new__(cls)
 
@@ -82,19 +85,17 @@ class PriorityQueue(AbstractBaseQueue):
     def pop(self):
         return heappop(self.queue)
 
+    def values(self):
+        return sorted(self.queue)
+
 
 class KeyBasedPriorityQueue(PriorityQueue):
 
-    def __init__(self, sequence=(), key=lambda x: x):
-        super().__init__(())
+    def __init__(self, sequence=(), *, key):
+        super().__init__()
         self._unique_id = count()
         self.key = key
         self.extend(sequence)
-
-    def __new__(cls, sequence=(), key=None):
-        if key is not None:
-            return object.__new__(KeyBasedPriorityQueue)
-        return object.__new__(cls)
 
     def append(self, item):
         super().append((self.key(item), next(self._unique_id), item))
@@ -109,11 +110,15 @@ class KeyBasedPriorityQueue(PriorityQueue):
         return super().peek()[2]
 
     def values(self):
-        for key, id_, item in super().values():
-            yield item
+        items = copy(self)
+        while not items.empty():
+            yield items.pop()
 
     def __copy__(self):
-        return KeyBasedPriorityQueue(self.values(), self.key)
+        queue = KeyBasedPriorityQueue(key=self.key)
+        queue._unique_id = count(next(self._unique_id))
+        queue._queue = copy(self.queue)
+        return queue
 
 
 class MultiQueue:
