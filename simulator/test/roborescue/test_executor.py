@@ -1,11 +1,11 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
-from hamcrest import assert_that, equal_to, contains_inanyorder
+from hamcrest import assert_that, equal_to, contains_inanyorder, has_length
 
 from operator import attrgetter
 
 from roborescue.executor import TaskAllocatorExecutor, AgentExecutor
-from roborescue.goal import Goal, Bid
+from roborescue.goal import Goal, Task, Bid
 
 
 class TestTaskAllocatorExecutor(TestCase):
@@ -55,73 +55,131 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_allocate_goals_in_deadline_order(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        goals = [Goal(predicate="a", deadline=1), Goal(predicate="b", deadline=0)]
-        bids = {g: Bid(name=executor.agent, value=0, goal=g, requirements=(), computation_time=0) for g in goals}
+        tasks = [Task(Goal(predicate="a", deadline=1), 0), Task(Goal(predicate="b", deadline=0), 0)]
+        bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
         executor.generate_bid.side_effect = bids.__getitem__
 
         # when
-        allocation, _ = allocator.compute_allocation(goals)
+        allocation, _ = allocator.compute_allocation(tasks)
 
         # then
-        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("goal.deadline"))))
+        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
 
-    def test_ignore_duplicated_goals(self):
+    def test_merge_duplicated_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        goals = first_goal, second_goal = [Goal(predicate="a", deadline=0), Goal(predicate="a", deadline=1)]
-        bids = {g: Bid(name=executor.agent, value=0, goal=g, requirements=(), computation_time=0) for g in goals}
+        tasks = [Task(Goal(predicate="a", deadline=0), 1)] * 2
+        summed_tasks = Task.combine(tasks)
+        bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
+        bids = {summed_tasks: bid}
         executor.generate_bid.side_effect = bids.__getitem__
 
         # when
-        allocation, _ = allocator.compute_allocation(goals)
+        allocation, _ = allocator.compute_allocation(tasks)
 
         # then
-        assert_that(allocation, equal_to([bids[first_goal]]))
+        assert_that(allocation, equal_to([bid]))
+
+    def test_merge_duplicated_tasks_with_different_value(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        goal = Goal(predicate="a", deadline=0)
+        tasks = [Task(goal, 0), Task(goal, 1)]
+        summed_tasks = Task.combine(tasks)
+        bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
+        bids = {summed_tasks: bid}
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation(tasks)
+
+        # then
+        assert_that(allocation, equal_to([bid]))
+
+    def test_no_merge_tasks_with_same_deadlines(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        tasks = [Task(Goal(predicate="a", deadline=0), 1), Task(Goal(predicate="b", deadline=0), 1)]
+        bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation(tasks)
+
+        # then
+        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
+
+    def test_merge_some_tasks_with_same_deadlines(self):
+        # given
+        allocator, (executor,) = self.set_up_executors(1)
+        tasks = [Task(Goal(predicate="a", deadline=0), 1),
+                 Task(Goal(predicate="b", deadline=0), 1),
+                 Task(Goal(predicate="a", deadline=0), 1)]
+        a_tasks = Task.combine([tasks[0], tasks[2]])
+        b_task = tasks[1]
+        bids = {
+            a_tasks: Bid(agent=executor.agent, value=0, task=a_tasks, requirements=(), computation_time=0),
+            b_task: Bid(agent=executor.agent, value=0, task=b_task, requirements=(), computation_time=0)
+        }
+        executor.generate_bid.side_effect = bids.__getitem__
+
+        # when
+        allocation, _ = allocator.compute_allocation(tasks)
+
+        # then
+        assert_that(allocation, has_length(2))
+        assert_that(set(allocation), equal_to(set(bids.values())))
+        assert_that([b.task.goal.deadline for b in allocation],
+                    equal_to(sorted([b.task.goal.deadline for b in bids.values()])))
 
     def test_allocates_sub_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        primary_goal, secondary_goal = [Goal(predicate="a", deadline=0), Goal(predicate="b", deadline=1)]
+        primary_task = Task(Goal(predicate="a", deadline=0), 0)
+        secondary_task = Task(Goal(predicate="b", deadline=1), 0)
         bids = {
-            primary_goal: Bid(name=executor.agent, value=0, goal=primary_goal, requirements=(secondary_goal,),
+            primary_task: Bid(agent=executor.agent, value=0, task=primary_task, requirements=[secondary_task],
                               computation_time=0),
-            secondary_goal: Bid(name=executor.agent, value=0, goal=secondary_goal, requirements=(), computation_time=0)
+            secondary_task: Bid(agent=executor.agent, value=0, task=secondary_task, requirements=(), computation_time=0)
         }
         executor.generate_bid.side_effect = bids.__getitem__
 
         # when
-        allocation, _ = allocator.compute_allocation([primary_goal])
+        allocation, _ = allocator.compute_allocation([primary_task])
 
         # then
-        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("goal.deadline"))))
+        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
 
-    def test_reconisder_task_if_earlier_deadline(self):
+    def test_merge_same_tasks_when_added_later(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        primary_goal, secondary_goal = [Goal(predicate="a", deadline=1), Goal(predicate="a", deadline=0)]
-        bids = {
-            primary_goal: Bid(name=executor.agent, value=0, goal=primary_goal, requirements=(secondary_goal,),
-                              computation_time=0),
-            secondary_goal: Bid(name=executor.agent, value=0, goal=secondary_goal, requirements=(), computation_time=0)
-        }
-        executor.generate_bid.side_effect = bids.__getitem__
+        needed_twice_task = Task(Goal(predicate="a", deadline=0), 1)
+        requiring_task = Task(Goal(predicate="b", deadline=1), 1)
+        tasks = [needed_twice_task, requiring_task]
+
+        needed_twice_bid = Bid(agent=executor.agent, value=0, task=needed_twice_task, requirements=(),
+                               computation_time=0)
+        requiring_bid = Bid(agent=executor.agent, value=0, task=requiring_task, requirements=[needed_twice_task],
+                             computation_time=0)
+        executor.generate_bid.side_effect = [needed_twice_bid, requiring_bid]
 
         # when
-        allocation, _ = allocator.compute_allocation([primary_goal])
+        allocation, _ = allocator.compute_allocation(tasks)
 
         # then
-        assert_that(allocation, equal_to([bids[secondary_goal]]))
+        modified_bid = needed_twice_bid._replace(task=Task.combine([needed_twice_task] * 2))
+        assert_that(allocation, equal_to([modified_bid, requiring_bid]))
 
     def test_assigns_goals_to_best_bidder(self):
         # given
         allocator, executors = self.set_up_executors(2)
-        goal = Goal(predicate="a", deadline=0)
-        bids = [Bid(name=e.agent, value=e.id * 10, goal=goal, requirements=(), computation_time=0) for e in executors]
+        task = Task(Goal(predicate="a", deadline=0), 0)
+        bids = [Bid(agent=e.agent, value=e.id * 10, task=task, requirements=(), computation_time=0) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
 
         # when
-        allocation, _ = allocator.compute_allocation([goal])
+        allocation, _ = allocator.compute_allocation([task])
 
         # then
         assert_that(allocation, equal_to([max(bids, key=attrgetter("value"))]))
@@ -129,17 +187,13 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_compute_computation_time(self):
         # given
         allocator, executors = self.set_up_executors(2)
-        goal = Goal(predicate="a", deadline=0)
-        bids = [Bid(name=e.agent, value=0, goal=goal, requirements=(), computation_time=e.id * 10) for e in executors]
+        task = Task(Goal(predicate="a", deadline=0), 0)
+        bids = [Bid(agent=e.agent, value=0, task=task, requirements=(), computation_time=e.id * 10) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
 
         # when
-        _, time_taken = allocator.compute_allocation([goal])
+        _, time_taken = allocator.compute_allocation([task])
 
         # then
         assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))
-
-    def test_notify_if_loses_bid_to_when_rebid_with_a_new_deadline(self):
-        # is this desired behaviour? surely still check that goal is achieved at a given deadline?
-        self.fail()

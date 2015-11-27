@@ -4,7 +4,6 @@ from decimal import Decimal
 from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
-from collections import defaultdict
 
 from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
@@ -12,7 +11,7 @@ from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
-from roborescue.goal import Goal, Bid
+from roborescue.goal import Goal, Task, Bid
 
 
 __author__ = 'jack'
@@ -469,35 +468,42 @@ class TaskAllocatorExecutor(Executor):
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
 
-    def compute_allocation(self, goals):
-        goals = PriorityQueue(goals, key=attrgetter("deadline"))
+    def compute_allocation(self, tasks):
+        tasks = PriorityQueue(tasks, key=attrgetter("goal.deadline", "goal.predicate"))
         allocation = {}
         computation_time = 0
 
-        while goals:
-            goal = goals.pop()
-            if goal.predicate in allocation and allocation[goal.predicate].goal.deadline <= goal.deadline:
-                # goal already has an earlier deadline than this one
+        while tasks:
+            task = Task.combine(tasks.pop_equal())
+
+            if task.goal in allocation:
+                # there is already already an agent assigned to this goal (and deadline)
+                current_bid = allocation[task.goal]
+                new_bid = current_bid._replace(task=Task.combine([current_bid.task, task]))
+                allocation[task.goal] = new_bid
+                del current_bid
+                del new_bid
                 continue
-            bids = [e.generate_bid(goal) for e in self._executors]
+
+            bids = [e.generate_bid(task) for e in self._executors]
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
             winner = max(bids, key=attrgetter("value"))
 
-            previous_winner = allocation.get(winner.goal.predicate)
-            if previous_winner and previous_winner.name != winner.name:
-                # notify loser it is no longer the best bidder
-                self.executor_by_name(previous_winner.name).notify_losing_previous_bid(previous_winner)
+            # previous_winner = allocation.get(winner.goal.predicate)
+            # if previous_winner and previous_winner.agent != winner.agent:
+            #     # notify loser it is no longer the best bidder
+            #     self.executor_by_name(previous_winner.agent).notify_losing_previous_bid(previous_winner)
 
             # notify winner of winning bid
-            allocation[winner.goal.predicate] = winner
-            self.executor_by_name(winner.name).notify_winning_bid(winner)
+            allocation[winner.task.goal] = winner
+            self.executor_by_name(winner.agent).notify_winning_bid(winner)
 
             # add additional goals if not already met
-            goals.extend(winner.requirements)
+            tasks.extend(winner.requirements)
 
-        return sorted(allocation.values(), key=attrgetter("goal.deadline")), computation_time
+        return sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
 
     @staticmethod
     def disseminate_plan(plan):
