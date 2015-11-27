@@ -18,6 +18,14 @@ __all__ = ["Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Unbl
 
 
 class Move(Action):
+    """
+    :type agent: str
+    :type start_node: str
+    :type end_node: str
+    """
+    agent = None
+    start_node = None
+    end_node = None
 
     _format_attrs = ("start_time", "duration", "agent", "start_node", "end_node", "partial")
 
@@ -118,6 +126,14 @@ class Move(Action):
 
 
 class Unblock(Action):
+    """
+    :type agent: str
+    :type start_node: str
+    :type end_node: str
+    """
+    agent = None
+    start_node = None
+    end_node = None
 
     _format_attrs = ("start_time", "duration", "agent", "start_node", "end_node", "partial")
 
@@ -158,6 +174,14 @@ class Unblock(Action):
 
 
 class Load(Action):
+    """
+    :type agent: str
+    :type target: str
+    :type node: str
+    """
+    agent = None
+    target = None
+    node = None
 
     _format_attrs = ("start_time", "duration", "agent", "target", "node", "partial")
 
@@ -208,6 +232,14 @@ class Load(Action):
 
 
 class Unload(Action):
+    """
+    :type agent: str
+    :type target: str
+    :type node: str
+    """
+    agent = None
+    target = None
+    node = None
 
     _format_attrs = ("start_time", "duration", "agent", "target", "node", "partial")
 
@@ -257,6 +289,14 @@ class Unload(Action):
 
 
 class Rescue(Action):
+    """
+    :type agent: str
+    :type target: str
+    :type node: str
+    """
+    agent = None
+    target = None
+    node = None
 
     _format_attrs = ("start_time", "duration", "agent", "target", "node", "partial")
 
@@ -296,6 +336,12 @@ class Rescue(Action):
 
 
 class Observe(Action):
+    """
+    :type agent: str
+    :type node: str
+    """
+    agent = None
+    node = None
 
     _ordinal = 2
 
@@ -358,6 +404,12 @@ class Observe(Action):
 
 
 class EventAction(Action):
+    """
+    :type agent: str
+    :type events: list[tuple[str]]
+    """
+    agent = None
+    events = None
 
     _format_attrs = ("start_time", "events")
 
@@ -383,6 +435,12 @@ class EventAction(Action):
 
 
 class Allocate(Action):
+    """
+    :type agent: str
+    :type goals: list[Goal]
+    """
+    agent = None
+    goals = None
 
     _format_attrs = ("agent", "start_time")
 

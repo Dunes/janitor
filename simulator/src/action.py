@@ -7,6 +7,12 @@ __all__ = ["Action", "Plan", "LocalPlan", "Stalled", "Observe", "GetExecutionHeu
 
 @total_ordering
 class Action(object):
+    """
+    :type start_time: Decimal
+    :type duration: Decimal
+    """
+    start_time = None
+    duration = None
 
     _ordinal = 1
 
@@ -15,6 +21,7 @@ class Action(object):
         object.__setattr__(self, "duration", duration)
         if partial is not None:
             object.__setattr__(self, "partial", partial)
+            self.start_time = start_time
 
     def __setattr__(self, key, value):
         raise TypeError("Action objects are immutable")
