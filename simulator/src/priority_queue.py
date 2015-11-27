@@ -85,6 +85,13 @@ class PriorityQueue(AbstractBaseQueue):
     def pop(self):
         return heappop(self.queue)
 
+    def pop_equal(self):
+        first = self.pop()
+        items = [first]
+        while self and self.peek() == first:
+            items.append(self.pop())
+        return items
+
     def values(self):
         return sorted(self.queue)
 
@@ -108,6 +115,13 @@ class KeyBasedPriorityQueue(PriorityQueue):
 
     def peek(self):
         return super().peek()[2]
+
+    def pop_equal(self):
+        first_key, _id, first = super().pop()
+        items = [first]
+        while self and super().peek()[0] == first_key:
+            items.append(self.pop())
+        return items
 
     def values(self):
         items = copy(self)
