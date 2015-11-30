@@ -4,6 +4,7 @@ from decimal import Decimal
 from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
+from copy import deepcopy
 
 from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
@@ -12,10 +13,14 @@ from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
+from planner import Planner
 
 
 __author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
+
+
+CIVILIAN_VALUE = Decimal(1000)
 
 
 class Executor(metaclass=ABCMeta):
@@ -216,6 +221,19 @@ class AgentExecutor(Executor):
         self.plan = plan
         self.halted = False
 
+    @abstractmethod
+    def generate_bid(self, task: Task, planner: Planner, model, time: Decimal, events) -> Bid:
+        """
+        Generate a bid for a given task.
+        :param task: The task to bid for
+        :param planner: The planner to use -- mostly just for easy access
+        :param model: The current model
+        :param time: The current time
+        :param events: Any events that may occur in the future
+        :return: A bid representing how much the agent values the task and any requirements
+        """
+        raise NotImplementedError
+
     @staticmethod
     @abstractmethod
     def extract_goals(plan):
@@ -278,6 +296,47 @@ class MedicExecutor(AgentExecutor):
     @staticmethod
     def extract_events(plan, time):
         return []
+
+    @staticmethod
+    def remove_blocks_from_model(model):
+        """
+        creates a copy of the model with all road blocks removed
+        :param model:
+        :return:
+        """
+        model = dict(model, graph=deepcopy(model["graph"]))
+        for edge in model["graph"]["edges"].values():
+            edge["known"] = {
+                "edge": True,
+                "blocked-edge": False,
+                "distance": edge["known"]["distance"]
+            }
+        return model
+
+    def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
+        plan, time_taken = planner.get_plan_and_time_taken(
+            model=self.remove_blocks_from_model(model),
+            # duration=?,
+            agent=self.agent,
+            goals=[task.goal],
+            metric=None,
+            time=time,
+            events=events
+        )
+
+        model_edges = model["graph"]["edges"]
+        blocked_edge_actions = [a for a in plan if isinstance(a, Move) and model_edges[a.edge]["known"]["edge"]]
+        value = CIVILIAN_VALUE / len(blocked_edge_actions)
+        requirements = tuple(
+            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time), value=value)
+            for a in blocked_edge_actions
+        )
+
+        return Bid(agent=self.agent,
+                   value=CIVILIAN_VALUE,
+                   task=task,
+                   requirements=requirements,
+                   computation_time=time_taken)
 
 
 class CentralPlannerExecutor(Executor):
@@ -481,8 +540,6 @@ class TaskAllocatorExecutor(Executor):
                 current_bid = allocation[task.goal]
                 new_bid = current_bid._replace(task=Task.combine([current_bid.task, task]))
                 allocation[task.goal] = new_bid
-                del current_bid
-                del new_bid
                 continue
 
             bids = [e.generate_bid(task) for e in self._executors]
@@ -490,11 +547,6 @@ class TaskAllocatorExecutor(Executor):
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
             winner = max(bids, key=attrgetter("value"))
-
-            # previous_winner = allocation.get(winner.goal.predicate)
-            # if previous_winner and previous_winner.agent != winner.agent:
-            #     # notify loser it is no longer the best bidder
-            #     self.executor_by_name(previous_winner.agent).notify_losing_previous_bid(previous_winner)
 
             # notify winner of winning bid
             allocation[winner.task.goal] = winner

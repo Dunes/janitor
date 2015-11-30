@@ -35,9 +35,13 @@ class Move(Action):
         object.__setattr__(self, "start_node", start_node)
         object.__setattr__(self, "end_node", end_node)
 
+    @property
+    def edge(self):
+        return " ".join((self.start_node, self.end_node))
+
     def is_applicable(self, model):
         return find_object(self.agent, model["objects"])["at"][1] == self.start_node \
-            and (model["graph"]["edges"][self.start_node + " " + self.end_node]["known"].get("edge") or
+            and (model["graph"]["edges"][self.edge]["known"].get("edge") or
                  self.partial)
 
     def apply(self, model):
@@ -63,7 +67,7 @@ class Move(Action):
         temp_node_name = self.start_node
 
         edges = model["graph"]["edges"]
-        edge_id = self.start_node + " " + self.end_node
+        edge_id = self.edge
         other_edge_id = next(e_id for e_id in edges if e_id.startswith(temp_node_name) and e_id != edge_id)
 
         distance_moved = deadline - self.start_time

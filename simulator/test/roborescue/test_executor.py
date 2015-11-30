@@ -3,8 +3,9 @@ from unittest.mock import patch, Mock
 from hamcrest import assert_that, equal_to, contains_inanyorder, has_length
 
 from operator import attrgetter
+from decimal import Decimal
 
-from roborescue.executor import TaskAllocatorExecutor, AgentExecutor
+from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor
 from roborescue.goal import Goal, Task, Bid
 
 
@@ -197,3 +198,19 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
         # then
         assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))
+
+
+class TestMedicGenerateBid(TestCase):
+
+    def test_(self):
+        # given
+        medic = MedicExecutor()
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=Decimal(1))
+
+        # when
+        bid = medic.generate_bid(task)
+
+        # then
+        assert_that(False)
+
