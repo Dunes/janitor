@@ -58,10 +58,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocator, (executor,) = self.set_up_executors(1)
         tasks = [Task(Goal(predicate="a", deadline=1), 0), Task(Goal(predicate="b", deadline=0), 0)]
         bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
@@ -73,10 +73,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         summed_tasks = Task.combine(tasks)
         bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
         bids = {summed_tasks: bid}
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         assert_that(allocation, equal_to([bid]))
@@ -89,10 +89,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         summed_tasks = Task.combine(tasks)
         bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
         bids = {summed_tasks: bid}
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         assert_that(allocation, equal_to([bid]))
@@ -102,10 +102,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocator, (executor,) = self.set_up_executors(1)
         tasks = [Task(Goal(predicate="a", deadline=0), 1), Task(Goal(predicate="b", deadline=0), 1)]
         bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
@@ -122,10 +122,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
             a_tasks: Bid(agent=executor.agent, value=0, task=a_tasks, requirements=(), computation_time=0),
             b_task: Bid(agent=executor.agent, value=0, task=b_task, requirements=(), computation_time=0)
         }
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         assert_that(allocation, has_length(2))
@@ -143,10 +143,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
                               computation_time=0),
             secondary_task: Bid(agent=executor.agent, value=0, task=secondary_task, requirements=(), computation_time=0)
         }
-        executor.generate_bid.side_effect = bids.__getitem__
+        executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
-        allocation, _ = allocator.compute_allocation([primary_task])
+        allocation, _ = allocator.compute_allocation([primary_task], None, None)
 
         # then
         assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
@@ -165,7 +165,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         executor.generate_bid.side_effect = [needed_twice_bid, requiring_bid]
 
         # when
-        allocation, _ = allocator.compute_allocation(tasks)
+        allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
         modified_bid = needed_twice_bid._replace(task=Task.combine([needed_twice_task] * 2))
@@ -180,7 +180,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         executors[1].generate_bid.return_value = bids[1]
 
         # when
-        allocation, _ = allocator.compute_allocation([task])
+        allocation, _ = allocator.compute_allocation([task], None, None)
 
         # then
         assert_that(allocation, equal_to([max(bids, key=attrgetter("value"))]))
@@ -194,7 +194,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         executors[1].generate_bid.return_value = bids[1]
 
         # when
-        _, time_taken = allocator.compute_allocation([task])
+        _, time_taken = allocator.compute_allocation([task], None, None)
 
         # then
         assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))

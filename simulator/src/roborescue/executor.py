@@ -458,7 +458,7 @@ class TaskAllocatorExecutor(Executor):
         raise NotImplementedError
 
     @property
-    def _executors(self):
+    def _executors(self) -> "list[AgentExecutor]":
         for executor_id in self.executor_ids:
             yield self.EXECUTORS[executor_id]
 
@@ -499,7 +499,7 @@ class TaskAllocatorExecutor(Executor):
 
         if not isinstance(action_state.action, Allocate):
             raise ExecutionError("Have a non-allocate action: " + str(action_state.action))
-        allocation, computation_time = self.compute_allocation(action_state.action.goals)
+        allocation, computation_time = self.compute_allocation(action_state.action.goals, model, action_state.time)
         action_ = action_state.action.copy_with(allocation=allocation, duration=computation_time)
         self.executing = ActionState(action_).start()
 
@@ -527,7 +527,7 @@ class TaskAllocatorExecutor(Executor):
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
 
-    def compute_allocation(self, tasks):
+    def compute_allocation(self, tasks, model, time):
         tasks = PriorityQueue(tasks, key=attrgetter("goal.deadline", "goal.predicate"))
         allocation = {}
         computation_time = 0
@@ -542,7 +542,8 @@ class TaskAllocatorExecutor(Executor):
                 allocation[task.goal] = new_bid
                 continue
 
-            bids = [e.generate_bid(task) for e in self._executors]
+            bids = [e.generate_bid(task, self.local_planner, model, time, self.event_executor.known_events)
+                    for e in self._executors]
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
