@@ -275,6 +275,9 @@ class PoliceExecutor(AgentExecutor):
     def extract_events(plan, time):
         return []
 
+    def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
+        pass
+
 
 class MedicExecutor(AgentExecutor):
 
@@ -326,14 +329,15 @@ class MedicExecutor(AgentExecutor):
 
         model_edges = model["graph"]["edges"]
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
-        value = CIVILIAN_VALUE / len(blocked_edge_actions) if blocked_edge_actions else 0
+        bid_value = task.value * (1 - (Decimal(1) / len(plan)))
+        task_value = (bid_value / len(blocked_edge_actions)) if blocked_edge_actions else 0
         requirements = tuple(
-            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time), value=value)
+            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time), value=task_value)
             for a in blocked_edge_actions
         )
 
         return Bid(agent=self.agent,
-                   value=CIVILIAN_VALUE,
+                   value=bid_value,
                    task=task,
                    requirements=requirements,
                    computation_time=time_taken)
@@ -547,7 +551,7 @@ class TaskAllocatorExecutor(Executor):
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
-            winner = max(bids, key=attrgetter("value"))
+            winner = min(bids, key=attrgetter("value"))
 
             # notify winner of winning bid
             allocation[winner.task.goal] = winner

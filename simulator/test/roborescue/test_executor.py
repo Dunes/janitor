@@ -186,7 +186,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocation, _ = allocator.compute_allocation([task], None, None)
 
         # then
-        assert_that(allocation, equal_to([max(bids, key=attrgetter("value"))]))
+        assert_that(allocation, equal_to([min(bids, key=attrgetter("value"))]))
 
     def test_compute_computation_time(self):
         # given
@@ -212,7 +212,7 @@ class TestMedicGenerateBid(TestCase):
         task = Task(goal=goal, value=Decimal(1))
 
         model = ModelBuilder().with_edge("a", "b").model
-        plan = []
+        plan = [Move(0, 1, "medic", "a", "b")]
         time_taken = 1
         planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
 
@@ -223,7 +223,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(CIVILIAN_VALUE))
+        assert_that(bid.value, equal_to(0))
         assert_that(bid.requirements, equal_to(()))
 
     def test_generate_correct_requirements_from_plan(self):
@@ -245,6 +245,59 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(CIVILIAN_VALUE))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=start_time), value=CIVILIAN_VALUE)
+        assert_that(bid.value, equal_to(Decimal(0)))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=start_time), value=0)
         assert_that(bid.requirements, equal_to((expected_requirement,)))
+
+    def test_only_factor_in_blocked_edge_in_requirements(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=0)
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=Decimal(1))
+
+        model = ModelBuilder().with_edge("a", "b", blockedness=1).with_edge("b", "c").model
+        start_time = 0
+        duration = 1
+        plan = [Move(start_time, duration, "medic", "a", "b"),
+                Move(start_time + duration, duration, "medic", "b", "c")]
+        time_taken = 1
+        planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
+
+        # when
+        bid = medic.generate_bid(task, planner, model, None, None)
+
+        # then
+        assert_that(bid.agent, equal_to("medic"))
+        assert_that(bid.task, equal_to(task))
+        assert_that(bid.computation_time, equal_to(time_taken))
+        assert_that(bid.value, equal_to(task.value / 2))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=start_time), value=task.value / 2)
+        assert_that(bid.requirements, equal_to((expected_requirement,)))
+
+    def test_value_requirements_equally(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=0)
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=Decimal(1))
+
+        model = ModelBuilder().with_edge("a", "b", blockedness=1).with_edge("b", "c", blockedness=1).model
+        start_time = 0
+        duration = 1
+        plan = [Move(start_time, duration, "medic", "a", "b"),
+                Move(start_time + duration, duration, "medic", "b", "c")]
+        time_taken = 1
+        planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
+
+        # when
+        bid = medic.generate_bid(task, planner, model, None, None)
+
+        # then
+        assert_that(bid.agent, equal_to("medic"))
+        assert_that(bid.task, equal_to(task))
+        assert_that(bid.computation_time, equal_to(time_taken))
+        assert_that(bid.value, equal_to(task.value / 2))
+        expected_requirement = (
+            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=start_time), value=task.value / 4),
+            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=start_time + duration), value=task.value / 4),
+        )
+        assert_that(bid.requirements, equal_to(expected_requirement))
