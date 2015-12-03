@@ -276,7 +276,21 @@ class PoliceExecutor(AgentExecutor):
         return []
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-        pass
+        plan, time_taken = planner.get_plan_and_time_taken(
+            model=model,
+            # duration=?,
+            agent=self.agent,
+            goals=[task.goal],
+            metric=None,
+            time=time,
+            events=events
+        )
+
+        return Bid(agent=self.agent,
+                   value=task.value * (1 - (Decimal(1) / len(plan))),
+                   task=task,
+                   requirements=(),
+                   computation_time=time_taken)
 
 
 class MedicExecutor(AgentExecutor):
