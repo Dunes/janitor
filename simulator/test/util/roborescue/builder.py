@@ -109,21 +109,25 @@ class ModelBuilder(object):
             if known:
                 edge["known"].update({
                     "blockedness": blockedness,
-                    type: True
+                    "edge": type == "edge",
+                    "blocked-edge": type == "blocked-edge"
                 })
             else:
                 edge["unknown"].update({
                     "blockedness": {"min": 0, "max": max(100, blockedness), "actual": blockedness},
-                    type: {"actual": True}
+                    "edge": {"actual": type == "edge"},
+                    "blocked-edge": {"actual": type == "blocked-edge"}
                 })
         elif type is not None:
             if known:
                 edge["known"].update({
-                    type: True
+                    "edge": type == "edge",
+                    "blocked-edge": type == "blocked-edge"
                 })
             else:
                 edge["unknown"].update({
-                    type: {"actual": True}
+                    "edge": {"actual": type == "edge"},
+                    "blocked-edge": {"actual": type == "blocked-edge"}
                 })
 
         return edge

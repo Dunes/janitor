@@ -325,8 +325,8 @@ class MedicExecutor(AgentExecutor):
         )
 
         model_edges = model["graph"]["edges"]
-        blocked_edge_actions = [a for a in plan if isinstance(a, Move) and model_edges[a.edge]["known"]["edge"]]
-        value = CIVILIAN_VALUE / len(blocked_edge_actions)
+        blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
+        value = CIVILIAN_VALUE / len(blocked_edge_actions) if blocked_edge_actions else 0
         requirements = tuple(
             Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time), value=value)
             for a in blocked_edge_actions

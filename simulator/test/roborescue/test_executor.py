@@ -5,8 +5,11 @@ from hamcrest import assert_that, equal_to, contains_inanyorder, has_length
 from operator import attrgetter
 from decimal import Decimal
 
-from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor
+from util.roborescue.builder import ModelBuilder
+
+from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, CIVILIAN_VALUE
 from roborescue.goal import Goal, Task, Bid
+from roborescue.action import Move
 
 
 class TestTaskAllocatorExecutor(TestCase):
@@ -202,15 +205,46 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
 class TestMedicGenerateBid(TestCase):
 
-    def test_(self):
+    def test_basic(self):
         # given
-        medic = MedicExecutor()
+        medic = MedicExecutor(agent="medic", planning_time=0)
         goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
         task = Task(goal=goal, value=Decimal(1))
 
+        model = ModelBuilder().with_edge("a", "b").model
+        plan = []
+        time_taken = 1
+        planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
+
         # when
-        bid = medic.generate_bid(task)
+        bid = medic.generate_bid(task, planner, model, None, None)
 
         # then
-        assert_that(False)
+        assert_that(bid.agent, equal_to("medic"))
+        assert_that(bid.task, equal_to(task))
+        assert_that(bid.computation_time, equal_to(time_taken))
+        assert_that(bid.value, equal_to(CIVILIAN_VALUE))
+        assert_that(bid.requirements, equal_to(()))
 
+    def test_generate_correct_requirements_from_plan(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=0)
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=Decimal(1))
+
+        model = ModelBuilder().with_edge("a", "b", blockedness=1).model
+        start_time = 0
+        plan = [Move(start_time, 1, "medic", "a", "b")]
+        time_taken = 1
+        planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
+
+        # when
+        bid = medic.generate_bid(task, planner, model, None, None)
+
+        # then
+        assert_that(bid.agent, equal_to("medic"))
+        assert_that(bid.task, equal_to(task))
+        assert_that(bid.computation_time, equal_to(time_taken))
+        assert_that(bid.value, equal_to(CIVILIAN_VALUE))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=start_time), value=CIVILIAN_VALUE)
+        assert_that(bid.requirements, equal_to((expected_requirement,)))
