@@ -10,6 +10,7 @@ from util.roborescue.builder import ModelBuilder
 from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, CIVILIAN_VALUE
 from roborescue.goal import Goal, Task, Bid
 from roborescue.action import Move
+from roborescue.event import ObjectEvent, Predicate
 
 
 class TestTaskAllocatorExecutor(TestCase):
@@ -40,6 +41,37 @@ class TestTaskAllocatorExecutor(TestCase):
         for name, executor in zip(names, executors):
             with self.subTest(name=name, executor=executor):
                 assert_that(e.executor_by_name(name), equal_to(executor))
+
+    def test_compute_tasks_basic_goal_to_task(self):
+        # given
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[],
+            agent_names=[], central_planner=None, local_planner=None, event_executor=None)
+        goals = [["rescue", "civ0"]]
+        events = []
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf")), value=CIVILIAN_VALUE)
+
+        # when
+        tasks = executor.compute_tasks(goals, events)
+
+        # then
+        assert_that(tasks, has_length(1))
+        assert_that(tasks[0], equal_to(expected))
+
+    def test_compute_tasks_goal_to_task_with_deadline(self):
+        # given
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[],
+            agent_names=[], central_planner=None, local_planner=None, event_executor=None)
+        goals = [["rescue", "civ0"]]
+        deadline = Decimal(1)
+        events = [ObjectEvent(time=deadline, id_="civ0", predicates=[Predicate(name="alive", becomes=False)])]
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=deadline), value=CIVILIAN_VALUE)
+
+        # when
+        tasks = executor.compute_tasks(goals, events)
+
+        # then
+        assert_that(tasks, has_length(1))
+        assert_that(tasks[0], equal_to(expected))
 
 
 class TestTaskAllocatorExecutorComputeAllocation(TestCase):

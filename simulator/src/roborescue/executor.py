@@ -13,6 +13,7 @@ from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
+from roborescue.event import Event
 from planner import Planner
 
 
@@ -506,18 +507,21 @@ class TaskAllocatorExecutor(Executor):
         return False
 
     def next_action(self, time):
-        raise NotImplementedError("need to compute goals")
         assert not self.valid_plan
         if self.executing:
             return self.executing
-        return ActionState(Allocate(as_start_time(time), goals))
+        return ActionState(Allocate(as_start_time(time), goals=None))
 
     def notify_action_starting(self, action_state: ActionState, model):
         assert not self.executing
-
         if not isinstance(action_state.action, Allocate):
             raise ExecutionError("Have a non-allocate action: " + str(action_state.action))
-        allocation, computation_time = self.compute_allocation(action_state.action.goals, model, action_state.time)
+
+        for e in self._executors:
+            e.halt(action_state.time)
+
+        tasks = self.compute_tasks(model["goal"]["soft-goals"], model["events"])
+        allocation, computation_time = self.compute_allocation(tasks, model, action_state.time)
         action_ = action_state.action.copy_with(allocation=allocation, duration=computation_time)
         self.executing = ActionState(action_).start()
 
@@ -525,13 +529,10 @@ class TaskAllocatorExecutor(Executor):
         super().notify_action_finishing(action_state, model)
         assert self.executing is action_state
         self.executing = None
-        action_state = action_state.finish()
-        plan = action_state.action.apply(model)
+        action_state.finish()
 
-        # disseminate plan
-        for agent, sub_plan in self.disseminate_plan(plan):
-            sub_plan = list(sub_plan)
-            self.EXECUTORS[self.agent_executor_map[agent]].new_plan(list(sub_plan))
+        for e in self._executors:
+            e.halted = False
 
         self.valid_plan = True
 
@@ -544,6 +545,27 @@ class TaskAllocatorExecutor(Executor):
         # tell all agents to stop immediately
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
+
+    @staticmethod
+    def compute_tasks(goals, events: "list[Event]"):
+        """
+        Takes a set of goals and events from a model and computes a list of Tasks for it
+        :param goals:
+        :param events: list[Event]
+        :return: list[Task]
+        """
+        tasks = []
+        for g in goals:
+            civ_id = g[1]
+            for e in events:
+                if e.id_ == civ_id and any((p.name == "alive" and p.becomes is False) for p in e.predicates):
+                    deadline = e.time
+                    break
+            else:
+                deadline = Decimal("inf")
+            t = Task(Goal(tuple(g), deadline), CIVILIAN_VALUE)
+            tasks.append(t)
+        return tasks
 
     def compute_allocation(self, tasks, model, time):
         tasks = PriorityQueue(tasks, key=attrgetter("goal.deadline", "goal.predicate"))
