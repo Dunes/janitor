@@ -21,7 +21,6 @@ class Action(object):
         object.__setattr__(self, "duration", duration)
         if partial is not None:
             object.__setattr__(self, "partial", partial)
-            self.start_time = start_time
 
     def __setattr__(self, key, value):
         raise TypeError("Action objects are immutable")

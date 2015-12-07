@@ -69,8 +69,8 @@ class ModelBuilder(object):
         return self
 
     def with_edge(self, from_node, to_node, distance=None, blockedness=None, type=None, known=True):
-        self.with_node(from_node, type="node")
-        self.with_node(to_node, type="node")
+        self.with_node(from_node, type="building")
+        self.with_node(to_node, type="building")
         if type is None:
             type = "edge" if blockedness is None else "blocked-edge"
         edge = self._default_edge(distance, blockedness, type, known)

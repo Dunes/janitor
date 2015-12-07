@@ -1,11 +1,13 @@
-__author__ = 'jack'
-
 from unittest import TestCase
 from io import StringIO
 from collections import OrderedDict
 
+from util.roborescue import make_bidirectional
+
 from roborescue.problem_encoder import (_encode_objects, _encode_init, _encode_graph, _collate_objects, _encode_goal,
      _encode_metric, create_predicate)
+
+__author__ = 'jack'
 
 
 class ProblemEncoderTest(TestCase):
@@ -88,8 +90,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_graph_with_unknown_edge(self):
         # given
         graph = {
-            "edges": {
-                "building1 hospital1": OrderedDict([
+            "edges": make_bidirectional(OrderedDict([
+                ("building1 hospital1", OrderedDict([
                     ("known", OrderedDict([
                         ("distance", 50),
                         ("edge", True),
@@ -97,9 +99,8 @@ class ProblemEncoderTest(TestCase):
                     ("unknown", OrderedDict([
                         ("blockedness", {"max": 100, "min": 0, "actual": 10})
                     ]))
-                ])
-            },
-            "bidirectional": True
+                ]))
+            ])),
         }
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
@@ -119,8 +120,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_graph_with_known_edge(self):
         # given
         graph = {
-            "edges": {
-                "building1 hospital1": OrderedDict([
+            "edges": make_bidirectional(OrderedDict([
+                ("building1 hospital1", OrderedDict([
                     ("known", OrderedDict([
                         ("distance", 50),
                         ("edge", True),
@@ -128,9 +129,8 @@ class ProblemEncoderTest(TestCase):
                     ("unknown", OrderedDict([
                         ("blockedness", {"max": 100, "min": 0, "actual": 10})
                     ]))
-                ])
-            },
-            "bidirectional": True
+                ]))
+            ])),
         }
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
@@ -150,8 +150,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_graph_with_known_blocked_edge(self):
         # given
         graph = {
-            "edges": {
-                "building1 hospital1": OrderedDict([
+            "edges": make_bidirectional(OrderedDict([
+                ("building1 hospital1", OrderedDict([
                     ("known", OrderedDict([
                         ("distance", 50),
                         ("blocked-edge", True),
@@ -159,9 +159,8 @@ class ProblemEncoderTest(TestCase):
                     ("unknown", OrderedDict([
                         ("blockedness", {"max": 100, "min": 0, "actual": 10})
                     ]))
-                ])
-            },
-            "bidirectional": True
+                ]))
+            ])),
         }
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
@@ -171,11 +170,11 @@ class ProblemEncoderTest(TestCase):
 
         # then
         expected = "(= (distance building1 hospital1 )  50 ) " \
-            + "(blocked-edge building1 hospital1 ) " \
-            + "(= (blockedness building1 hospital1 )  100 ) " \
-            + "(= (distance hospital1 building1 )  50 ) " \
-            + "(blocked-edge hospital1 building1 ) " \
-            + "(= (blockedness hospital1 building1 )  100 ) "
+            "(blocked-edge building1 hospital1 ) " \
+            "(= (blockedness building1 hospital1 )  100 ) " \
+            "(= (distance hospital1 building1 )  50 ) " \
+            "(blocked-edge hospital1 building1 ) " \
+            "(= (blockedness hospital1 building1 )  100 ) "
         self.assertEqual(expected, actual)
 
     def test_collate_objects(self):
@@ -194,7 +193,7 @@ class ProblemEncoderTest(TestCase):
         }
 
         # when
-        actual = _collate_objects(objects)
+        actual = _collate_objects(objects, agent="all")
 
         # then
         self.assertEqual(expected, actual)
@@ -217,7 +216,7 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_metric(self):
         # given
-        goals = {"soft-goals": [["rescued", "civ1"], ["rescued", "civ2"]]}
+        goals = [["rescued", "civ1"], ["rescued", "civ2"]]
         metric = {
             "type": "minimize",
             "weights": {"total-time": 1, "soft-goal-violations": {"rescued": 1000}}

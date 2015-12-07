@@ -42,7 +42,7 @@ class Move(Action):
     def is_applicable(self, model):
         return find_object(self.agent, model["objects"])["at"][1] == self.start_node \
             and (model["graph"]["edges"][self.edge]["known"].get("edge") or
-                 self.partial)
+                 getattr(self, "partial", False))
 
     def apply(self, model):
         assert self.is_applicable(model), "tried to apply action in an invalid state"

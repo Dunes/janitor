@@ -40,7 +40,7 @@ class TestPlanDecoder(TestCase):
         ]
 
         # when
-        plan = list(plan_decoder.decode_plan(in_))
+        plan = list(plan_decoder.decode_plan(in_, time=0))
 
         # then
         self.assertEqual(expected, plan)

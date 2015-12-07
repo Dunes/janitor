@@ -113,17 +113,6 @@ class TestMove(TestCase):
         assert_that(model["objects"], is_not(has_object("temp_start_node")))
         assert_that(model["graph"]["edges"], is_not(has_key("temp_start_node end_node")))
 
-    def test_create_temp_node_creates_partial_action(self):
-        deadline = Decimal("1.6")
-        model = ModelBuilder().with_agent("agent", at="start_node") \
-            .with_edge("start_node", "end_node", distance=ZERO).model
-        expected = Move(self.move.start_time, Decimal("0.6"), "agent",
-            "start_node", "temp-agent-start_node-end_node", True)
-
-        actual = self.move.create_temp_node(model, deadline)
-
-        assert_that(actual, equal_to(expected))
-
     def test_create_temp_node_applies_partial_move(self):
         deadline = Decimal("1.6")
         model = ModelBuilder().with_agent("agent", at="start_node")\
@@ -185,7 +174,6 @@ class TestMove(TestCase):
 
         actual = self.move.partially_apply(model, deadline)
 
-        self.move.is_applicable.assert_called_once_with(model)
         self.move.create_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
 
@@ -200,7 +188,6 @@ class TestMove(TestCase):
 
         actual = self.move.partially_apply(model, deadline)
 
-        self.move.is_applicable.assert_called_once_with(model)
         self.move.modify_temp_node.assert_called_once_with(model, deadline)
         assert_that(actual, equal_to(expected))
 
@@ -1056,7 +1043,7 @@ class ObserveTest(TestCase):
         agent = "agent1"
         node = "building1"
         other_node = "building2"
-        model = ModelBuilder(assumed_values={"blockedness": 0, "blocked-edge": False}) \
+        model = ModelBuilder(assumed_values={"blockedness": 0, "blocked-edge": False, "edge": True}) \
             .with_agent(agent, at=node) \
             .with_edge(node, other_node, distance=10, blockedness=20, known=False) \
             .model

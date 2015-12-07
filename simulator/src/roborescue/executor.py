@@ -597,10 +597,3 @@ class TaskAllocatorExecutor(Executor):
             tasks.extend(winner.requirements)
 
         return sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
-
-    @staticmethod
-    def disseminate_plan(plan):
-        plan = sorted(plan, key=attrgetter("agent", "start_time"))
-        return groupby(plan, key=attrgetter("agent"))
-
-
