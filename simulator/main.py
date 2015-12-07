@@ -110,7 +110,7 @@ def run_single_agent_replan_simulator():
 def run_roborescue_simulator():
     from roborescue import plan_decoder, problem_encoder
     from roborescue.simulator import Simulator
-    from roborescue.executor import EventExecutor, MedicExecutor, PoliceExecutor, CentralPlannerExecutor
+    from roborescue.executor import EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor
     domain_template = "../roborescue/{}-domain.pddl"
 
     args = parser().parse_args()
@@ -150,18 +150,18 @@ def run_roborescue_simulator():
                        for agent_name in model["objects"]["medic"]]
     agent_executors = police_executors + medic_executors
     event_executor = EventExecutor(events=model["events"])
-    planning_executor = CentralPlannerExecutor(
-        agent="planner", planning_time=args.planning_time, executor_ids=[e.id for e in agent_executors],
+    allocator_executor = TaskAllocatorExecutor(
+        agent="allocator", planning_time=args.planning_time, executor_ids=[e.id for e in agent_executors],
         agent_names=[e.agent for e in agent_executors], central_planner=central_planner, local_planner=local_planner,
         event_executor=event_executor)
 
-    event_executor.central_executor_id = planning_executor.id
+    event_executor.central_executor_id = allocator_executor.id
     for e in agent_executors:
-        e.central_executor_id = planning_executor.id
+        e.central_executor_id = allocator_executor.id
 
     # setup simulator
     executors = dict({e.agent: e for e in agent_executors},
-                     planner=planning_executor, event_executor=event_executor)
+                     allocator=allocator_executor, event_executor=event_executor)
     simulator = Simulator(model, executors)
 
     # run simulator

@@ -21,7 +21,7 @@ def encode_problem(out, model, agent, goals, metric, time, events):
     object_values = _collate_objects(model["objects"], agent=agent)
     _encode_init(out, object_values, model["graph"], model["assumed-values"], events, model, time)
 
-    goals = goals if goals is not None else model["goal"]
+    goals = [g.predicate for g in goals] if goals is not None else model["goal"]
     _encode_goal(out, goals)
 
     if has_metric:

@@ -448,9 +448,9 @@ class Allocate(Action):
 
     _format_attrs = ("agent", "start_time")
 
-    def __init__(self, time, goals):
+    def __init__(self, time, agent, goals):
         super().__init__(as_end_time(time), INSTANTANEOUS_ACTION_DURATION)
-        object.__setattr__(self, "agent", "task_allocator_executor")
+        object.__setattr__(self, "agent", agent)
         object.__setattr__(self, "goals", goals)
 
     def is_applicable(self, model):

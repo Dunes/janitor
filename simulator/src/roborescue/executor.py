@@ -277,15 +277,18 @@ class PoliceExecutor(AgentExecutor):
         return []
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-        plan, time_taken = planner.get_plan_and_time_taken(
-            model=model,
-            # duration=?,
-            agent=self.agent,
-            goals=[task.goal],
-            metric=None,
-            time=time,
-            events=events
-        )
+        try:
+            plan, time_taken = planner.get_plan_and_time_taken(
+                model=model,
+                duration=self.planning_time,
+                agent=self.agent,
+                goals=[task.goal],
+                metric=None,
+                time=time,
+                events=events
+            )
+        except NoPlanException:
+            return None
 
         return Bid(agent=self.agent,
                    value=task.value * (1 - (Decimal(1) / len(plan))),
@@ -332,15 +335,18 @@ class MedicExecutor(AgentExecutor):
         return model
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-        plan, time_taken = planner.get_plan_and_time_taken(
-            model=self.remove_blocks_from_model(model),
-            # duration=?,
-            agent=self.agent,
-            goals=[task.goal],
-            metric=None,
-            time=time,
-            events=events
-        )
+        try:
+            plan, time_taken = planner.get_plan_and_time_taken(
+                model=self.remove_blocks_from_model(model),
+                duration=self.planning_time,
+                agent=self.agent,
+                goals=[task.goal],
+                metric=None,
+                time=time,
+                events=events
+            )
+        except NoPlanException:
+            return None
 
         model_edges = model["graph"]["edges"]
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
@@ -510,7 +516,7 @@ class TaskAllocatorExecutor(Executor):
         assert not self.valid_plan
         if self.executing:
             return self.executing
-        return ActionState(Allocate(as_start_time(time), goals=None))
+        return ActionState(Allocate(as_start_time(time), agent=self.agent, goals=None))
 
     def notify_action_starting(self, action_state: ActionState, model):
         assert not self.executing
@@ -584,6 +590,7 @@ class TaskAllocatorExecutor(Executor):
 
             bids = [e.generate_bid(task, self.local_planner, model, time, self.event_executor.known_events)
                     for e in self._executors]
+            bids = [b for b in bids if b is not None]  # filter out failed bids
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
