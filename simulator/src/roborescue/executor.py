@@ -516,7 +516,7 @@ class TaskAllocatorExecutor(Executor):
         assert not self.valid_plan
         if self.executing:
             return self.executing
-        return ActionState(Allocate(as_start_time(time), agent=self.agent, goals=None))
+        return ActionState(Allocate(as_start_time(time), agent=self.agent))
 
     def notify_action_starting(self, action_state: ActionState, model):
         assert not self.executing
@@ -535,10 +535,19 @@ class TaskAllocatorExecutor(Executor):
         super().notify_action_finishing(action_state, model)
         assert self.executing is action_state
         self.executing = None
-        action_state.finish()
+        action_state = action_state.finish()
 
-        for e in self._executors:
-            e.halted = False
+        plan_start = as_start_time(action_state.time)
+
+        bids = sorted(action_state.action.allocation, key=attrgetter("agent"))
+        for agent, agent_bids in groupby(bids, key=attrgetter("agent")):
+            self.executor_by_name(agent).new_plan([LocalPlan(
+                start_time=plan_start,
+                duration=self.planning_time,
+                agent=agent,
+                goals=[b.task.goal for b in agent_bids],
+                local_events=None
+            )])
 
         self.valid_plan = True
 
@@ -598,7 +607,7 @@ class TaskAllocatorExecutor(Executor):
 
             # notify winner of winning bid
             allocation[winner.task.goal] = winner
-            self.executor_by_name(winner.agent).notify_winning_bid(winner)
+            # self.executor_by_name(winner.agent).notify_winning_bid(winner)
 
             # add additional goals if not already met
             tasks.extend(winner.requirements)
