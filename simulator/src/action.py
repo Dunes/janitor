@@ -118,7 +118,7 @@ class Plan(Action):
 
 class LocalPlan(Plan):
 
-    _format_attrs = ("start_time", "duration", "agent", "goals", "events")
+    _format_attrs = ("start_time", "duration", "agent", "goals", "local_events")
 
     def __init__(self, start_time, duration, agent=None, plan=None, *, goals, local_events):
         super(Plan, self).__init__(start_time, duration)
