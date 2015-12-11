@@ -13,8 +13,9 @@ from planning_exceptions import ExecutionError, NoPlanException
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
-from roborescue.event import Event
+from roborescue.event import Event, EdgeEvent, ObjectEvent, Predicate
 from planner import Planner
+from .problem_encoder import find_object
 
 
 __author__ = 'jack'
@@ -93,10 +94,11 @@ class EventExecutor(Executor):
         self.event_actions = []
         for t, evts in groupby(self.events, key=time):
             self.event_actions.append(EventAction(time=t, events=tuple(evts)))
+        self.agent_based_events = []
 
     @property
     def known_events(self):
-        return [e for e in self.events if not e.hidden]
+        return [e for e in self.events if not e.hidden] + self.agent_based_events
 
     def copy(self):
         raise NotImplementedError
@@ -178,6 +180,7 @@ class AgentExecutor(Executor):
                     events=action_.local_events + self.central_executor.event_executor.known_events)
                 plan_action = action_.copy_with(plan=new_plan, duration=zero)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
+                self.central_executor.notify_goal_realisation(self.extract_events(new_plan, action_.goals))
             except NoPlanException:
                 self.central_executor.notify_planning_failure(self.id, action_state.time)
         else:
@@ -237,12 +240,12 @@ class AgentExecutor(Executor):
 
     @staticmethod
     @abstractmethod
-    def extract_goals(plan):
-        raise NotImplementedError
-
-    @staticmethod
-    @abstractmethod
-    def extract_events(plan, time):
+    def extract_events(plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
+        """
+        :param plan: list[Action]
+        :param goals: list[Goal]
+        :return: list[Event]
+        """
         raise NotImplementedError
 
     def halt(self, time):
@@ -264,17 +267,33 @@ class AgentExecutor(Executor):
 
 class PoliceExecutor(AgentExecutor):
 
-    @staticmethod
-    def extract_goals(plan):
-        goals = []
-        for action_ in plan:
-            if isinstance(action_, Unblock):
-                goals.append(["edge", action_.start_node, action_.end_node])
-        return goals
+    def extract_events(self, plan, goals):
+        events = []
+        unblocks = [(a, {a.start_node, a.end_node}) for a in plan if isinstance(a, Unblock)]
+        edges = set(frozenset(g.predicate[1:]) for g in goals)
+        for edge in edges:
+            start, end = edge
+            for u, unblock_nodes in unblocks:
+                if edge == unblock_nodes:
+                    events.append(self.create_clear_edge_event(as_start_time(u.end_time), start, end))
+                    events.append(self.create_clear_edge_event(as_start_time(u.end_time), end, start))
+                    break
+            else:
+                raise ValueError("no matching unblock for unblock goal: {}".format(edge))
+
+        return events
 
     @staticmethod
-    def extract_events(plan, time):
-        return []
+    def create_clear_edge_event(time, start_node, end_node):
+        return EdgeEvent(
+            time=time,
+            id_="{} {}".format(start_node, end_node),
+            predicates=[
+                Predicate(name="edge", becomes=True),
+                Predicate(name="blocked-edge", becomes=False),
+            ],
+            hidden=False
+        )
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
         try:
@@ -299,24 +318,30 @@ class PoliceExecutor(AgentExecutor):
 
 class MedicExecutor(AgentExecutor):
 
-    @staticmethod
-    def extract_goals(plan):
-        goals = []
-        rescued = set()
-        for action_ in plan:
-            if isinstance(action_, Unload) and action_.target not in rescued:
-                goals.append(["rescued", action_.target])
-                rescued.add(action_.target)
-        # for action_ in plan:
-        #     if isinstance(action_, Rescue) and action_.target not in rescued:
-        #         goals.append(["unburied", action_.target])
-        #         rescued.add(action_.target)
+    def extract_events(self, plan, goals):
+        events = []
+        rescues = [a for a in plan if isinstance(a, Rescue)]
+        for goal in goals:
+            target = goal.predicate[1]
+            for r in rescues:
+                if target == r.target:
+                    events.append(self.create_rescue_civilian_event(as_start_time(r.end_time), target))
+                    break
+            else:
+                raise ValueError("no matching Rescue for goal: {}".format(goal))
 
-        return goals
+        return events
 
     @staticmethod
-    def extract_events(plan, time):
-        return []
+    def create_rescue_civilian_event(time, civ_id):
+        return ObjectEvent(
+            time=time,
+            id_=civ_id,
+            predicates=[
+                Predicate(name="rescued", becomes=True),
+            ],
+            hidden=False
+        )
 
     @staticmethod
     def remove_blocks_from_model(model):
@@ -467,7 +492,7 @@ class CentralPlannerExecutor(Executor):
 
 class TaskAllocatorExecutor(Executor):
 
-    planning_possible = True
+    valid_goals = True
 
     def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
                  central_planner, local_planner, event_executor):
@@ -504,10 +529,10 @@ class TaskAllocatorExecutor(Executor):
     @property
     def has_goals(self):
         # has a goal if no valid plan and still unobtained goals that are possible
+        if not self.valid_goals:
+            return False
         if not self.valid_plan:
             return True
-        if not self.planning_possible:
-            return False
         if not any(e.has_goals for e in self._executors):
             self.valid_plan = False
             return True
@@ -526,8 +551,15 @@ class TaskAllocatorExecutor(Executor):
 
         for e in self._executors:
             e.halt(action_state.time)
+        self.event_executor.agent_based_events.clear()
 
-        tasks = self.compute_tasks(model["goal"]["soft-goals"], model["events"])
+        tasks = self.compute_tasks(model["goal"]["soft-goals"], model["events"], model["objects"], action_state.time)
+        if not tasks:
+            # nothing more to do
+            self.valid_goals = False
+            self.executing = None
+            return
+
         allocation, computation_time = self.compute_allocation(tasks, model, action_state.time)
         action_ = action_state.action.copy_with(allocation=allocation, duration=computation_time)
         self.executing = ActionState(action_).start()
@@ -563,22 +595,31 @@ class TaskAllocatorExecutor(Executor):
             self.EXECUTORS[e_id].halt(time)
 
     @staticmethod
-    def compute_tasks(goals, events: "list[Event]"):
+    def compute_tasks(goals, events: "list[Event]", objects, time):
         """
         Takes a set of goals and events from a model and computes a list of Tasks for it
         :param goals:
         :param events: list[Event]
+        :param objects:
+        :param time:
         :return: list[Task]
         """
         tasks = []
         for g in goals:
             civ_id = g[1]
+            civ = find_object(civ_id, objects)
+            if civ["known"].get("rescued"):
+                # goal already achieved
+                continue
             for e in events:
                 if e.id_ == civ_id and any((p.name == "alive" and p.becomes is False) for p in e.predicates):
                     deadline = e.time
                     break
             else:
                 deadline = Decimal("inf")
+            if deadline <= time:
+                # deadline already elapsed -- cannot achieve this goal
+                continue
             t = Task(Goal(tuple(g), deadline), CIVILIAN_VALUE)
             tasks.append(t)
         return tasks
@@ -614,3 +655,6 @@ class TaskAllocatorExecutor(Executor):
             tasks.extend(winner.requirements)
 
         return sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
+
+    def notify_goal_realisation(self, events: "list[Event]"):
+        self.event_executor.agent_based_events.extend(events)

@@ -8,7 +8,7 @@ from fractions import Fraction
 
 from accuracy import quantize, as_end_time, as_start_time
 from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue, EventAction
-from action_state import ExecutionState
+from action_state import ExecutionState, ActionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
 from priority_queue import MultiActionStateQueue
@@ -68,9 +68,11 @@ class Simulator:
             return
 
         while self.time <= deadline and any(e.has_goals for e in self.executors.values()):
-            action_states = MultiActionStateQueue(
+            queue = MultiActionStateQueue(
                 e.next_action(self.time) for e in self.executors.values() if e.has_goals
-            ).get()
+            )
+            action_states = queue.get()
+            action_states.sort(key=self.action_state_sort_order)  # make sure police planning is done first
             self.process_action_states(action_states)
 
         assert not any(e.has_goals for e in self.executors.values())
@@ -210,3 +212,13 @@ class Simulator:
             total_time += t
 
         return total_time
+
+    @staticmethod
+    def action_state_sort_order(item: ActionState):
+        agent = item.action.agent
+        if agent.startswith("police"):
+            return 1
+        elif agent.startswith("medic"):
+            return 2
+        else:
+            return 0
