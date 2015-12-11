@@ -342,7 +342,7 @@ class MedicExecutor(AgentExecutor):
                 agent=self.agent,
                 goals=[task.goal],
                 metric=None,
-                time=time,
+                time=time - self.planning_time,  # instantaneous plan?
                 events=events
             )
         except NoPlanException:
@@ -352,8 +352,9 @@ class MedicExecutor(AgentExecutor):
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
         bid_value = task.value * (1 - (Decimal(1) / len(plan)))
         task_value = (bid_value / len(blocked_edge_actions)) if blocked_edge_actions else 0
+        spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
         requirements = tuple(
-            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time), value=task_value)
+            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time), value=task_value)
             for a in blocked_edge_actions
         )
 
@@ -546,7 +547,7 @@ class TaskAllocatorExecutor(Executor):
                 duration=self.planning_time,
                 agent=agent,
                 goals=[b.task.goal for b in agent_bids],
-                local_events=None
+                local_events=[]
             )])
 
         self.valid_plan = True
