@@ -1,7 +1,30 @@
 {
     "assumed-values": {},
     "domain": "roborescue",
-    "events": [],
+    "events": [
+        {
+        	"type": "edge",
+            "time": 90,
+            "id": "building0-1 building0-2",
+            "hidden": true,
+            "predicates": [
+            	{"name": "edge", "becomes": false},
+            	{"name": "blocked-edge", "becomes": true},
+            	{"name": "blockedness", "becomes": 120}
+            ]
+        },
+        {
+        	"type": "edge",
+            "time": 90,
+            "id": "building0-2 building0-1",
+            "hidden": true,
+            "predicates": [
+            	{"name": "edge", "becomes": false},
+            	{"name": "blocked-edge", "becomes": true},
+            	{"name": "blockedness", "becomes": 120}
+            ]
+        }
+    ],
     "goal": {
         "soft-goals": [
             [
@@ -48,28 +71,7 @@
                 },
                 "unknown": {}
             },
-            "building1-0 building1-1": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building1-0 hospital0-0": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building1-1 building0-1": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building1-1 building1-0": {
                 "known": {
                     "distance": 120,
                     "edge": true
@@ -103,13 +105,6 @@
                     "edge": true
                 },
                 "unknown": {}
-            },
-            "hospital0-0 building1-0": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
             }
         }
     },
@@ -126,7 +121,6 @@
         "building": {
             "building0-1": {},
             "building0-2": {},
-            "building1-0": {},
             "building1-1": {},
             "building1-2": {}
         },
@@ -136,7 +130,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-2"
+                        "building0-2"
                     ],
                     "buried": true,
                     "buriedness": 120
