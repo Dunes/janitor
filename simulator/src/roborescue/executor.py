@@ -6,7 +6,7 @@ from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 
-from .action import Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
+from .action import Action, Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
@@ -142,6 +142,7 @@ class AgentExecutor(Executor):
         self.plan = plan or []
         self.central_executor_id = central_executor_id
         self.halted = halted
+        self.goals = []
 
     def copy(self):
         raise TypeError("copying not implemented")
@@ -253,6 +254,7 @@ class AgentExecutor(Executor):
         log.debug("halting {}", self.agent)
         self.halted = True
         self.plan = []
+        self.goals = []
         if self.executing and not isinstance(self.executing.action, Observe):
             log.debug("halting {} at {}", self.executing.action, time)
             if self.executing.action.start_time == time:
@@ -263,6 +265,20 @@ class AgentExecutor(Executor):
                 if new_action.start_time != self.executing.action.start_time:
                     assert False
                 self.executing = ActionState(new_action).start()
+
+    def notify_bid_won(self, bid: Bid):
+        self.goals.append(bid)
+
+    def compute_bid_value(self, task: Task, plan: "list[Action]", time: Decimal) -> Decimal:
+        plan_length_discount = 1 - (1 / (self.get_plan_makespan(plan, time) + 1))
+        other_goals_cost = sum(bid.value for bid in self.goals)
+        return task.value * plan_length_discount + other_goals_cost
+
+    @staticmethod
+    def get_plan_makespan(plan: "list[Action]", time: Decimal) -> Decimal:
+        if not plan:
+            return Decimal(0)
+        return as_start_time(plan[-1].end_time) - time
 
 
 class PoliceExecutor(AgentExecutor):
@@ -310,7 +326,7 @@ class PoliceExecutor(AgentExecutor):
             return None
 
         return Bid(agent=self.agent,
-                   value=task.value * (1 - (Decimal(1) / len(plan))),
+                   value=self.compute_bid_value(task, plan, time),
                    task=task,
                    requirements=(),
                    computation_time=time_taken)
@@ -375,7 +391,7 @@ class MedicExecutor(AgentExecutor):
 
         model_edges = model["graph"]["edges"]
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
-        bid_value = task.value * (1 - (Decimal(1) / len(plan)))
+        bid_value = self.compute_bid_value(task, plan, time)
         task_value = (bid_value / len(blocked_edge_actions)) if blocked_edge_actions else 0
         spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
         requirements = tuple(
@@ -645,14 +661,14 @@ class TaskAllocatorExecutor(Executor):
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
-            winner = min(bids, key=attrgetter("value"))
+            winning_bid = min(bids, key=attrgetter("value"))
 
             # notify winner of winning bid
-            allocation[winner.task.goal] = winner
-            # self.executor_by_name(winner.agent).notify_winning_bid(winner)
+            allocation[winning_bid.task.goal] = winning_bid
+            self.executor_by_name(winning_bid.agent).notify_bid_won(winning_bid)
 
             # add additional goals if not already met
-            tasks.extend(winner.requirements)
+            tasks.extend(winning_bid.requirements)
 
         return sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
 

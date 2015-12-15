@@ -243,7 +243,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
 class TestMedicGenerateBid(TestCase):
 
-    def test_basic(self):
+    def test_one_length_plan(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
         goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
@@ -261,7 +261,28 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(0))
+        assert_that(bid.value, equal_to(Decimal("0.5")))
+        assert_that(bid.requirements, equal_to(()))
+
+    def test_two_length_plan(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=ONE)
+
+        model = ModelBuilder().with_edge("a", "b").model
+        plan = [Move(ZERO, Decimal(3), "medic", "a", "b")]
+        time_taken = ONE
+        planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
+
+        # when
+        bid = medic.generate_bid(task, planner, model, ZERO, None)
+
+        # then
+        assert_that(bid.agent, equal_to("medic"))
+        assert_that(bid.task, equal_to(task))
+        assert_that(bid.computation_time, equal_to(time_taken))
+        assert_that(bid.value, equal_to(Decimal("0.75")))
         assert_that(bid.requirements, equal_to(()))
 
     def test_generate_correct_requirements_from_plan(self):
@@ -283,8 +304,9 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(ZERO))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=ZERO)
+        assert_that(bid.value, equal_to(Decimal("0.5")))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
+                                    value=Decimal("0.5"))
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_only_factor_in_blocked_edge_in_requirements(self):
@@ -297,7 +319,7 @@ class TestMedicGenerateBid(TestCase):
         start_time = ZERO
         duration = ONE
         plan = [Move(start_time, duration, "medic", "a", "b"),
-                Move(start_time + duration, duration, "medic", "b", "c")]
+                Move(start_time + duration, Decimal(2), "medic", "b", "c")]
         time_taken = ONE
         planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
 
@@ -308,9 +330,9 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(task.value / 2))
+        assert_that(bid.value, equal_to(Decimal("0.75")))
         expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
-                                    value=task.value / 2)
+                                    value=Decimal("0.75"))
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_value_requirements_equally(self):
@@ -323,7 +345,7 @@ class TestMedicGenerateBid(TestCase):
         start_time = ZERO
         duration = ONE
         plan = [Move(start_time, duration, "medic", "a", "b"),
-                Move(start_time + duration, duration, "medic", "b", "c")]
+                Move(start_time + duration, Decimal(2), "medic", "b", "c")]
         time_taken = ONE
         planner = Mock(**{"get_plan_and_time_taken.side_effect": [[plan, time_taken]]})
 
@@ -334,10 +356,10 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(task.value / 2))
+        assert_that(bid.value, equal_to(Decimal("0.75")))
         expected_requirement = (
-            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=task.value / 4),
-            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=task.value / 4),
+            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("0.375")),
+            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("0.375")),
         )
         assert_that(bid.requirements, equal_to(expected_requirement))
 
@@ -359,6 +381,28 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(ZERO))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=ZERO),
+        assert_that(bid.value, equal_to(Decimal("0.5")))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=Decimal("0.5")),
         assert_that(bid.requirements, equal_to(expected_requirement))
+
+    def test_bid_dependent_on_number_of_won_bids(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        first_goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        second_goal = Goal(predicate=("rescued", "civ1"), deadline=Decimal("Infinity"))
+        first_task = Task(goal=first_goal, value=ONE)
+        second_task = Task(goal=second_goal, value=ONE)
+
+        model = ModelBuilder().with_edge("a", "b").model
+        plan = [Move(ZERO, ONE, "medic", "a", "b")]
+        time_taken = ONE
+        planner = Mock(**{"get_plan_and_time_taken.return_value": [plan, time_taken]})
+
+        # when
+        first_bid = medic.generate_bid(first_task, planner, model, ZERO, None)
+        medic.notify_bid_won(first_bid)
+        second_bid = medic.generate_bid(second_task, planner, model, ZERO, None)
+
+        # then
+        assert_that(first_bid.value, equal_to(Decimal("0.5")))
+        assert_that(second_bid.value, equal_to(ONE))
