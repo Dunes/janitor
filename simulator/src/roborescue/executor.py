@@ -81,8 +81,6 @@ class Executor(metaclass=ABCMeta):
     def _adjust_plan_helper(plan):
         for action in plan:
             yield action
-            if type(action) is Move:
-                yield Observe(action.end_time, action.agent, action.end_node)
 
 
 class EventExecutor(Executor):
@@ -209,6 +207,7 @@ class AgentExecutor(Executor):
         for change in changes:
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
+                    raise NotImplementedError("this code is wrong")
                     goals = self.extract_goals(self.plan)
                     events = self.extract_events(self.plan, as_start_time(time))
                     if not goals:
@@ -239,9 +238,8 @@ class AgentExecutor(Executor):
         """
         raise NotImplementedError
 
-    @staticmethod
     @abstractmethod
-    def extract_events(plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
+    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
         """
         :param plan: list[Action]
         :param goals: list[Goal]
@@ -283,7 +281,7 @@ class AgentExecutor(Executor):
 
 class PoliceExecutor(AgentExecutor):
 
-    def extract_events(self, plan, goals):
+    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
         events = []
         unblocks = [(a, {a.start_node, a.end_node}) for a in plan if isinstance(a, Unblock)]
         edges = set(frozenset(g.predicate[1:]) for g in goals)
@@ -334,7 +332,7 @@ class PoliceExecutor(AgentExecutor):
 
 class MedicExecutor(AgentExecutor):
 
-    def extract_events(self, plan, goals):
+    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
         events = []
         rescues = [a for a in plan if isinstance(a, Rescue)]
         for goal in goals:
@@ -392,12 +390,15 @@ class MedicExecutor(AgentExecutor):
         model_edges = model["graph"]["edges"]
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
         bid_value = self.compute_bid_value(task, plan, time)
-        task_value = (bid_value / len(blocked_edge_actions)) if blocked_edge_actions else 0
-        spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
-        requirements = tuple(
-            Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time), value=task_value)
-            for a in blocked_edge_actions
-        )
+        if blocked_edge_actions:
+            task_value = bid_value / len(blocked_edge_actions)
+            spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
+            requirements = tuple(
+                Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time), value=task_value)
+                for a in blocked_edge_actions
+            )
+        else:
+            requirements = ()
 
         return Bid(agent=self.agent,
                    value=bid_value,

@@ -97,8 +97,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_allocate_goals_in_deadline_order(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate="a", deadline=1), 0), Task(Goal(predicate="b", deadline=0), 0)]
-        bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
+        tasks = [Task(Goal(predicate=("a",), deadline=ONE), ZERO), Task(Goal(predicate=("b",), deadline=ZERO), ZERO)]
+        bids = {t: Bid(agent=executor.agent, value=ONE, task=t, requirements=(), computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
@@ -110,9 +110,9 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_duplicated_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate="a", deadline=0), 1)] * 2
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE)] * 2
         summed_tasks = Task.combine(tasks)
-        bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
+        bid = Bid(agent=executor.agent, value=ZERO, task=summed_tasks, requirements=(), computation_time=ZERO)
         bids = {summed_tasks: bid}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -125,10 +125,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_duplicated_tasks_with_different_value(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        goal = Goal(predicate="a", deadline=0)
-        tasks = [Task(goal, 0), Task(goal, 1)]
+        goal = Goal(predicate=("a",), deadline=ZERO)
+        tasks = [Task(goal, ZERO), Task(goal, ONE)]
         summed_tasks = Task.combine(tasks)
-        bid = Bid(agent=executor.agent, value=0, task=summed_tasks, requirements=(), computation_time=0)
+        bid = Bid(agent=executor.agent, value=ZERO, task=summed_tasks, requirements=(), computation_time=ZERO)
         bids = {summed_tasks: bid}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -141,8 +141,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_no_merge_tasks_with_same_deadlines(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate="a", deadline=0), 1), Task(Goal(predicate="b", deadline=0), 1)]
-        bids = {t: Bid(agent=executor.agent, value=0, task=t, requirements=(), computation_time=0) for t in tasks}
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE), Task(Goal(predicate=("b",), deadline=ZERO), ONE)]
+        bids = {t: Bid(agent=executor.agent, value=ZERO, task=t, requirements=(), computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
@@ -154,14 +154,14 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_some_tasks_with_same_deadlines(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate="a", deadline=0), 1),
-                 Task(Goal(predicate="b", deadline=0), 1),
-                 Task(Goal(predicate="a", deadline=0), 1)]
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE),
+                 Task(Goal(predicate=("b",), deadline=ZERO), ONE),
+                 Task(Goal(predicate=("a",), deadline=ZERO), ONE)]
         a_tasks = Task.combine([tasks[0], tasks[2]])
         b_task = tasks[1]
         bids = {
-            a_tasks: Bid(agent=executor.agent, value=0, task=a_tasks, requirements=(), computation_time=0),
-            b_task: Bid(agent=executor.agent, value=0, task=b_task, requirements=(), computation_time=0)
+            a_tasks: Bid(agent=executor.agent, value=ZERO, task=a_tasks, requirements=(), computation_time=ZERO),
+            b_task: Bid(agent=executor.agent, value=ZERO, task=b_task, requirements=(), computation_time=ZERO)
         }
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -177,12 +177,13 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_allocates_sub_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        primary_task = Task(Goal(predicate="a", deadline=0), 0)
-        secondary_task = Task(Goal(predicate="b", deadline=1), 0)
+        primary_task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
+        secondary_task = Task(Goal(predicate=("b",), deadline=ONE), ZERO)
         bids = {
-            primary_task: Bid(agent=executor.agent, value=0, task=primary_task, requirements=[secondary_task],
-                              computation_time=0),
-            secondary_task: Bid(agent=executor.agent, value=0, task=secondary_task, requirements=(), computation_time=0)
+            primary_task: Bid(agent=executor.agent, value=ZERO, task=primary_task, requirements=(secondary_task,),
+                              computation_time=ZERO),
+            secondary_task: Bid(agent=executor.agent, value=ZERO, task=secondary_task, requirements=(),
+                                computation_time=ZERO)
         }
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -195,14 +196,14 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_same_tasks_when_added_later(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        needed_twice_task = Task(Goal(predicate="a", deadline=0), 1)
-        requiring_task = Task(Goal(predicate="b", deadline=1), 1)
+        needed_twice_task = Task(Goal(predicate=("a",), deadline=ZERO), ONE)
+        requiring_task = Task(Goal(predicate=("b",), deadline=ONE), ONE)
         tasks = [needed_twice_task, requiring_task]
 
-        needed_twice_bid = Bid(agent=executor.agent, value=0, task=needed_twice_task, requirements=(),
-                               computation_time=0)
-        requiring_bid = Bid(agent=executor.agent, value=0, task=requiring_task, requirements=[needed_twice_task],
-                             computation_time=0)
+        needed_twice_bid = Bid(agent=executor.agent, value=ZERO, task=needed_twice_task, requirements=(),
+                               computation_time=ZERO)
+        requiring_bid = Bid(agent=executor.agent, value=ZERO, task=requiring_task, requirements=(needed_twice_task,),
+                            computation_time=ZERO)
         executor.generate_bid.side_effect = [needed_twice_bid, requiring_bid]
 
         # when
@@ -214,9 +215,11 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
     def test_assigns_goals_to_best_bidder(self):
         # given
+        ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
-        task = Task(Goal(predicate="a", deadline=0), 0)
-        bids = [Bid(agent=e.agent, value=e.id * 10, task=task, requirements=(), computation_time=0) for e in executors]
+        task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
+        bids = [Bid(agent=e.agent, value=e.id * ten, task=task, requirements=(),
+                    computation_time=ZERO) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
 
@@ -228,9 +231,11 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
     def test_compute_computation_time(self):
         # given
+        ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
-        task = Task(Goal(predicate="a", deadline=0), 0)
-        bids = [Bid(agent=e.agent, value=0, task=task, requirements=(), computation_time=e.id * 10) for e in executors]
+        task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
+        bids = [Bid(agent=e.agent, value=ZERO, task=task, requirements=(),
+                    computation_time=e.id * ten) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
 
