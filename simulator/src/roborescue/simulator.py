@@ -72,7 +72,6 @@ class Simulator:
                 e.next_action(self.time) for e in self.executors.values() if e.has_goals
             )
             action_states = queue.get()
-            action_states.sort(key=self.action_state_sort_order)  # make sure police planning is done first
             self.process_action_states(action_states)
 
         assert not any(e.has_goals for e in self.executors.values())
@@ -212,13 +211,3 @@ class Simulator:
             total_time += t
 
         return total_time
-
-    @staticmethod
-    def action_state_sort_order(item: ActionState):
-        agent = item.action.agent
-        if agent.startswith("police"):
-            return 1
-        elif agent.startswith("medic"):
-            return 2
-        else:
-            return 0

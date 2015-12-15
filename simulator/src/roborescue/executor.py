@@ -481,11 +481,18 @@ class TaskAllocatorExecutor(Executor):
         action_state = action_state.finish()
 
         plan_start = as_start_time(action_state.time)
+        delayed_start = plan_start + self.planning_time
 
         bids = sorted(action_state.action.allocation, key=attrgetter("agent"))
         for agent, agent_bids in groupby(bids, key=attrgetter("agent")):
-            self.executor_by_name(agent).new_plan([LocalPlan(
-                start_time=plan_start,
+            executor = self.executor_by_name(agent)
+            if any(bid.requirements for bid in executor.won_bids):
+                start_time = delayed_start
+            else:
+                start_time = plan_start
+
+            executor.new_plan([LocalPlan(
+                start_time=start_time,
                 duration=self.planning_time,
                 agent=agent,
                 goals=[b.task.goal for b in agent_bids],
