@@ -118,14 +118,15 @@ class Plan(Action):
 
 class LocalPlan(Plan):
 
-    _format_attrs = ("start_time", "duration", "agent", "goals", "local_events")
+    _format_attrs = ("start_time", "duration", "agent", "goals", "local_events", "failed")
 
-    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, local_events):
+    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, local_events, failed=False):
         super(Plan, self).__init__(start_time, duration)
         object.__setattr__(self, "agent", agent if agent else Plan.agent)
         object.__setattr__(self, "plan", plan)
         object.__setattr__(self, "goals", goals)
         object.__setattr__(self, "local_events", local_events)
+        object.__setattr__(self, "failed", failed)
 
 
 class Stalled(Action):

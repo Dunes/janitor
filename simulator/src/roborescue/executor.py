@@ -9,7 +9,7 @@ from copy import deepcopy
 from .action import Action, Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
 from action_state import ActionState, ExecutionState
 from logger import StyleAdapter
-from planning_exceptions import ExecutionError, NoPlanException
+from planning_exceptions import ExecutionError
 from accuracy import as_start_time, as_next_end_time, zero
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
@@ -171,16 +171,17 @@ class AgentExecutor(Executor):
         if isinstance(action_state.action, LocalPlan):
             planner = self.central_executor.planner
             action_ = action_state.action
-            try:
-                new_plan, time_taken = planner.get_plan_and_time_taken(
-                    model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
-                    metric=None, time=action_state.time,
-                    events=action_.local_events + self.central_executor.event_executor.known_events)
+            new_plan, time_taken = planner.get_plan_and_time_taken(
+                model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
+                metric=None, time=action_state.time,
+                events=action_.local_events + self.central_executor.event_executor.known_events)
+            if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
                 self.central_executor.notify_goal_realisation(self.extract_events(new_plan, action_.goals))
-            except NoPlanException:
-                self.central_executor.notify_planning_failure(self.id, action_state.time)
+            else:
+                plan_action = action_.copy_with(failed=True, duration=time_taken)
+                self.executing = ActionState(plan_action, plan_action.start_time).start()
         else:
             self.executing = action_state.start()
 
@@ -193,7 +194,10 @@ class AgentExecutor(Executor):
         self.executing = None
         action_state = action_state.finish()
         if isinstance(action_state.action, Plan):
-            self.new_plan(self.adjust_plan(action_state.action.apply(model)))
+            if action_state.action.failed:
+                self.central_executor.notify_planning_failure(self.id, action_state.time)
+            else:
+                self.new_plan(self.adjust_plan(action_state.action.apply(model)))
         else:
             changes = action_state.action.apply(model)
             if changes:
@@ -301,17 +305,17 @@ class PoliceExecutor(AgentExecutor):
         )
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-        try:
-            plan, time_taken = planner.get_plan_and_time_taken(
-                model=model,
-                duration=self.planning_time,
-                agent=self.agent,
-                goals=[task.goal],
-                metric=None,
-                time=time,
-                events=events
-            )
-        except NoPlanException:
+
+        plan, time_taken = planner.get_plan_and_time_taken(
+            model=model,
+            duration=self.planning_time,
+            agent=self.agent,
+            goals=[task.goal],
+            metric=None,
+            time=time,
+            events=events
+        )
+        if plan is None:
             return None
 
         return Bid(agent=self.agent,
@@ -365,17 +369,16 @@ class MedicExecutor(AgentExecutor):
         return model
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-        try:
-            plan, time_taken = planner.get_plan_and_time_taken(
-                model=self.remove_blocks_from_model(model),
-                duration=self.planning_time,
-                agent=self.agent,
-                goals=[task.goal],
-                metric=None,
-                time=time - self.planning_time,  # instantaneous plan?
-                events=events
-            )
-        except NoPlanException:
+        plan, time_taken = planner.get_plan_and_time_taken(
+            model=self.remove_blocks_from_model(model),
+            duration=self.planning_time,
+            agent=self.agent,
+            goals=[task.goal],
+            metric=None,
+            time=time - self.planning_time,  # instantaneous plan?
+            events=events
+        )
+        if plan is None:
             return None
 
         model_edges = model["graph"]["edges"]

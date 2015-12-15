@@ -9,7 +9,7 @@ from math import isnan
 from logging import getLogger
 from decimal import Decimal, ROUND_DOWN
 
-from planning_exceptions import NoPlanException, IncompletePlanException
+from planning_exceptions import IncompletePlanException
 from logger import StyleAdapter
 
 log = StyleAdapter(getLogger(__name__))
@@ -89,12 +89,7 @@ class Planner(object):
             root, ext = splitext(basename(problem_file))
             with open("logs/roborescue/plans/{}.plan".format(root), "w") as f:
                 f.write(repr(plan))
-            return plan
-        if report:
-            raise NoPlanException
-        if single_pass:
-            return []
-        raise RuntimeError("Illegal state")
+        return plan
 
     def get_plan_and_time_taken(self, model, *, duration, agent, goals, metric, time, events):
         start = _time()
