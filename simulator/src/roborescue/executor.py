@@ -176,7 +176,7 @@ class AgentExecutor(Executor):
                     model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
                     metric=None, time=action_state.time,
                     events=action_.local_events + self.central_executor.event_executor.known_events)
-                plan_action = action_.copy_with(plan=new_plan, duration=planner.planning_time)
+                plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
                 self.central_executor.notify_goal_realisation(self.extract_events(new_plan, action_.goals))
             except NoPlanException:

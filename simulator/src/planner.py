@@ -3,16 +3,19 @@ from subprocess import Popen, PIPE
 import tempfile
 from io import TextIOWrapper
 from os.path import join as path_join, basename, splitext
-from threading import Timer, Thread, Lock
+from threading import Timer, Lock
 from time import time as _time
 from math import isnan
 from logging import getLogger
+from decimal import Decimal, ROUND_DOWN
 
 from planning_exceptions import NoPlanException, IncompletePlanException
-from accuracy import quantize
 from logger import StyleAdapter
 
 log = StyleAdapter(getLogger(__name__))
+
+
+_precision = Decimal("0.000")
 
 
 _lock = Lock()
@@ -97,7 +100,7 @@ class Planner(object):
         start = _time()
         plan = self.get_plan(model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events)
         end = _time()
-        return plan, min(quantize(end - start), duration)
+        return plan, min(Decimal(end - start).quantize(_precision, rounding=ROUND_DOWN), duration)
 
     def create_problem_file(self, model, agent, goals, metric, time, events):
         import datetime
