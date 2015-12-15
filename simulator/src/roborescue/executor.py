@@ -140,7 +140,7 @@ class AgentExecutor(Executor):
         self.plan = plan or []
         self.central_executor_id = central_executor_id
         self.halted = halted
-        self.goals = []
+        self.won_bids = []
 
     def copy(self):
         raise TypeError("copying not implemented")
@@ -206,12 +206,11 @@ class AgentExecutor(Executor):
         for change in changes:
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
-                    self.central_executor.notify_planning_failure(self.id, time)
+                    goals = [bid.task.goal for bid in self.won_bids]
+                    self.halt(time)
+                    self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
+                                           local_events=[])])
                     return
-                    # self.halt(time)
-                    # self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=self.goals,
-                    #                        local_events=())])
-                    # return
 
     def new_plan(self, plan):
         self.plan = plan
@@ -244,7 +243,7 @@ class AgentExecutor(Executor):
         log.debug("halting {}", self.agent)
         self.halted = True
         self.plan = []
-        self.goals = []
+        self.won_bids = []
         if self.executing and not isinstance(self.executing.action, Observe):
             log.debug("halting {} at {}", self.executing.action, time)
             if self.executing.action.start_time == time:
@@ -257,11 +256,11 @@ class AgentExecutor(Executor):
                 self.executing = ActionState(new_action).start()
 
     def notify_bid_won(self, bid: Bid):
-        self.goals.append(bid)
+        self.won_bids.append(bid)
 
     def compute_bid_value(self, task: Task, plan: "list[Action]", time: Decimal) -> Decimal:
         plan_length_discount = 1 - (1 / (self.get_plan_makespan(plan, time) + 1))
-        other_goals_cost = sum(bid.value for bid in self.goals)
+        other_goals_cost = sum(bid.value for bid in self.won_bids)
         return task.value * plan_length_discount + other_goals_cost
 
     @staticmethod
