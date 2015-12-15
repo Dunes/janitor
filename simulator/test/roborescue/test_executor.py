@@ -105,7 +105,9 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
-        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
+        assert_that(allocation, contains_inanyorder(*bids.values()))
+        assert_that([bid.task.goal.deadline for bid in allocation],
+                    equal_to(sorted([bid.task.goal.deadline for bid in bids.values()])))
 
     def test_merge_duplicated_tasks(self):
         # given
@@ -149,7 +151,9 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocation, _ = allocator.compute_allocation(tasks, None, None)
 
         # then
-        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
+        assert_that(allocation, contains_inanyorder(*bids.values()))
+        assert_that([bid.task.goal.deadline for bid in allocation],
+                    equal_to(sorted([bid.task.goal.deadline for bid in bids.values()])))
 
     def test_merge_some_tasks_with_same_deadlines(self):
         # given
@@ -191,7 +195,9 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocation, _ = allocator.compute_allocation([primary_task], None, None)
 
         # then
-        assert_that(allocation, equal_to(sorted(bids.values(), key=attrgetter("task.goal.deadline"))))
+        assert_that(allocation, contains_inanyorder(*bids.values()))
+        assert_that([bid.task.goal.deadline for bid in allocation],
+                    equal_to(sorted([bid.task.goal.deadline for bid in bids.values()])))
 
     def test_merge_same_tasks_when_added_later(self):
         # given
