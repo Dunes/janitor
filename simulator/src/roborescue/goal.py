@@ -5,10 +5,11 @@ __author__ = 'jack'
 
 class Goal(namedtuple("Goal", "predicate deadline")):
     """
-    :type predicate: str
+    :type predicate: tuple[str]
     :type deadline: decimal.Decimal
     """
     def __init__(self, predicate, deadline):
+        super().__init__()
         self.predicate = predicate
         self.deadline = deadline
     del __init__
@@ -20,6 +21,7 @@ class Task(namedtuple("Task", "goal value")):
     :type value: decimal.Decimal
     """
     def __init__(self, goal, value):
+        super().__init__()
         self.goal = goal
         self.value = value
     del __init__
@@ -45,11 +47,12 @@ class Bid(namedtuple("Bid", "agent value task requirements computation_time")):
     """
     :type agent: str
     :type value: decimal.Decimal
-    :type task: Goal
-    :type requirements: list[Task]
+    :type task: Task
+    :type requirements: tuple[Task]
     :type computation_time: decimal.Decimal
     """
     def __init__(self, agent, value, task, requirements, computation_time):
+        super().__init__()
         self.agent = agent
         self.value = value
         self.task = task
