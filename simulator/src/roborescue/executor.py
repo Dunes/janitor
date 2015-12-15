@@ -171,7 +171,7 @@ class AgentExecutor(Executor):
         del self.plan[0]
 
         if isinstance(action_state.action, LocalPlan):
-            planner = self.central_executor.local_planner
+            planner = self.central_executor.planner
             action_ = action_state.action
             try:
                 # subtract planning time to create "instantaneous" plan
@@ -406,116 +406,15 @@ class MedicExecutor(AgentExecutor):
                    computation_time=time_taken)
 
 
-class CentralPlannerExecutor(Executor):
-
-    planning_possible = True
-
-    def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
-                 central_planner, local_planner, event_executor):
-        super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
-        self.valid_plan = False
-        self.central_planner = central_planner
-        self.local_planner = local_planner
-        self.event_executor = event_executor if event_executor else EventExecutor(events=())
-        self.executor_ids = executor_ids
-        assert len(executor_ids) == len(agent_names)
-        self.agent_executor_map = {name: id_ for name, id_ in zip(agent_names, executor_ids)}
-
-    def copy(self):
-        raise NotImplementedError
-
-    @property
-    def _executors(self):
-        for executor_id in self.executor_ids:
-            yield self.EXECUTORS[executor_id]
-
-    @property
-    def deadline(self):
-        return self._deadline
-
-    @deadline.setter
-    def deadline(self, deadline):
-        if self.executing:
-            raise ExecutionError("Wasn't expecting to be told deadline is changing when already planning")
-        self._deadline = deadline
-
-    @property
-    def has_goals(self):
-        # has a goal if no valid plan and still unobtained goals that are possible
-        if not self.valid_plan:
-            return True
-        if not self.planning_possible:
-            return False
-        if not any(e.has_goals for e in self._executors):
-            self.valid_plan = False
-            return True
-        return False
-
-    def next_action(self, time):
-        assert not self.valid_plan
-        if self.executing:
-            return self.executing
-        return ActionState(Plan(as_start_time(time), self.planning_time))
-
-    def notify_action_starting(self, action_state: ActionState, model):
-        assert not self.executing
-
-        if not isinstance(action_state.action, Plan):
-            raise ExecutionError("Have a non-plan action: " + str(action_state.action))
-
-        try:
-            new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
-                model, duration=self.central_planner.planning_time, agent="all", goals=model["goal"],
-                metric=model["metric"], time=action_state.time, events=self.event_executor.known_events
-            )
-        except NoPlanException:
-            new_plan, time_taken = [], self.central_planner.planning_time
-            self.planning_possible = False
-
-        new_plan = self.adjust_plan(new_plan)
-        plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
-        self.executing = ActionState(plan_action).start()
-
-    def notify_action_finishing(self, action_state: ActionState, model):
-        super().notify_action_finishing(action_state, model)
-        assert self.executing is action_state
-        self.executing = None
-        action_state = action_state.finish()
-        plan = action_state.action.apply(model)
-
-        # disseminate plan
-        for agent, sub_plan in self.disseminate_plan(plan):
-            sub_plan = list(sub_plan)
-            self.EXECUTORS[self.agent_executor_map[agent]].new_plan(list(sub_plan))
-
-        self.valid_plan = True
-
-    def notify_new_knowledge(self, time, node):
-        for e in self._executors:
-            e.notify_new_knowledge(time, node)
-
-    def notify_planning_failure(self, executor_id, time):
-        self.valid_plan = False
-        # tell all agents to stop immediately
-        for e in self._executors:
-            e.halt(time)
-
-    @staticmethod
-    def disseminate_plan(plan):
-        plan = sorted(plan, key=attrgetter("agent", "start_time"))
-        return groupby(plan, key=attrgetter("agent"))
-
-
 class TaskAllocatorExecutor(Executor):
 
     valid_goals = True
 
-    def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"),
-                 central_planner, local_planner, event_executor):
+    def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"), planner,
+                 event_executor):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.valid_plan = False
-        self.central_planner = central_planner
-        self.local_planner = local_planner
+        self.planner = planner
         self.event_executor = event_executor if event_executor else EventExecutor(events=())
         self.executor_ids = executor_ids
         assert len(executor_ids) == len(agent_names)
@@ -655,7 +554,7 @@ class TaskAllocatorExecutor(Executor):
                 allocation[task.goal] = new_bid
                 continue
 
-            bids = [e.generate_bid(task, self.local_planner, model, time, self.event_executor.known_events)
+            bids = [e.generate_bid(task, self.planner, model, time, self.event_executor.known_events)
                     for e in self._executors]
             bids = [b for b in bids if b is not None]  # filter out failed bids
 

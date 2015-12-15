@@ -9,6 +9,8 @@ import argparse
 import decimal
 import logging.config
 import importlib
+import itertools
+import copy
 
 logging.config.fileConfig("logging.conf")
 
@@ -18,9 +20,6 @@ import problem_parser
 import logger
 
 log = logger.StyleAdapter(logging.getLogger())
-
-
-domain_template = "../janitor/{}-domain.pddl"
 
 
 def parser():
@@ -33,7 +32,7 @@ def parser():
     return p
 
 
-def run_old_simulator():
+def run_old_simulator(domain_template="../janitor/{}-domain.pddl"):
     from new_simulator import Simulator
     import executor
 
@@ -58,7 +57,7 @@ def run_old_simulator():
         exit(1)
 
 
-def run_single_agent_replan_simulator():
+def run_single_agent_replan_simulator(domain_template="../janitor/{}-domain.pddl"):
     from singleagent.simulator import Simulator
     from singleagent.executor import AgentExecutor, CentralPlannerExecutor
 
@@ -107,11 +106,10 @@ def run_single_agent_replan_simulator():
         exit(1)
 
 
-def run_roborescue_simulator():
+def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     from roborescue import plan_decoder, problem_encoder
     from roborescue.simulator import Simulator
     from roborescue.executor import EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor
-    domain_template = "../roborescue/{}-domain.pddl"
 
     args = parser().parse_args()
     log.info(args)
@@ -124,36 +122,29 @@ def run_roborescue_simulator():
     # add bidirectionality
     if model["graph"].get("bidirectional"):
         edges = model["graph"]["edges"]
-        from copy import deepcopy
         for key in list(edges):
             new_key = " ".join(reversed(key.split(" ")))
-            edges[new_key] = deepcopy(edges[key])
+            edges[new_key] = copy.deepcopy(edges[key])
     # add agents key
-    from itertools import chain
-    model["agents"] = dict(chain(model["objects"]["police"].items(), model["objects"]["medic"].items()))
+    model["agents"] = dict(itertools.chain(model["objects"]["police"].items(), model["objects"]["medic"].items()))
 
-    # create planners
-    central_planner = Planner(args.planning_time,
-                              decoder=decoder,
-                              problem_encoder=problem_encoder,
-                              domain_file=domain_template.format(model["domain"]))
-
-    local_planner = Planner(decimal.Decimal(10),
-                            decoder=decoder,
-                            problem_encoder=problem_encoder,
-                            domain_file=domain_template.format(model["domain"]))
+    # create planner
+    planner = Planner(args.planning_time,
+                      decoder=decoder,
+                      problem_encoder=problem_encoder,
+                      domain_file=domain_template.format(model["domain"]))
 
     # create and setup executors
-    police_executors = [PoliceExecutor(agent=agent_name, planning_time=local_planner.planning_time)
+    police_executors = [PoliceExecutor(agent=agent_name, planning_time=planner.planning_time)
                        for agent_name in model["objects"]["police"]]
-    medic_executors = [MedicExecutor(agent=agent_name, planning_time=local_planner.planning_time)
+    medic_executors = [MedicExecutor(agent=agent_name, planning_time=planner.planning_time)
                        for agent_name in model["objects"]["medic"]]
     agent_executors = police_executors + medic_executors
     event_executor = EventExecutor(events=model["events"])
-    allocator_executor = TaskAllocatorExecutor(
-        agent="allocator", planning_time=args.planning_time, executor_ids=[e.id for e in agent_executors],
-        agent_names=[e.agent for e in agent_executors], central_planner=central_planner, local_planner=local_planner,
-        event_executor=event_executor)
+    allocator_executor = TaskAllocatorExecutor(agent="allocator", planning_time=args.planning_time,
+                                               executor_ids=[e.id for e in agent_executors],
+                                               agent_names=[e.agent for e in agent_executors], planner=planner,
+                                               event_executor=event_executor)
 
     event_executor.central_executor_id = allocator_executor.id
     for e in agent_executors:

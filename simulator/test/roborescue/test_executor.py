@@ -25,8 +25,8 @@ class TestTaskAllocatorExecutor(TestCase):
         ids = [next(TaskAllocatorExecutor.ID_COUNTER) for _ in range(3)]
         names = list("abc")
         executor_cache.update(zip(ids, names))
-        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
-            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids, agent_names=names,
+                                         planner=None, event_executor=None)
 
         # then
         assert_that(list(executor._executors), contains_inanyorder(*names))
@@ -38,8 +38,8 @@ class TestTaskAllocatorExecutor(TestCase):
         names = list("abc")
         executors = list("xyz")
         executor_cache.update(zip(ids, executors))
-        e = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
-            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
+        e = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids, agent_names=names,
+                                  planner=None, event_executor=None)
 
         # then
         for name, executor in zip(names, executors):
@@ -48,8 +48,8 @@ class TestTaskAllocatorExecutor(TestCase):
 
     def test_compute_tasks_basic_goal_to_task(self):
         # given
-        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[],
-            agent_names=[], central_planner=None, local_planner=None, event_executor=None)
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[], agent_names=[],
+                                         planner=None, event_executor=None)
         goals = [["rescue", "civ0"]]
         events = []
         expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf")), value=CIVILIAN_VALUE)
@@ -64,8 +64,8 @@ class TestTaskAllocatorExecutor(TestCase):
 
     def test_compute_tasks_goal_to_task_with_deadline(self):
         # given
-        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[],
-            agent_names=[], central_planner=None, local_planner=None, event_executor=None)
+        executor = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=[], agent_names=[],
+                                         planner=None, event_executor=None)
         goals = [["rescue", "civ0"]]
         deadline = Decimal(1)
         events = [ObjectEvent(time=deadline, id_="civ0", predicates=[Predicate(name="alive", becomes=False)])]
@@ -87,8 +87,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         names = [chr(ord("A") + i) for i in ids]
         executors = [Mock(autospec=AgentExecutor, id=i, agent=name) for i, name in zip(ids, names)]
 
-        allocator = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids,
-            agent_names=names, central_planner=None, local_planner=None, event_executor=None)
+        allocator = TaskAllocatorExecutor(agent="allocator", planning_time=None, executor_ids=ids, agent_names=names,
+                                          planner=None, event_executor=None)
         allocator.id = -1
         TaskAllocatorExecutor.EXECUTORS.update((e.id, e) for e in executors + [allocator])
 
