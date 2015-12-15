@@ -172,12 +172,11 @@ class AgentExecutor(Executor):
             planner = self.central_executor.planner
             action_ = action_state.action
             try:
-                # subtract planning time to create "instantaneous" plan
                 new_plan, time_taken = planner.get_plan_and_time_taken(
                     model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
-                    metric=None, time=action_state.time - planner.planning_time,
+                    metric=None, time=action_state.time,
                     events=action_.local_events + self.central_executor.event_executor.known_events)
-                plan_action = action_.copy_with(plan=new_plan, duration=zero)
+                plan_action = action_.copy_with(plan=new_plan, duration=planner.planning_time)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
                 self.central_executor.notify_goal_realisation(self.extract_events(new_plan, action_.goals))
             except NoPlanException:
