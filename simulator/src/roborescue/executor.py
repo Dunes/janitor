@@ -206,19 +206,12 @@ class AgentExecutor(Executor):
         for change in changes:
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
-                    raise NotImplementedError("this code is wrong")
-                    goals = self.extract_goals(self.plan)
-                    events = self.extract_events(self.plan, as_start_time(time))
-                    if not goals:
-                        log.warning("{} has actions, but none are goal orientated -- not bothering to replan for "
-                                    "these goals", self.agent)
-                        self.plan = []
-                        return
-                    else:
-                        self.halt(time)
-                        self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                           local_events=events)])
-                        return
+                    self.central_executor.notify_planning_failure(self.id, time)
+                    return
+                    # self.halt(time)
+                    # self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=self.goals,
+                    #                        local_events=())])
+                    # return
 
     def new_plan(self, plan):
         self.plan = plan
