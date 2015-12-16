@@ -214,7 +214,7 @@ class ProblemEncoderTest(TestCase):
         # then
         self.assertEqual(expected, actual)
 
-    def test_encode_metric(self):
+    def test_encode_metric_generic(self):
         # given
         goals = [["rescued", "civ1"], ["rescued", "civ2"]]
         metric = {
@@ -226,6 +226,24 @@ class ProblemEncoderTest(TestCase):
             "(* 1 (total-time )  ) " \
             "(* 1000 (is-violated rescued-civ1 )  ) " \
             "(* 1000 (is-violated rescued-civ2 )  ) " \
+            ") ) \n"
+
+        # when
+        _encode_metric(self.out, metric, goals)
+        actual = self.out.getvalue()
+
+        self.assertEqual(expected, actual)
+
+    def test_encode_metric_specific(self):
+        # given
+        goals = [["rescued", "civ1"]]
+        metric = {
+            "type": "minimize",
+            "weights": {"soft-goal-violations": {("rescued", "civ1"): 1000}}
+        }
+        expected = "" \
+            "(:metric minimize (+ " \
+            "(* 1000 (is-violated rescued-civ1 )  ) " \
             ") ) \n"
 
         # when

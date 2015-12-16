@@ -139,13 +139,12 @@ def _encode_metric(out, metric, goals):
     out.write(metric["type"])
     out.write(" (+ ")
     weights = metric["weights"]
+    violations = weights["soft-goal-violations"]
     if "total-time" in weights:
         _encode_predicate(out, ["*", str(weights["total-time"]), ["total-time"]])
-    for goal_type, weight in weights.get("soft-goal-violations", {}).items():
-        weight = str(weight)
-        for goal in goals:
-            if goal[0] == goal_type:
-                _encode_predicate(out, ["*", weight, ["is-violated", "-".join(goal)]])
+    for goal in goals:
+        weight = violations.get(tuple(goal)) or violations[goal[0]]
+        _encode_predicate(out, ["*", weight, ["is-violated", "-".join(goal)]])
     out.write(") ) \n")
 
 
