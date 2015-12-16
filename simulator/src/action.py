@@ -118,14 +118,14 @@ class Plan(Action):
 
 class LocalPlan(Plan):
 
-    _format_attrs = ("start_time", "duration", "agent", "goals", "local_events", "failed")
+    _format_attrs = ("start_time", "duration", "agent", "goals", "metric", "failed")
 
-    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, local_events, failed=False):
+    def __init__(self, start_time, duration, agent=None, plan=None, *, goals, metric, failed=False):
         super(Plan, self).__init__(start_time, duration)
         object.__setattr__(self, "agent", agent if agent else Plan.agent)
         object.__setattr__(self, "plan", plan)
         object.__setattr__(self, "goals", goals)
-        object.__setattr__(self, "local_events", local_events)
+        object.__setattr__(self, "metric", metric)
         object.__setattr__(self, "failed", failed)
 
 

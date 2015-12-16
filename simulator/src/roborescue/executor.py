@@ -173,8 +173,8 @@ class AgentExecutor(Executor):
             action_ = action_state.action
             new_plan, time_taken = planner.get_plan_and_time_taken(
                 model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
-                metric=None, time=action_state.time,
-                events=action_.local_events + self.central_executor.event_executor.known_events)
+                metric=action_.metric, time=action_state.time,
+                events=self.central_executor.event_executor.known_events)
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
@@ -212,8 +212,9 @@ class AgentExecutor(Executor):
                 if action_.is_effected_by_change(change):
                     goals = [bid.task.goal for bid in self.won_bids]
                     self.halt(time)
+                    # No metric. Can either still complete all goals or not
                     self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                           local_events=[])])
+                                             metric=None)])
                     return
 
     def new_plan(self, plan):
@@ -485,6 +486,7 @@ class TaskAllocatorExecutor(Executor):
 
         bids = sorted(action_state.action.allocation, key=attrgetter("agent"))
         for agent, agent_bids in groupby(bids, key=attrgetter("agent")):
+            agent_bids = list(agent_bids)
             executor = self.executor_by_name(agent)
             if any(bid.requirements for bid in executor.won_bids):
                 start_time = delayed_start
@@ -496,7 +498,7 @@ class TaskAllocatorExecutor(Executor):
                 duration=self.planning_time,
                 agent=agent,
                 goals=[b.task.goal for b in agent_bids],
-                local_events=[]
+                metric=self.metric_from_goals([b.task for b in agent_bids], model["metric"])
             )])
 
         self.valid_plan = True
@@ -575,3 +577,10 @@ class TaskAllocatorExecutor(Executor):
 
     def notify_goal_realisation(self, events: "list[Event]"):
         self.event_executor.agent_based_events.extend(events)
+
+    def metric_from_goals(self, tasks: "list[Task]", base_metric):
+        metric = deepcopy(base_metric)
+        violations = metric["weights"]["soft-goal-violations"]
+        for task in tasks:
+            violations[tuple(task.goal.predicate)] = task.value
+        return metric

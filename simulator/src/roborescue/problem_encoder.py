@@ -22,6 +22,8 @@ def encode_problem(out, model, agent, goals, metric, time, events):
     _encode_init(out, object_values, model["graph"], model["assumed-values"], events, model, time)
 
     goals = [g.predicate for g in goals] if goals is not None else model["goal"]
+    if has_metric:
+        goals = {"soft-goals": goals}
     _encode_goal(out, goals)
 
     if has_metric:

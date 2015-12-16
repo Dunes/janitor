@@ -16,6 +16,7 @@ class ActionEncoder(JSONEncoder):
             d.pop("tils", None)  # remove extraneaous information associated with planning
             d.pop("goals", None)
             d.pop("plan", None)
+            d.pop("metric", None)
             return d
         elif isinstance(o, Event):
             d = dict(vars(o), id=o.id_, type=o.type)
