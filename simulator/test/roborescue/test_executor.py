@@ -98,7 +98,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         # given
         allocator, (executor,) = self.set_up_executors(1)
         tasks = [Task(Goal(predicate=("a",), deadline=ONE), ZERO), Task(Goal(predicate=("b",), deadline=ZERO), ZERO)]
-        bids = {t: Bid(agent=executor.agent, value=ONE, task=t, requirements=(), computation_time=ZERO) for t in tasks}
+        bids = {t: Bid(agent=executor.agent, estimated_endtime=ONE, additional_cost=ONE, task=t, requirements=(),
+                       computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
@@ -114,7 +115,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocator, (executor,) = self.set_up_executors(1)
         tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE)] * 2
         summed_tasks = Task.combine(tasks)
-        bid = Bid(agent=executor.agent, value=ZERO, task=summed_tasks, requirements=(), computation_time=ZERO)
+        bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=summed_tasks,
+                  requirements=(), computation_time=ZERO)
         bids = {summed_tasks: bid}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -130,7 +132,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         goal = Goal(predicate=("a",), deadline=ZERO)
         tasks = [Task(goal, ZERO), Task(goal, ONE)]
         summed_tasks = Task.combine(tasks)
-        bid = Bid(agent=executor.agent, value=ZERO, task=summed_tasks, requirements=(), computation_time=ZERO)
+        bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=summed_tasks,
+                  requirements=(), computation_time=ZERO)
         bids = {summed_tasks: bid}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -144,7 +147,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         # given
         allocator, (executor,) = self.set_up_executors(1)
         tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE), Task(Goal(predicate=("b",), deadline=ZERO), ONE)]
-        bids = {t: Bid(agent=executor.agent, value=ZERO, task=t, requirements=(), computation_time=ZERO) for t in tasks}
+        bids = {t: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=t, requirements=(),
+                       computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
         # when
@@ -164,8 +168,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         a_tasks = Task.combine([tasks[0], tasks[2]])
         b_task = tasks[1]
         bids = {
-            a_tasks: Bid(agent=executor.agent, value=ZERO, task=a_tasks, requirements=(), computation_time=ZERO),
-            b_task: Bid(agent=executor.agent, value=ZERO, task=b_task, requirements=(), computation_time=ZERO)
+            a_tasks: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=a_tasks,
+                         requirements=(), computation_time=ZERO),
+            b_task: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=b_task,
+                        requirements=(), computation_time=ZERO)
         }
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -184,10 +190,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         primary_task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
         secondary_task = Task(Goal(predicate=("b",), deadline=ONE), ZERO)
         bids = {
-            primary_task: Bid(agent=executor.agent, value=ZERO, task=primary_task, requirements=(secondary_task,),
-                              computation_time=ZERO),
-            secondary_task: Bid(agent=executor.agent, value=ZERO, task=secondary_task, requirements=(),
-                                computation_time=ZERO)
+            primary_task: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=primary_task,
+                              requirements=(secondary_task,), computation_time=ZERO),
+            secondary_task: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=secondary_task,
+                                requirements=(), computation_time=ZERO)
         }
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
 
@@ -206,10 +212,10 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         requiring_task = Task(Goal(predicate=("b",), deadline=ONE), ONE)
         tasks = [needed_twice_task, requiring_task]
 
-        needed_twice_bid = Bid(agent=executor.agent, value=ZERO, task=needed_twice_task, requirements=(),
-                               computation_time=ZERO)
-        requiring_bid = Bid(agent=executor.agent, value=ZERO, task=requiring_task, requirements=(needed_twice_task,),
-                            computation_time=ZERO)
+        needed_twice_bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO,
+                               task=needed_twice_task, requirements=(), computation_time=ZERO)
+        requiring_bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=requiring_task,
+                            requirements=(needed_twice_task,), computation_time=ZERO)
         executor.generate_bid.side_effect = [needed_twice_bid, requiring_bid]
 
         # when
@@ -224,7 +230,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
         task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
-        bids = [Bid(agent=e.agent, value=e.id * ten, task=task, requirements=(),
+        bids = [Bid(agent=e.agent, estimated_endtime=ZERO, additional_cost=e.id * ten, task=task, requirements=(),
                     computation_time=ZERO) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
@@ -233,14 +239,14 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         allocation, _ = allocator.compute_allocation([task], None, None)
 
         # then
-        assert_that(allocation, equal_to([min(bids, key=attrgetter("value"))]))
+        assert_that(allocation, equal_to([min(bids, key=attrgetter("additional_cost"))]))
 
     def test_compute_computation_time(self):
         # given
         ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
         task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
-        bids = [Bid(agent=e.agent, value=ZERO, task=task, requirements=(),
+        bids = [Bid(agent=e.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=task, requirements=(),
                     computation_time=e.id * ten) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
         executors[1].generate_bid.return_value = bids[1]
@@ -250,6 +256,42 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
 
         # then
         assert_that(time_taken, equal_to(max(b.computation_time for b in bids)))
+
+
+class TestAgentExecutor(TestCase):
+
+    def test_first_compute_bid_value(self):
+        # given
+        agent = MedicExecutor(agent="agent", planning_time=ZERO)
+        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=ONE)
+        plan = [Move(ZERO, Decimal(10), "agent", "x", "y")]
+
+        # when
+        result = agent.compute_bid_value(task, plan, ZERO)
+
+        # then
+        assert_that(result, equal_to(10))
+
+    def test_subsequent_compute_bid_value(self):
+        agent = MedicExecutor(agent="agent", planning_time=ZERO)
+        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"))
+        task = Task(goal=goal, value=ONE)
+        agent.notify_bid_won(Bid(
+            agent="agent",
+            estimated_endtime=Decimal(5),
+            additional_cost=Decimal(5),
+            task=task,
+            requirements=(),
+            computation_time=Decimal(0)
+        ))
+        plan = [Move(Decimal(10), Decimal(5), "agent", "x", "y")]
+
+        # when
+        result = agent.compute_bid_value(task, plan, ZERO)
+
+        # then
+        assert_that(result, equal_to(10))
 
 
 class TestMedicGenerateBid(TestCase):
@@ -272,7 +314,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.5")))
+        assert_that(bid.additional_cost, equal_to(ONE))
         assert_that(bid.requirements, equal_to(()))
 
     def test_two_length_plan(self):
@@ -293,7 +335,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.75")))
+        assert_that(bid.additional_cost, equal_to(Decimal(3)))
         assert_that(bid.requirements, equal_to(()))
 
     def test_generate_correct_requirements_from_plan(self):
@@ -315,9 +357,9 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.5")))
+        assert_that(bid.additional_cost, equal_to(ONE))
         expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
-                                    value=Decimal("0.5"))
+                                    value=ONE)
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_only_factor_in_blocked_edge_in_requirements(self):
@@ -341,9 +383,9 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.75")))
+        assert_that(bid.additional_cost, equal_to(Decimal(3)))
         expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
-                                    value=Decimal("0.75"))
+                                    value=Decimal(3))
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_value_requirements_equally(self):
@@ -367,10 +409,10 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.75")))
+        assert_that(bid.additional_cost, equal_to(Decimal(3)))
         expected_requirement = (
-            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("0.375")),
-            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("0.375")),
+            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("1.5")),
+            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("1.5")),
         )
         assert_that(bid.requirements, equal_to(expected_requirement))
 
@@ -392,28 +434,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.agent, equal_to("medic"))
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
-        assert_that(bid.value, equal_to(Decimal("0.5")))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=Decimal("0.5")),
+        assert_that(bid.additional_cost, equal_to(ONE))
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=ONE),
         assert_that(bid.requirements, equal_to(expected_requirement))
 
-    def test_bid_dependent_on_number_of_won_bids(self):
-        # given
-        medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        first_goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
-        second_goal = Goal(predicate=("rescued", "civ1"), deadline=Decimal("Infinity"))
-        first_task = Task(goal=first_goal, value=ONE)
-        second_task = Task(goal=second_goal, value=ONE)
-
-        model = ModelBuilder().with_edge("a", "b").model
-        plan = [Move(ZERO, ONE, "medic", "a", "b")]
-        time_taken = ONE
-        planner = Mock(**{"get_plan_and_time_taken.return_value": [plan, time_taken]})
-
-        # when
-        first_bid = medic.generate_bid(first_task, planner, model, ZERO, None)
-        medic.notify_bid_won(first_bid)
-        second_bid = medic.generate_bid(second_task, planner, model, ZERO, None)
-
-        # then
-        assert_that(first_bid.value, equal_to(Decimal("0.5")))
-        assert_that(second_bid.value, equal_to(ONE))

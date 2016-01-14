@@ -43,18 +43,20 @@ class Task(namedtuple("Task", "goal value")):
         return Task(goal=goal, value=sum(t.value for t in tasks))
 
 
-class Bid(namedtuple("Bid", "agent value task requirements computation_time")):
+class Bid(namedtuple("Bid", "agent estimated_endtime additional_cost task requirements computation_time")):
     """
     :type agent: str
-    :type value: decimal.Decimal
+    :type estimated_endtime: decimal.Decimal
+    :type additional_cost: decimal.Decimal
     :type task: Task
     :type requirements: tuple[Task]
     :type computation_time: decimal.Decimal
     """
-    def __init__(self, agent, value, task, requirements, computation_time):
+    def __init__(self, agent, estimated_endtime, additional_cost, task, requirements, computation_time):
         super().__init__()
         self.agent = agent
-        self.value = value
+        self.estimated_endtime = estimated_endtime
+        self.additional_cost = additional_cost
         self.task = task
         self.requirements = requirements
         self.computation_time = computation_time

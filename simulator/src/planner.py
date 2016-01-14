@@ -87,7 +87,7 @@ class Planner(object):
 
         if plan is not None:
             root, ext = splitext(basename(problem_file))
-            with open("logs/roborescue/plans/{}.plan".format(root), "w") as f:
+            with open(path_join(self.working_directory, "logs/roborescue/plans/{}.plan".format(root)), "w") as f:
                 f.write(repr(plan))
         return plan
 

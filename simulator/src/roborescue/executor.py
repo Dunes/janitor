@@ -244,7 +244,9 @@ class AgentExecutor(Executor):
         raise NotImplementedError
 
     def halt(self, time):
-        """halt all actions at current time"""
+        """halt all actions at current time
+        :param time: Decimal
+        """
         log.debug("halting {}", self.agent)
         self.halted = True
         self.plan = []
@@ -264,14 +266,13 @@ class AgentExecutor(Executor):
         self.won_bids.append(bid)
 
     def compute_bid_value(self, task: Task, plan: "list[Action]", time: Decimal) -> Decimal:
-        plan_length_discount = 1 - (1 / (self.get_plan_makespan(plan, time) + 1))
-        other_goals_cost = sum(bid.value for bid in self.won_bids)
-        return task.value * plan_length_discount + other_goals_cost
+        makespan = self.get_plan_makespan(plan, time)
+        if not self.won_bids:
+            return makespan
+        return makespan - self.won_bids[-1].estimated_endtime
 
     @staticmethod
     def get_plan_makespan(plan: "list[Action]", time: Decimal) -> Decimal:
-        if not plan:
-            return Decimal(0)
         return as_start_time(plan[-1].end_time) - time
 
 
@@ -306,7 +307,8 @@ class PoliceExecutor(AgentExecutor):
         )
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
-
+        if "rescued" in task.goal.predicate:
+            return None
         plan, time_taken = planner.get_plan_and_time_taken(
             model=model,
             duration=self.planning_time,
@@ -320,7 +322,8 @@ class PoliceExecutor(AgentExecutor):
             return None
 
         return Bid(agent=self.agent,
-                   value=self.compute_bid_value(task, plan, time),
+                   estimated_endtime=as_start_time(plan[-1].end_time),
+                   additional_cost=self.compute_bid_value(task, plan, time),
                    task=task,
                    requirements=(),
                    computation_time=time_taken)
@@ -370,11 +373,13 @@ class MedicExecutor(AgentExecutor):
         return model
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
+        if "edge" in task.goal.predicate:
+            return None
         plan, time_taken = planner.get_plan_and_time_taken(
             model=self.remove_blocks_from_model(model),
             duration=self.planning_time,
             agent=self.agent,
-            goals=[task.goal],
+            goals=[task.goal] + [b.task.goal for b in self.won_bids],
             metric=None,
             time=time - self.planning_time,  # instantaneous plan?
             events=events
@@ -396,7 +401,8 @@ class MedicExecutor(AgentExecutor):
             requirements = ()
 
         return Bid(agent=self.agent,
-                   value=bid_value,
+                   estimated_endtime=as_start_time(plan[-1].end_time),
+                   additional_cost=bid_value,
                    task=task,
                    requirements=requirements,
                    computation_time=time_taken)
@@ -564,7 +570,7 @@ class TaskAllocatorExecutor(Executor):
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
-            winning_bid = min(bids, key=attrgetter("value"))
+            winning_bid = min(bids, key=attrgetter("additional_cost"))
 
             # notify winner of winning bid
             allocation[winning_bid.task.goal] = winning_bid
