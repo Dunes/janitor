@@ -26,8 +26,10 @@ def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
     p.add_argument("--domain-file", "-d")
     p.add_argument("problem_file")
-    p.add_argument("--planning-time", "-t", type=decimal.Decimal, default="nan",
+    p.add_argument("--planning-time", "-t", type=decimal.Decimal, required=True,
         help="The amount of time to spend planning")
+    p.add_argument("--heuristic-planning-time", "-q", type=decimal.Decimal, required=True,
+        help="The amount of time to spend planning when computing bid values")
     p.add_argument("--log-directory", "-l", default="logs")
     return p
 
@@ -129,15 +131,14 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     model["agents"] = dict(itertools.chain(model["objects"]["police"].items(), model["objects"]["medic"].items()))
 
     # create planner
-    planner = Planner(args.planning_time,
-                      decoder=decoder,
+    planner = Planner(decoder=decoder,
                       problem_encoder=problem_encoder,
                       domain_file=domain_template.format(model["domain"]))
 
     # create and setup executors
-    police_executors = [PoliceExecutor(agent=agent_name, planning_time=planner.planning_time)
+    police_executors = [PoliceExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
                        for agent_name in model["objects"]["police"]]
-    medic_executors = [MedicExecutor(agent=agent_name, planning_time=planner.planning_time)
+    medic_executors = [MedicExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
                        for agent_name in model["objects"]["medic"]]
     agent_executors = police_executors + medic_executors
     event_executor = EventExecutor(events=model["events"])

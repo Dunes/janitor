@@ -172,7 +172,7 @@ class AgentExecutor(Executor):
             planner = self.central_executor.planner
             action_ = action_state.action
             new_plan, time_taken = planner.get_plan_and_time_taken(
-                model, duration=planner.planning_time, agent=self.agent, goals=action_.goals,
+                model, duration=action_.duration, agent=self.agent, goals=action_.goals,
                 metric=action_.metric, time=action_state.time,
                 events=self.central_executor.event_executor.known_events)
             if new_plan is not None:
@@ -213,8 +213,8 @@ class AgentExecutor(Executor):
                     goals = [bid.task.goal for bid in self.won_bids]
                     self.halt(time)
                     # No metric. Can either still complete all goals or not
-                    self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                             metric=None)])
+                    self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
+                                             self.agent, goals=goals, metric=None)])
                     return
 
     def new_plan(self, plan):

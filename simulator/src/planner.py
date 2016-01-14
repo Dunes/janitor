@@ -38,9 +38,8 @@ def synchronized(lock):
 
 class Planner(object):
 
-    def __init__(self, planning_time, decoder, problem_encoder, domain_file, planner_location="../optic-cplex",
+    def __init__(self, decoder, problem_encoder, domain_file, planner_location="../optic-cplex",
                  working_directory=".", encoding="UTF-8"):
-        self.planning_time = planning_time if not isnan(planning_time) else "till_first_plan"
         self.planner_location = planner_location
         self.domain_file = domain_file
         self.working_directory = working_directory
