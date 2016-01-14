@@ -12,7 +12,7 @@ from hamcrest import assert_that, is_not, has_item, equal_to, any_of
 from accuracy import as_next_end_time
 from janitor.action import Action, Clean
 from janitor import plan_decoder, problem_encoder
-from planner import Planner, NoPlanException, synchronized
+from planner import Planner, synchronized
 from pddl_parser import CleaningWindowTil
 from janitor.problem_encoder import _encode_predicate
 
@@ -56,8 +56,7 @@ agent_spec = {"agent": True, "available": True, "at": [True, "empty-rm1"]}
 class TestGetPlan(unittest.TestCase):
 
     def setUp(self):
-        self.planner = Planner(planning_time=10,
-                               decoder=plan_decoder,
+        self.planner = Planner(decoder=plan_decoder,
                                problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-domain.pddl")
@@ -178,8 +177,7 @@ class TestCleaningWindowTil(unittest.TestCase):
 class TestSingleAgentGetPlan(unittest.TestCase):
 
     def setUp(self):
-        self.planner = Planner(planning_time=10,
-                               decoder=plan_decoder,
+        self.planner = Planner(decoder=plan_decoder,
                                problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
@@ -244,8 +242,7 @@ class TestSingleAgentGetPlan(unittest.TestCase):
 class TestTilEffectsActionOrder(unittest.TestCase):
 
     def setUp(self):
-        self.planner = Planner(planning_time=10,
-                               decoder=plan_decoder,
+        self.planner = Planner(decoder=plan_decoder,
                                problem_encoder=problem_encoder,
                                planner_location="../../optic-cplex",
                                domain_file="../../janitor/janitor-single-domain.pddl")
