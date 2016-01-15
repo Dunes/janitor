@@ -385,7 +385,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(Decimal(3)))
         expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
-                                    value=Decimal(3))
+                                    value=Decimal(1))
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_value_requirements_equally(self):
@@ -411,8 +411,8 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(Decimal(3)))
         expected_requirement = (
-            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("1.5")),
-            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("1.5")),
+            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("0.5")),
+            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("0.5")),
         )
         assert_that(bid.requirements, equal_to(expected_requirement))
 

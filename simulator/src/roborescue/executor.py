@@ -391,7 +391,7 @@ class MedicExecutor(AgentExecutor):
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
         bid_value = self.compute_bid_value(task, plan, time)
         if blocked_edge_actions:
-            task_value = bid_value / len(blocked_edge_actions)
+            task_value = task.value / len(blocked_edge_actions)
             spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
             requirements = tuple(
                 Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time), value=task_value)
