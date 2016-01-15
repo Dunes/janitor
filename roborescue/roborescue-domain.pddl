@@ -1,6 +1,7 @@
 (define (domain roborescue)
 	(:requirements :strips :fluents :durative-actions :timed-initial-literals :adl :equality :typing :action-costs :preferences)
 	(:types
+	    predicate - object
 		moveable - object
 		agent civilian - moveable
 		police medic - agent
@@ -25,6 +26,9 @@
 		(alive ?c - civilian)
 		
 		(rescued ?c - civilian)
+		
+		(required ?p - predicate)
+		(cleared ?n1 ?n2 - node ?p - predicate)
 
 	)
 	
@@ -122,5 +126,16 @@
 			(at end (available ?m))
 		)
 	)
-
+	
+	(:durative-action clear
+		:parameters (?n1 - node ?n2 - node ?p - predicate)
+		:duration (= ?duration 0)
+		:condition (and 
+			(at start (edge ?n1 ?n2))
+			(at start (required ?p))
+		)
+		:effect (and
+			(at start (cleared ?n1 ?n2 ?p))
+		)
+	)
 )
