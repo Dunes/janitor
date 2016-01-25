@@ -1,12 +1,9 @@
-__author__ = 'jack'
-
 from action import Action, Plan, LocalPlan, GetExecutionHeuristic, as_end_time, \
     INSTANTANEOUS_ACTION_DURATION
 from .problem_encoder import find_object
 from planning_exceptions import ExecutionError
 
 from itertools import chain
-from abc import abstractmethod
 
 from logger import StyleAdapter
 from logging import getLogger
@@ -14,7 +11,7 @@ from logging import getLogger
 log = StyleAdapter(getLogger(__name__))
 
 __all__ = ["Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Unblock", "Unload", "Load", "Rescue",
-           "Observe"]
+           "Observe", "Clear"]
 
 
 class Move(Action):
@@ -464,3 +461,12 @@ class Allocate(Action):
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError
+
+
+class Clear(Action):
+    """
+    Dummy action that represents achieving the goal of clearing an edge at a specific time
+    """
+
+    def __new__(cls, start_time, duration, start_node, end_node, predicate):
+        return None

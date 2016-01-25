@@ -1,14 +1,13 @@
-__author__ = 'jack'
-
 from unittest import TestCase
 from io import StringIO
 from roborescue import plan_decoder
-from roborescue.action import Move, Rescue, Load, Unload, Unblock
+from roborescue.action import Move, Rescue, Load, Unload, Unblock, Clear
 
 
 class TestPlanDecoder(TestCase):
 
     plan_string = """0.000: (unblock police1 hospital1 building1)  [10.000]
+10.000: (clear hospital1 building1 cleared-hospital1-building1-0)  [0.000]
 10.001: (move medic1 hospital1 building1)  [50.000]
 60.002: (rescue medic1 civ2 building1)  [100.000]
 160.003: (rescue medic1 civ1 building1)  [100.000]
@@ -27,6 +26,7 @@ class TestPlanDecoder(TestCase):
         in_ = StringIO(self.plan_string)
         expected = [
             Unblock(0, 10, "police1", "hospital1", "building1"),
+            # Clear(10, 0, "hospital1", "building1", "cleared-hospital1-building1-0"), <-- should not appear
             Move(10, 50, "medic1", "hospital1", "building1"),
             Rescue(60, 100, "medic1", "civ2", "building1"),
             Rescue(160, 100, "medic1", "civ1", "building1"),

@@ -49,7 +49,8 @@ class PlanDecoder:
             action_name = items[1].strip("()")
             arguments = tuple(i.strip("()") for i in items[2:-2])
             action_ = self.action_map[action_name](start_time, duration, *arguments)
-            yield action_
+            if action_ is not None:
+                yield action_
         if report_incomplete_plan and line != "\n":
             raise IncompletePlanException("possible missing action")
 
