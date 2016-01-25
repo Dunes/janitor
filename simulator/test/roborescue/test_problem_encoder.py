@@ -1,11 +1,16 @@
 from unittest import TestCase
+from hamcrest import assert_that, equal_to
 from io import StringIO
 from collections import OrderedDict
+from decimal import Decimal
 
 from util.roborescue import make_bidirectional
 
-from roborescue.problem_encoder import (_encode_objects, _encode_init, _encode_graph, _collate_objects, _encode_goal,
-     _encode_metric, create_predicate)
+from roborescue.problem_encoder import (encode_objects, encode_init, encode_graph, collate_objects, encode_goal,
+                                        encode_metric, create_predicate, collate_object_types, encode_deadlines,
+                                        convert_goals)
+
+from roborescue.goal import Goal
 
 __author__ = 'jack'
 
@@ -14,31 +19,6 @@ class ProblemEncoderTest(TestCase):
 
     def setUp(self):
         self.out = StringIO()
-        """
-        {
-            'domain': 'roborescue',
-            'events': [{
-                'becomes': False,
-                'object': 'civ1',
-                'predicate': 'alive',
-                'time': 200
-            }],
-            'goal': {'soft-goals': [['rescued', 'civ1'], ['rescued', 'civ2']]},
-            'graph': {
-                'bidirectional': True,
-                'edges': {
-                    'building1 hospital1': {
-                        'known': {'distance': 50},
-                        'unknown': {'blocked-edge': {'actual': True}, 'blockedness': {'actual': 10, 'max': 100, 'min': 0}}
-                    }
-                }
-            },
-            'metric': {'type': 'minimize',
-            'weights': {'soft-goal-violations': {'rescued': 1000}, 'total-time': 1}},
-            'objects': "",
-            'problem': 'roborescue-problem-test'
-        }
-        """
 
     def test_encode_objects(self):
         # given
@@ -52,7 +32,7 @@ class ProblemEncoderTest(TestCase):
         expected = "(:objects building1 - building civ1 civ2 - civilian hospital1 - hospital medic1 - medic )\n"
 
         # when
-        _encode_objects(self.out, objects)
+        encode_objects(self.out, objects)
         actual = self.out.getvalue()
 
         # then
@@ -75,7 +55,7 @@ class ProblemEncoderTest(TestCase):
         ])
 
         # when
-        _encode_init(self.out, objects, {"edges": {}, "bidirectional": False}, assumed_values)
+        encode_init(self.out, objects, [], {"edges": {}, "bidirectional": False}, assumed_values)
         actual = self.out.getvalue()
 
         # then
@@ -105,7 +85,7 @@ class ProblemEncoderTest(TestCase):
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
         # when
-        _encode_graph(self.out, graph, assumed_values)
+        encode_graph(self.out, graph, assumed_values)
         actual = self.out.getvalue()
 
         # then
@@ -135,7 +115,7 @@ class ProblemEncoderTest(TestCase):
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
         # when
-        _encode_graph(self.out, graph, assumed_values)
+        encode_graph(self.out, graph, assumed_values)
         actual = self.out.getvalue()
 
         # then
@@ -165,7 +145,7 @@ class ProblemEncoderTest(TestCase):
         assumed_values = {"blocked-edge": False, "blockedness": "max"}
 
         # when
-        _encode_graph(self.out, graph, assumed_values)
+        encode_graph(self.out, graph, assumed_values)
         actual = self.out.getvalue()
 
         # then
@@ -193,22 +173,74 @@ class ProblemEncoderTest(TestCase):
         }
 
         # when
-        actual = _collate_objects(objects, agent="all")
+        actual = collate_objects(objects, agent="all")
 
         # then
         self.assertEqual(expected, actual)
 
-    def test_encode_soft_goal(self):
+    def test_encode_rescued_goal(self):
         # given
-        goals = {"soft-goals": [["rescued", "civ1"], ["rescued", "civ2"]]}
+        goals = convert_goals([
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf")),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"))],
+            False)
         expected = "" \
             "(:goal (and " \
-            "(preference rescued-civ1 (rescued civ1 )  ) " \
-            "(preference rescued-civ2 (rescued civ2 )  ) " \
+            "(rescued civ1 ) " \
+            "(rescued civ2 ) " \
             "))\n"
 
         # when
-        _encode_goal(self.out, goals)
+        encode_goal(self.out, goals)
+        actual = self.out.getvalue()
+
+        # then
+        self.assertEqual(expected, actual)
+
+    def test_encode_rescued_preference(self):
+        # given
+        goals = convert_goals([
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf")),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"))],
+            True)
+        expected = "" \
+            "(:goal (and " \
+            "(preference pref-rescued-civ1-Infinity (rescued civ1 )  ) " \
+            "(preference pref-rescued-civ2-Infinity (rescued civ2 )  ) " \
+            "))\n"
+
+        # when
+        encode_goal(self.out, goals)
+        actual = self.out.getvalue()
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_encode_edge_preference_with_deadline(self):
+        # given
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], True)
+        expected = "" \
+            "(:goal (and " \
+            "(preference pref-cleared-x-y-0 (cleared x y cleared-x-y-0 )  ) " \
+            "))\n"
+
+        # when
+        encode_goal(self.out, goals)
+        actual = self.out.getvalue()
+
+        # then
+        self.assertEqual(expected, actual)
+
+    def test_encode_edge_goal_with_deadline(self):
+        # given
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], False)
+        expected = "" \
+            "(:goal (and " \
+            "(cleared x y cleared-x-y-0 ) " \
+            "))\n"
+
+        # when
+        encode_goal(self.out, goals)
         actual = self.out.getvalue()
 
         # then
@@ -229,7 +261,7 @@ class ProblemEncoderTest(TestCase):
             ") ) \n"
 
         # when
-        _encode_metric(self.out, metric, goals)
+        encode_metric(self.out, metric, goals)
         actual = self.out.getvalue()
 
         self.assertEqual(expected, actual)
@@ -247,7 +279,7 @@ class ProblemEncoderTest(TestCase):
             ") ) \n"
 
         # when
-        _encode_metric(self.out, metric, goals)
+        encode_metric(self.out, metric, goals)
         actual = self.out.getvalue()
 
         self.assertEqual(expected, actual)
@@ -299,3 +331,167 @@ class TestCreatePredicate(TestCase):
 
         # then
         self.assertEqual(("=", (predicate_name, object_name), 10), actual)
+
+
+class TestDeadlineEncoding(TestCase):
+
+    def test_collate_object_types(self):
+        # given
+        objects = {"some_type": OrderedDict([("some_object_id0", "some_object"), ("some_object_id1", "some_object")])}
+        goals = convert_goals([Goal(predicate=("some_predicate",), deadline=Decimal(0))], True)
+        expected = {
+            "some_type": ["some_object_id0", "some_object_id1"],
+            "predicate": ["some_predicate-0"]
+        }
+
+        # when
+        actual = collate_object_types(objects, goals)
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_collate_object_types_only_adds_for_non_rescue_goals(self):
+        # given
+        objects = {}
+        goals = convert_goals([
+            Goal(predicate=("rescued", "civ0",), deadline=Decimal(0)),
+            Goal(predicate=("some_predicate",), deadline=Decimal(0)),
+            Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))],
+            True)
+        expected = {
+            "predicate": ["some_predicate-0", "cleared-x-y-0"]
+        }
+
+        # when
+        actual = collate_object_types(objects, goals)
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_encode_objects_with_predicates(self):
+        # given
+        objects = {"predicate": ["some_predicate-150"]}
+        expected = "(:objects some_predicate-150 - predicate )\n"
+        out = StringIO()
+
+        # when
+        encode_objects(out, objects)
+        actual = out.getvalue()
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_encode_goals_with_finite_deadlines(self):
+        # given
+        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal(0))], True)
+        out = StringIO()
+        expected = "(required predicate-0 ) (at 0 (not (required predicate-0 )  )  ) "
+
+        # when
+        encode_deadlines(out, goals)
+        actual = out.getvalue()
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_encode_goals_with_infinite_deadlines(self):
+        # given
+        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal("inf"))], True)
+        out = StringIO()
+        expected = "(required predicate-Infinity ) "
+
+        # when
+        encode_deadlines(out, goals)
+        actual = out.getvalue()
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+    def test_encode_goals_without_explicit_deadlines(self):
+        # given
+        goals = convert_goals([Goal(predicate=("rescued", "civ0"), deadline=Decimal("inf"))], True)
+        out = StringIO()
+        expected = ""
+
+        # when
+        encode_deadlines(out, goals)
+        actual = out.getvalue()
+
+        # then
+        assert_that(actual, equal_to(expected))
+
+
+class ConvertGoalsTest(TestCase):
+
+    def test_goal_to_pddl_predicate_finite(self):
+        # given
+        goal = Goal(predicate=("predicate",), deadline=Decimal(0))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.predicate_name, equal_to("predicate-0"))
+
+    def test_goal_to_pddl_predicate_infinite(self):
+        # given
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.predicate_name, equal_to("predicate-Infinity"))
+
+    def test_goal_to_pddl_predicate_compound(self):
+        # given
+        goal = Goal(predicate=("complex", "predicate"), deadline=Decimal(0))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.predicate_name, equal_to("complex-predicate-0"))
+
+    def test_passes_through_use_preferences(self):
+        # given
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+
+        # when
+        actual_soft_goal, = convert_goals([goal], True)
+        actual_hard_goal, = convert_goals([goal], False)
+
+        # then
+        assert_that(actual_soft_goal.preference, equal_to(True))
+        assert_that(actual_hard_goal.preference, equal_to(False))
+
+    def test_rescue_goal_has_no_explicit_deadline(self):
+        # given
+        goal = Goal(predicate=("rescued",), deadline=Decimal("inf"))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.explicit_deadline, equal_to(False))
+
+    def test_non_rescue_goal_has_explicit_deadline(self):
+        # given
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.explicit_deadline, equal_to(True))
+
+    def test_edge_converted_to_cleared(self):
+        # given
+        goal = Goal(predicate=("edge", "x", "y"), deadline=Decimal("inf"))
+
+        # when
+        actual, = convert_goals([goal], True)
+
+        # then
+        assert_that(actual.goal.predicate, equal_to(("cleared", "x", "y")))
+
