@@ -82,6 +82,19 @@ class Executor(metaclass=ABCMeta):
         for action in plan:
             yield action
 
+    @staticmethod
+    def goals_and_metric_from_tasks(tasks, base_metric):
+        """
+        :param tasks: list[Task]
+        :param base_metric: dict
+        :return: (list[Goal], dict[Goal, Decimal])
+        """
+        goals = [task.goal for task in tasks]
+        metric = deepcopy(base_metric)
+        violations = metric["weights"]["soft-goal-violations"]
+        violations.update((task.goal, task.value) for task in tasks)
+        return goals, metric
+
 
 class EventExecutor(Executor):
     def __init__(self, *, events, central_executor_id=None):
@@ -211,6 +224,7 @@ class AgentExecutor(Executor):
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
                     goals = [bid.task.goal for bid in self.won_bids]
+                    raise NotImplementedError("need to create metric from tasks")
                     self.halt(time)
                     # No metric. Can either still complete all goals or not
                     self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
@@ -309,12 +323,13 @@ class PoliceExecutor(AgentExecutor):
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
         if "rescued" in task.goal.predicate:
             return None
+        goals, metric = self.goals_and_metric_from_tasks([task], model["metric"])
         plan, time_taken = planner.get_plan_and_time_taken(
             model=model,
             duration=self.planning_time,
             agent=self.agent,
-            goals=[task.goal],
-            metric=None,
+            goals=goals,
+            metric=metric,
             time=time,
             events=events
         )
@@ -375,12 +390,14 @@ class MedicExecutor(AgentExecutor):
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
         if "edge" in task.goal.predicate:
             return None
+        tasks = [task] + [b.task for b in self.won_bids]
+        goals, metric = self.goals_and_metric_from_tasks(tasks, model["metric"])
         plan, time_taken = planner.get_plan_and_time_taken(
             model=self.remove_blocks_from_model(model),
             duration=self.planning_time,
             agent=self.agent,
-            goals=[task.goal] + [b.task.goal for b in self.won_bids],
-            metric=None,
+            goals=goals,
+            metric=metric,
             time=time - self.planning_time,  # instantaneous plan?
             events=events
         )
@@ -499,12 +516,13 @@ class TaskAllocatorExecutor(Executor):
             else:
                 start_time = plan_start
 
+            goals, metric = self.goals_and_metric_from_tasks([b.task for b in agent_bids], model["metric"])
             executor.new_plan([LocalPlan(
                 start_time=start_time,
                 duration=self.planning_time,
                 agent=agent,
-                goals=[b.task.goal for b in agent_bids],
-                metric=self.metric_from_goals([b.task for b in agent_bids], model["metric"])
+                goals=goals,
+                metric=metric
             )])
 
         self.valid_plan = True
@@ -583,10 +601,3 @@ class TaskAllocatorExecutor(Executor):
 
     def notify_goal_realisation(self, events: "list[Event]"):
         self.event_executor.agent_based_events.extend(events)
-
-    def metric_from_goals(self, tasks: "list[Task]", base_metric):
-        metric = deepcopy(base_metric)
-        violations = metric["weights"]["soft-goal-violations"]
-        for task in tasks:
-            violations[tuple(task.goal.predicate)] = task.value
-        return metric

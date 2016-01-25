@@ -11,7 +11,11 @@ class ModelBuilder(object):
 
     def __init__(self, ordered=False, bidirectional=True, assumed_values=None):
         dict_type = OrderedDict if ordered else dict
-        self.model = {"objects": dict_type(), "graph": {"edges": dict_type()}}
+        self.model = {
+            "objects": dict_type(),
+            "graph": {"edges": dict_type()},
+            "metric": {"weights": {"soft-goal-violations": dict_type()}}
+        }
         self.bidirectional = bidirectional
         if assumed_values is not None:
             self.model["assumed-values"] = assumed_values

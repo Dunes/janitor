@@ -248,7 +248,11 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_metric_generic(self):
         # given
-        goals = [["rescued", "civ1"], ["rescued", "civ2"]]
+        goals = convert_goals([
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal(0)),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal(0))
+        ], False)
+
         metric = {
             "type": "minimize",
             "weights": {"total-time": 1, "soft-goal-violations": {"rescued": 1000}}
@@ -256,8 +260,8 @@ class ProblemEncoderTest(TestCase):
         expected = "" \
             "(:metric minimize (+ " \
             "(* 1 (total-time )  ) " \
-            "(* 1000 (is-violated rescued-civ1 )  ) " \
-            "(* 1000 (is-violated rescued-civ2 )  ) " \
+            "(* 1000 (is-violated pref-rescued-civ1-0 )  ) " \
+            "(* 1000 (is-violated pref-rescued-civ2-0 )  ) " \
             ") ) \n"
 
         # when
@@ -268,14 +272,32 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_metric_specific(self):
         # given
-        goals = [["rescued", "civ1"]]
+        goals = convert_goals([Goal(predicate=("rescued", "civ1"), deadline=Decimal(0))], False)
         metric = {
             "type": "minimize",
-            "weights": {"soft-goal-violations": {("rescued", "civ1"): 1000}}
+            "weights": {"soft-goal-violations": {goals[0].goal: 1000}}
         }
         expected = "" \
             "(:metric minimize (+ " \
-            "(* 1000 (is-violated rescued-civ1 )  ) " \
+            "(* 1000 (is-violated pref-rescued-civ1-0 )  ) " \
+            ") ) \n"
+
+        # when
+        encode_metric(self.out, metric, goals)
+        actual = self.out.getvalue()
+
+        self.assertEqual(expected, actual)
+
+    def test_encode_metric_edge(self):
+        # given
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], False)
+        metric = {
+            "type": "minimize",
+            "weights": {"soft-goal-violations": {"edge": 1000}}
+        }
+        expected = "" \
+            "(:metric minimize (+ " \
+            "(* 1000 (is-violated pref-cleared-x-y-0 )  ) " \
             ") ) \n"
 
         # when

@@ -39,6 +39,12 @@ class PddlGoal:
     def predicate_name(self):
         return "-".join(self.goal.predicate + (str(self.goal.deadline),))
 
+    @property
+    def key(self):
+        if self.goal.predicate[0] == "cleared":
+            return self.goal._replace(predicate=("edge",) + self.goal.predicate[1:])
+        return self.goal
+
 
 def encode_problem_to_file(filename, model, agent, goals, metric, time, events):
     with get_text_file_handle(filename) as fh:
@@ -90,7 +96,7 @@ def encode_init(out, objects, goals, graph, assumed_values, events=None, model=N
                 use_preferences=None):
     out.write("(:init ")
     encode_init_helper(out, objects, assumed_values)
-    if not use_preferences:
+    if use_preferences:
         encode_deadlines(out, goals)
     encode_events(out, events, time, model)
     encode_graph(out, graph, assumed_values)
@@ -184,8 +190,8 @@ def encode_metric(out, metric, goals):
     if "total-time" in weights:
         encode_predicate(out, ["*", str(weights["total-time"]), ["total-time"]])
     for goal in goals:
-        weight = violations.get(tuple(goal)) or violations[goal[0]]
-        encode_predicate(out, ["*", weight, ["is-violated", "-".join(goal)]])
+        weight = violations.get(goal.key) or violations[goal.key.predicate[0]]
+        encode_predicate(out, ["*", weight, ["is-violated", goal.preference_name]])
     out.write(") ) \n")
 
 
