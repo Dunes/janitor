@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from util.roborescue.builder import ModelBuilder
 
-from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, CIVILIAN_VALUE
+from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor
 from roborescue.goal import Goal, Task, Bid
 from roborescue.action import Move
 from roborescue.event import ObjectEvent, Predicate
@@ -52,11 +52,12 @@ class TestTaskAllocatorExecutor(TestCase):
                                          planner=None, event_executor=None)
         goals = [["rescue", "civ0"]]
         events = []
-        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf")), value=CIVILIAN_VALUE)
+        value = Decimal(1000)
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf")), value=value)
         model = ModelBuilder().with_object("civ0").model
 
         # when
-        tasks = executor.compute_tasks(goals, events, model["objects"], ZERO)
+        tasks = executor.compute_tasks(goals, value, events, model["objects"], ZERO)
 
         # then
         assert_that(tasks, has_length(1))
@@ -68,12 +69,13 @@ class TestTaskAllocatorExecutor(TestCase):
                                          planner=None, event_executor=None)
         goals = [["rescue", "civ0"]]
         deadline = Decimal(1)
+        value = Decimal(1000)
         events = [ObjectEvent(time=deadline, id_="civ0", predicates=[Predicate(name="alive", becomes=False)])]
-        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=deadline), value=CIVILIAN_VALUE)
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=deadline), value=value)
         model = ModelBuilder().with_object("civ0").model
 
         # when
-        tasks = executor.compute_tasks(goals, events, model["objects"], ZERO)
+        tasks = executor.compute_tasks(goals, value, events, model["objects"], ZERO)
 
         # then
         assert_that(tasks, has_length(1))

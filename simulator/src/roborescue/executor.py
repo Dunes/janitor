@@ -22,9 +22,6 @@ __author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
 
 
-CIVILIAN_VALUE = Decimal(1000)
-
-
 class Executor(metaclass=ABCMeta):
 
     ID_COUNTER = count()
@@ -377,7 +374,8 @@ class MedicExecutor(AgentExecutor):
                     events.append(self.create_rescue_civilian_event(as_start_time(r.end_time), target))
                     break
             else:
-                raise ValueError("no matching Rescue for goal: {}".format(goal))
+                log.info("abandoning {} as not found in plan.".format(goal))
+                # raise ValueError("no matching Rescue for goal: {}".format(goal))
 
         return events
 
@@ -510,14 +508,25 @@ class TaskAllocatorExecutor(Executor):
             e.halt(action_state.time)
         self.event_executor.agent_based_events.clear()
 
-        tasks = self.compute_tasks(model["goal"]["soft-goals"], model["events"], model["objects"], action_state.time)
+        tasks = self.compute_tasks(model["goal"]["soft-goals"],
+                                   model["metric"]["weights"]["soft-goal-violations"]["rescued"],
+                                   model["events"], model["objects"], action_state.time)
         if not tasks:
+            log.info("All goals are in the past or achieved -- halting")
             # nothing more to do
             self.valid_goals = False
             self.executing = None
             return
 
         allocation, computation_time = self.compute_allocation(tasks, model, action_state.time)
+
+        if not allocation:
+            log.info("No goal can be achieved -- halting")
+            # nothing more that can be done
+            self.valid_goals = False
+            self.executing = None
+            return
+
         action_ = action_state.action.copy_with(allocation=allocation, duration=computation_time)
         self.executing = ActionState(action_).start()
 
@@ -562,7 +571,7 @@ class TaskAllocatorExecutor(Executor):
             self.EXECUTORS[e_id].halt(time)
 
     @staticmethod
-    def compute_tasks(goals, events, objects, time):
+    def compute_tasks(goals, value, events, objects, time):
         """
         Takes a set of goals and events from a model and computes a list of Tasks for it
         :param goals:
@@ -586,8 +595,9 @@ class TaskAllocatorExecutor(Executor):
                 deadline = Decimal("inf")
             if deadline <= time:
                 # deadline already elapsed -- cannot achieve this goal
+                log.info("deadline for rescuing {!r} already elapsed".format(civ_id))
                 continue
-            t = Task(Goal(tuple(g), deadline), CIVILIAN_VALUE)
+            t = Task(Goal(tuple(g), deadline), value)
             tasks.append(t)
         return tasks
 
@@ -609,6 +619,10 @@ class TaskAllocatorExecutor(Executor):
             bids = [e.generate_bid(task, self.planner, model, time, self.event_executor.known_events)
                     for e in self._executors]
             bids = [b for b in bids if b is not None]  # filter out failed bids
+
+            if not bids:
+                continue
+                # raise ValueError("no bids for {}".format(task))
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
