@@ -6,11 +6,11 @@ from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 
-from .action import Action, Plan, LocalPlan, Observe, Move, Unblock, Unload, Rescue, EventAction, Allocate
-from action_state import ActionState, ExecutionState
+from .action import Action, Plan, LocalPlan, Observe, Move, Unblock, Rescue, EventAction, Allocate
+from action_state import ActionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError
-from accuracy import as_start_time, as_next_end_time, zero
+from accuracy import as_start_time
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
 from roborescue.event import Event, EdgeEvent, ObjectEvent, Predicate
@@ -83,17 +83,16 @@ class Executor(metaclass=ABCMeta):
             yield action
 
     @staticmethod
-    def goals_and_metric_from_tasks(tasks, base_metric):
+    def get_metric_from_tasks(tasks, base_metric):
         """
         :param tasks: list[Task]
         :param base_metric: dict
-        :return: (list[Goal], dict[Goal, Decimal])
+        :return: dict[Goal, Decimal]
         """
-        goals = [task.goal for task in tasks]
         metric = deepcopy(base_metric)
         violations = metric["weights"]["soft-goal-violations"]
         violations.update((task.goal, task.value) for task in tasks)
-        return goals, metric
+        return metric
 
 
 class EventExecutor(Executor):
@@ -157,7 +156,7 @@ class AgentExecutor(Executor):
 
     def copy(self):
         raise TypeError("copying not implemented")
-        log.debug("Executor.copy()")
+        # log.debug("Executor.copy()")
 
     @property
     def deadline(self):
@@ -223,13 +222,13 @@ class AgentExecutor(Executor):
         for change in changes:
             for action_ in self.plan:
                 if action_.is_effected_by_change(change):
-                    goals = [bid.task.goal for bid in self.won_bids]
                     raise NotImplementedError("need to create metric from tasks")
-                    self.halt(time)
-                    # No metric. Can either still complete all goals or not
-                    self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
-                                             self.agent, goals=goals, metric=None)])
-                    return
+                    # goals = [bid.task.goal for bid in self.won_bids]
+                    # self.halt(time)
+                    # # No metric. Can either still complete all goals or not
+                    # self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
+                    #                          self.agent, goals=goals, metric=None)])
+                    # return
 
     def new_plan(self, plan):
         self.plan = plan
@@ -249,7 +248,7 @@ class AgentExecutor(Executor):
         raise NotImplementedError
 
     @abstractmethod
-    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
+    def extract_events(self, plan, goals):
         """
         :param plan: list[Action]
         :param goals: list[Goal]
@@ -279,20 +278,37 @@ class AgentExecutor(Executor):
     def notify_bid_won(self, bid: Bid):
         self.won_bids.append(bid)
 
-    def compute_bid_value(self, task: Task, plan: "list[Action]", time: Decimal) -> Decimal:
+    def compute_bid_value(self, task, plan, time):
+        """
+        :param task: Task
+        :param plan: list[Action]
+        :param time: Decimal
+        :return: Decimal
+        """
         makespan = self.get_plan_makespan(plan, time)
         if not self.won_bids:
             return makespan
         return makespan - self.won_bids[-1].estimated_endtime
 
     @staticmethod
-    def get_plan_makespan(plan: "list[Action]", time: Decimal) -> Decimal:
+    def get_plan_makespan(plan, time):
+        """
+        :param plan: list[Action]
+        :param time: Decimal
+        :return: Decimal
+        """
         return as_start_time(plan[-1].end_time) - time
 
 
 class PoliceExecutor(AgentExecutor):
 
-    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
+    def extract_events(self, plan, goals):
+        """
+
+        :param plan: list[Action]
+        :param goals: list[Goal]
+        :return: list[Event]
+        """
         events = []
         unblocks = [(a, {a.start_node, a.end_node}) for a in plan if isinstance(a, Unblock)]
         edges = set(frozenset(g.predicate[1:]) for g in goals)
@@ -323,13 +339,12 @@ class PoliceExecutor(AgentExecutor):
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
         if "rescued" in task.goal.predicate:
             return None
-        goals, metric = self.goals_and_metric_from_tasks([task], model["metric"])
         plan, time_taken = planner.get_plan_and_time_taken(
             model=model,
             duration=self.planning_time,
             agent=self.agent,
-            goals=goals,
-            metric=metric,
+            goals=[task.goal] + [b.task.goal for b in self.won_bids],
+            metric=None,
             time=time,
             events=events
         )
@@ -346,7 +361,13 @@ class PoliceExecutor(AgentExecutor):
 
 class MedicExecutor(AgentExecutor):
 
-    def extract_events(self, plan: "list[Action]", goals: "list[Goal]") -> "list[Event]":
+    def extract_events(self, plan, goals):
+        """
+
+        :param plan: list[Action]
+        :param goals: list[Goal]
+        :return: list[Event]
+        """
         events = []
         rescues = [a for a in plan if isinstance(a, Rescue)]
         for goal in goals:
@@ -390,14 +411,12 @@ class MedicExecutor(AgentExecutor):
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
         if "edge" in task.goal.predicate:
             return None
-        tasks = [task] + [b.task for b in self.won_bids]
-        goals, metric = self.goals_and_metric_from_tasks(tasks, model["metric"])
         plan, time_taken = planner.get_plan_and_time_taken(
             model=self.remove_blocks_from_model(model),
             duration=self.planning_time,
             agent=self.agent,
-            goals=goals,
-            metric=metric,
+            goals=[task.goal] + [b.task.goal for b in self.won_bids],
+            metric=None,
             time=time - self.planning_time,  # instantaneous plan?
             events=events
         )
@@ -443,7 +462,11 @@ class TaskAllocatorExecutor(Executor):
         raise NotImplementedError
 
     @property
-    def _executors(self) -> "list[AgentExecutor]":
+    def _executors(self):
+        """
+
+        :return: "list[AgentExecutor]"
+        """
         for executor_id in self.executor_ids:
             yield self.EXECUTORS[executor_id]
 
@@ -516,7 +539,8 @@ class TaskAllocatorExecutor(Executor):
             else:
                 start_time = plan_start
 
-            goals, metric = self.goals_and_metric_from_tasks([b.task for b in agent_bids], model["metric"])
+            goals = [b.task.goal for b in agent_bids]
+            metric = self.get_metric_from_tasks([b.task for b in agent_bids], model["metric"])
             executor.new_plan([LocalPlan(
                 start_time=start_time,
                 duration=self.planning_time,
@@ -538,7 +562,7 @@ class TaskAllocatorExecutor(Executor):
             self.EXECUTORS[e_id].halt(time)
 
     @staticmethod
-    def compute_tasks(goals, events: "list[Event]", objects, time):
+    def compute_tasks(goals, events, objects, time):
         """
         Takes a set of goals and events from a model and computes a list of Tasks for it
         :param goals:

@@ -62,7 +62,7 @@ def encode_problem(out, model, agent, goals, metric, time, events):
     encode_preamble(out, "problem-name", model["domain"], use_preferences)
     encode_objects(out, objects)
     encode_init(out, object_values, goals, model["graph"], model["assumed-values"], events, model, time,
-                use_preferences)
+                "predicate" in objects)
     encode_goal(out, goals)
     if metric is not None:
         encode_metric(out, metric, goals)
@@ -93,10 +93,10 @@ def encode_objects(out, objects):
 
 
 def encode_init(out, objects, goals, graph, assumed_values, events=None, model=None, time=None,
-                use_preferences=None):
+                predicates=None):
     out.write("(:init ")
     encode_init_helper(out, objects, assumed_values)
-    if use_preferences:
+    if predicates:
         encode_deadlines(out, goals)
     encode_events(out, events, time, model)
     encode_graph(out, graph, assumed_values)
