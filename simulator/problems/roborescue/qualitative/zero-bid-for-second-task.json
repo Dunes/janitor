@@ -1,0 +1,111 @@
+{
+    "assumed-values": {},
+    "domain": "roborescue",
+    "events": [
+        {
+        	"type": "object",
+            "time": 1000,
+            "id": "civ0",
+            "hidden": false,
+            "predicates": [{"name": "alive", "becomes": false}]
+        }
+    ],
+    "goal": {
+        "soft-goals": [
+            [
+                "rescued",
+                "civ0"
+            ],
+            [
+                "rescued",
+                "civ1"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": {
+            "hospital0-0 building0-1": {
+                "known": {
+                    "distance": 120,
+                    "edge": false,
+                    "blocked-edge": true,
+                    "blockedness": 300
+                },
+                "unknown": {}
+            },
+            "building0-1 hospital0-0": {
+                "known": {
+                    "distance": 120,
+                    "edge": false,
+                    "blocked-edge": true,
+                    "blockedness": 300
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "metric": {
+        "type": "minimize",
+        "weights": {
+            "soft-goal-violations": {
+                "rescued": 100000
+            },
+            "total-time": 1
+        }
+    },
+    "objects": {
+        "building": {
+            "building0-1": {}
+        },
+        "civilian": {
+            "civ0": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building0-1"
+                    ],
+                    "buried": true,
+                    "buriedness": 120
+                },
+                "unknown": {}
+            },
+            "civ1": {
+                "known": {
+                    "alive": true,
+                    "at": [
+                        true,
+                        "building0-1"
+                    ],
+                    "buried": true,
+                    "buriedness": 120
+                },
+                "unknown": {}
+            }
+        },
+        "hospital": {
+            "hospital0-0": {}
+        },
+        "medic": {
+            "medic0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true,
+                "empty": true
+            }
+        },
+        "police": {
+            "police0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true
+            }
+        }
+    },
+    "problem": "zero-bid-by-police-for-second-task"
+}
