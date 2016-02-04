@@ -104,6 +104,10 @@ class Simulator:
             elif not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agent, action_state.action)
                 log.error("agent state: {}", self.model["agents"][action_state.action.agent])
+                # remove from here
+                if isinstance(action_state.action, Rescue):
+                    log.error("civilian state: {}", self.model["objects"]["civilian"][action_state.action.target])
+                # to here
                 if hasattr(action_state.action, "room"):
                     log.error("room state: {}", self.model["nodes"][action_state.action.room])
                 # agents should never stall when they are in charge of replanning locally.
