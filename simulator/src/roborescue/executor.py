@@ -6,15 +6,14 @@ from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 
-from .action import Action, Plan, LocalPlan, Observe, Move, Unblock, Rescue, EventAction, Allocate \
-    , Load, Unload
+from .action import Plan, LocalPlan, Observe, Move, Unblock, EventAction, Allocate
 from action_state import ActionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError
 from accuracy import as_start_time
 from priority_queue import PriorityQueue
 from roborescue.goal import Goal, Task, Bid
-from roborescue.event import Event, EdgeEvent, ObjectEvent, Predicate
+from roborescue.event import EdgeEvent, ObjectEvent, Predicate
 from planner import Planner
 from .problem_encoder import find_object
 
@@ -100,8 +99,8 @@ class EventExecutor(Executor):
         time = attrgetter("time")
         self.events = sorted(events, key=time)
         self.event_actions = []
-        for t, evts in groupby(self.events, key=time):
-            self.event_actions.append(EventAction(time=t, events=tuple(evts)))
+        for t, events_ in groupby(self.events, key=time):
+            self.event_actions.append(EventAction(time=t, events=tuple(events_)))
         self.agent_based_events = []
 
     @property
@@ -144,6 +143,8 @@ class EventExecutor(Executor):
 
 class AgentExecutor(Executor):
 
+    type_ = None
+
     def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), central_executor_id=None,
                  halted=False):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
@@ -181,16 +182,12 @@ class AgentExecutor(Executor):
         if isinstance(action_state.action, LocalPlan):
             planner = self.central_executor.planner
             action_ = action_state.action
-            # remove from here
-            if action_state.action.agent == "medic1":
-                time_taken = Decimal("0.1")
-                new_plan = [Move(start_time=Decimal('15'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Rescue(start_time=Decimal('135'), duration=Decimal('60'), agent='medic1', target='civ1', node='building0-1'), Load(start_time=Decimal('195'), duration=Decimal('30'), agent='medic1', target='civ1', node='building0-1'), Move(start_time=Decimal('225'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='hospital0-0'), Unload(start_time=Decimal('345'), duration=Decimal('30'), agent='medic1', target='civ1', node='hospital0-0'), Move(start_time=Decimal('375'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Move(start_time=Decimal('495'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='building1-1'), Rescue(start_time=Decimal('615'), duration=Decimal('60'), agent='medic1', target='civ8', node='building1-1'), Load(start_time=Decimal('675'), duration=Decimal('30'), agent='medic1', target='civ8', node='building1-1'), Move(start_time=Decimal('705'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building2-1'), Rescue(start_time=Decimal('825'), duration=Decimal('60'), agent='medic1', target='civ2', node='building2-1'), Rescue(start_time=Decimal('885'), duration=Decimal('60'), agent='medic1', target='civ10', node='building2-1'), Move(start_time=Decimal('945'), duration=Decimal('120'), agent='medic1', start_node='building2-1', end_node='building1-1'), Move(start_time=Decimal('1065'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building0-1'), Move(start_time=Decimal('1185'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='hospital0-0'), Unload(start_time=Decimal('1305'), duration=Decimal('30'), agent='medic1', target='civ8', node='hospital0-0'), Move(start_time=Decimal('1335'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Move(start_time=Decimal('1455'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='building0-2'), Rescue(start_time=Decimal('1575'), duration=Decimal('60'), agent='medic1', target='civ0', node='building0-2'), Load(start_time=Decimal('1635'), duration=Decimal('30'), agent='medic1', target='civ0', node='building0-2'), Move(start_time=Decimal('1665'), duration=Decimal('120'), agent='medic1', start_node='building0-2', end_node='building0-3'), Rescue(start_time=Decimal('1785'), duration=Decimal('60'), agent='medic1', target='civ5', node='building0-3'), Move(start_time=Decimal('1845'), duration=Decimal('120'), agent='medic1', start_node='building0-3', end_node='building0-2'), Move(start_time=Decimal('1965'), duration=Decimal('120'), agent='medic1', start_node='building0-2', end_node='building0-1'), Move(start_time=Decimal('2085'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='hospital0-0'), Unload(start_time=Decimal('2205'), duration=Decimal('30'), agent='medic1', target='civ0', node='hospital0-0'), Move(start_time=Decimal('2235'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Move(start_time=Decimal('2355'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='building1-1'), Move(start_time=Decimal('2475'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building2-1'), Load(start_time=Decimal('2595'), duration=Decimal('30'), agent='medic1', target='civ2', node='building2-1'), Move(start_time=Decimal('2625'), duration=Decimal('120'), agent='medic1', start_node='building2-1', end_node='building1-1'), Move(start_time=Decimal('2745'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building0-1'), Move(start_time=Decimal('2865'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='hospital0-0'), Unload(start_time=Decimal('2985'), duration=Decimal('30'), agent='medic1', target='civ2', node='hospital0-0'), Move(start_time=Decimal('3015'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Move(start_time=Decimal('3135'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='building1-1'), Move(start_time=Decimal('3255'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building2-1'), Load(start_time=Decimal('3375'), duration=Decimal('30'), agent='medic1', target='civ10', node='building2-1'), Move(start_time=Decimal('3405'), duration=Decimal('120'), agent='medic1', start_node='building2-1', end_node='building1-1'), Move(start_time=Decimal('3525'), duration=Decimal('120'), agent='medic1', start_node='building1-1', end_node='building0-1'), Move(start_time=Decimal('3645'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='hospital0-0'), Unload(start_time=Decimal('3765'), duration=Decimal('30'), agent='medic1', target='civ10', node='hospital0-0'), Move(start_time=Decimal('3795'), duration=Decimal('120'), agent='medic1', start_node='hospital0-0', end_node='building0-1'), Move(start_time=Decimal('3915'), duration=Decimal('120'), agent='medic1', start_node='building0-1', end_node='building0-2'), Move(start_time=Decimal('4035'), duration=Decimal('120'), agent='medic1', start_node='building0-2', end_node='building0-3'), Load(start_time=Decimal('4155'), duration=Decimal('30'), agent='medic1', target='civ5', node='building0-3'), Move(start_time=Decimal('4185'), duration=Decimal('120'), agent='medic1', start_node='building0-3', end_node='building0-4'), Rescue(start_time=Decimal('4305'), duration=Decimal('60'), agent='medic1', target='civ7', node='building0-4'), Rescue(start_time=Decimal('4365'), duration=Decimal('60'), agent='medic1', target='civ4', node='building0-4'), Move(start_time=Decimal('4425'), duration=Decimal('120'), agent='medic1', start_node='building0-4', end_node='building1-4'), Move(start_time=Decimal('4545'), duration=Decimal('120'), agent='medic1', start_node='building1-4', end_node='building2-4'), Move(start_time=Decimal('4665'), duration=Decimal('120'), agent='medic1', start_node='building2-4', end_node='hospital3-4'), Unload(start_time=Decimal('4785'), duration=Decimal('30'), agent='medic1', target='civ5', node='hospital3-4'), Move(start_time=Decimal('4815'), duration=Decimal('120'), agent='medic1', start_node='hospital3-4', end_node='building2-4'), Move(start_time=Decimal('4935'), duration=Decimal('120'), agent='medic1', start_node='building2-4', end_node='building1-4'), Move(start_time=Decimal('5055'), duration=Decimal('120'), agent='medic1', start_node='building1-4', end_node='building0-4'), Load(start_time=Decimal('5175'), duration=Decimal('30'), agent='medic1', target='civ7', node='building0-4'), Move(start_time=Decimal('5205'), duration=Decimal('120'), agent='medic1', start_node='building0-4', end_node='building1-4'), Move(start_time=Decimal('5325'), duration=Decimal('120'), agent='medic1', start_node='building1-4', end_node='building2-4'), Move(start_time=Decimal('5445'), duration=Decimal('120'), agent='medic1', start_node='building2-4', end_node='hospital3-4'), Unload(start_time=Decimal('5565'), duration=Decimal('30'), agent='medic1', target='civ7', node='hospital3-4'), Move(start_time=Decimal('5595'), duration=Decimal('120'), agent='medic1', start_node='hospital3-4', end_node='building2-4'), Move(start_time=Decimal('5715'), duration=Decimal('120'), agent='medic1', start_node='building2-4', end_node='building1-4'), Move(start_time=Decimal('5835'), duration=Decimal('120'), agent='medic1', start_node='building1-4', end_node='building0-4'), Load(start_time=Decimal('5955'), duration=Decimal('30'), agent='medic1', target='civ4', node='building0-4'), Move(start_time=Decimal('5985'), duration=Decimal('120'), agent='medic1', start_node='building0-4', end_node='building1-4'), Move(start_time=Decimal('6105'), duration=Decimal('120'), agent='medic1', start_node='building1-4', end_node='building2-4'), Move(start_time=Decimal('6225'), duration=Decimal('120'), agent='medic1', start_node='building2-4', end_node='hospital3-4'), Unload(start_time=Decimal('6345'), duration=Decimal('30'), agent='medic1', target='civ4', node='hospital3-4')]
-            else:
-                new_plan, time_taken = planner.get_plan_and_time_taken(
-                    model, duration=action_.duration, agent=self.agent, goals=action_.goals,
-                    metric=action_.metric, time=action_state.time,
-                    events=self.central_executor.event_executor.known_events)
-            # to here
+            new_plan, time_taken = planner.get_plan_and_time_taken(
+                self.transform_model_for_planning(model, action_.goals), duration=action_.duration,
+                agent=self.agent, goals=action_.goals, metric=action_.metric, time=action_state.time,
+                events=self.transform_events_for_planning(self.central_executor.event_executor.known_events,
+                    action_.goals)
+            )
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
@@ -303,8 +300,37 @@ class AgentExecutor(Executor):
         """
         return as_start_time(plan[-1].end_time) - time
 
+    def transform_model_for_planning(self, model, goals):
+        """
+        converts a model for planning
+        default implementation removes objects that are not the agent represented by this executor or are not nodes
+        :param model:
+        :param goals:
+        :return:
+        """
+        model = deepcopy(model)
+        objects = model["objects"]
+        objects[self.type_] = {self.agent: objects[self.type_][self.agent]}
+        to_remove = objects.keys() - {"building", "hospital", self.type_}
+        for key in to_remove:
+            del objects[key]
+        return model
+
+    @staticmethod
+    def transform_events_for_planning(events, goals):
+        """
+        removes extraneous events given a set of goals.
+        default implementation removes agent based events (external = False)
+        :param events: list[Event]
+        :param goals: list[Goal]
+        :return:
+        """
+        return [e for e in events if e.external]
+
 
 class PoliceExecutor(AgentExecutor):
+
+    type_ = "police"
 
     def extract_events(self, plan, goals):
         """
@@ -337,7 +363,8 @@ class PoliceExecutor(AgentExecutor):
                 Predicate(name="edge", becomes=True),
                 Predicate(name="blocked-edge", becomes=False),
             ],
-            hidden=False
+            hidden=False,
+            external=False
         )
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
@@ -365,6 +392,8 @@ class PoliceExecutor(AgentExecutor):
 
 class MedicExecutor(AgentExecutor):
 
+    type_ = "medic"
+
     def extract_events(self, plan, goals):
         """
 
@@ -372,19 +401,8 @@ class MedicExecutor(AgentExecutor):
         :param goals: list[Goal]
         :return: list[Event]
         """
-        events = []
-        rescues = [a for a in plan if isinstance(a, Rescue)]
-        for goal in goals:
-            target = goal.predicate[1]
-            for r in rescues:
-                if target == r.target:
-                    events.append(self.create_rescue_civilian_event(as_start_time(r.end_time), target))
-                    break
-            else:
-                log.info("{} not found in plan.".format(goal))
-                # raise ValueError("no matching Rescue for goal: {}".format(goal))
-
-        return events
+        # medic does not produce events for planning
+        return []
 
     @staticmethod
     def create_rescue_civilian_event(time, civ_id):
@@ -394,17 +412,23 @@ class MedicExecutor(AgentExecutor):
             predicates=[
                 Predicate(name="rescued", becomes=True),
             ],
-            hidden=False
+            hidden=False,
+            external=False
         )
+
+    @classmethod
+    def convert_model_for_bid_generation(cls, model):
+        model = dict(model, graph=deepcopy(model["graph"]))
+        cls.remove_blocks_from_model(model)
+        return model
 
     @staticmethod
     def remove_blocks_from_model(model):
         """
-        creates a copy of the model with all road blocks removed
+        converts all blocked roads to be clear
         :param model:
         :return:
         """
-        model = dict(model, graph=deepcopy(model["graph"]))
         for edge in model["graph"]["edges"].values():
             edge["known"] = {
                 "edge": True,
@@ -417,7 +441,7 @@ class MedicExecutor(AgentExecutor):
         if "edge" in task.goal.predicate:
             return None
         plan, time_taken = planner.get_plan_and_time_taken(
-            model=self.remove_blocks_from_model(model),
+            model=self.convert_model_for_bid_generation(model),
             duration=self.planning_time,
             agent=self.agent,
             goals=[task.goal] + [b.task.goal for b in self.won_bids],
@@ -428,6 +452,7 @@ class MedicExecutor(AgentExecutor):
         if plan is None:
             return None
 
+        # generate any edge clearing requirements needed
         model_edges = model["graph"]["edges"]
         blocked_edge_actions = [a for a in plan if isinstance(a, Move) and not model_edges[a.edge]["known"]["edge"]]
         bid_value = self.compute_bid_value(task, plan, time)
@@ -435,7 +460,8 @@ class MedicExecutor(AgentExecutor):
             task_value = task.value / len(blocked_edge_actions)
             spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
             requirements = tuple(
-                Task(goal=Goal(predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time), value=task_value)
+                Task(goal=Goal(predicate=("edge", a.start_node, a.end_node),
+                    deadline=a.start_time + spare_time), value=task_value)
                 for a in blocked_edge_actions
             )
         else:
@@ -447,6 +473,24 @@ class MedicExecutor(AgentExecutor):
                    task=task,
                    requirements=requirements,
                    computation_time=time_taken)
+
+    def transform_model_for_planning(self, model, goals):
+        new_model = super().transform_model_for_planning(model, goals)
+        civ_ids_to_keep = [goal.predicate[1] for goal in goals]
+        new_model["objects"]["civilian"] = {civ_id: civ
+                                            for civ_id, civ in model["objects"]["civilian"].items()
+                                            if civ_id in civ_ids_to_keep}
+        return new_model
+
+    @staticmethod
+    def transform_events_for_planning(events, goals):
+        new_events = []
+        for e in events:
+            if e.external:
+                new_events.append(e)
+            elif isinstance(e, EdgeEvent):
+                new_events.append(e)
+        return new_events
 
 
 class TaskAllocatorExecutor(Executor):
@@ -582,6 +626,7 @@ class TaskAllocatorExecutor(Executor):
         """
         Takes a set of goals and events from a model and computes a list of Tasks for it
         :param goals:
+        :param value: Decimal
         :param events: list[Event]
         :param objects:
         :param time:
@@ -613,18 +658,11 @@ class TaskAllocatorExecutor(Executor):
         allocation = {}
         computation_time = 0
 
-        # remove from here
-        allocation = {Goal(predicate=('rescued', 'civ7'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('5520'), additional_cost=Decimal('840'), task=Task(goal=Goal(predicate=('rescued', 'civ7'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ8'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('6360'), additional_cost=Decimal('840'), task=Task(goal=Goal(predicate=('rescued', 'civ8'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ5'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('4680'), additional_cost=Decimal('1080'), task=Task(goal=Goal(predicate=('rescued', 'civ5'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ11'), deadline=Decimal('Infinity')): Bid(agent='medic0', estimated_endtime=Decimal('960'), additional_cost=Decimal('960'), task=Task(goal=Goal(predicate=('rescued', 'civ11'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ1'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('960'), additional_cost=Decimal('360'), task=Task(goal=Goal(predicate=('rescued', 'civ1'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ4'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('3600'), additional_cost=Decimal('960'), task=Task(goal=Goal(predicate=('rescued', 'civ4'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ2'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('2640'), additional_cost=Decimal('840'), task=Task(goal=Goal(predicate=('rescued', 'civ2'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ0'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('600'), additional_cost=Decimal('600'), task=Task(goal=Goal(predicate=('rescued', 'civ0'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('0.086')), Goal(predicate=('rescued', 'civ6'), deadline=Decimal('Infinity')): Bid(agent='medic0', estimated_endtime=Decimal('2400'), additional_cost=Decimal('1080'), task=Task(goal=Goal(predicate=('rescued', 'civ6'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ9'), deadline=Decimal('Infinity')): Bid(agent='medic0', estimated_endtime=Decimal('3600'), additional_cost=Decimal('1200'), task=Task(goal=Goal(predicate=('rescued', 'civ9'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ10'), deadline=Decimal('Infinity')): Bid(agent='medic1', estimated_endtime=Decimal('1800'), additional_cost=Decimal('840'), task=Task(goal=Goal(predicate=('rescued', 'civ10'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1')), Goal(predicate=('rescued', 'civ3'), deadline=Decimal('Infinity')): Bid(agent='medic0', estimated_endtime=Decimal('1320'), additional_cost=Decimal('360'), task=Task(goal=Goal(predicate=('rescued', 'civ3'), deadline=Decimal('Infinity')), value=Decimal('100000')), requirements=(), computation_time=Decimal('1'))}
-        computation_time = Decimal(10)
-
-        return sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
-        # to here
         while tasks:
             task = Task.combine(tasks.pop_equal())
 
             if task.goal in allocation:
                 # there is already already an agent assigned to this goal (and deadline)
-                raise NotImplementedError("Not sure this is correct or even possible")
                 current_bid = allocation[task.goal]
                 new_bid = current_bid._replace(task=Task.combine([current_bid.task, task]))
                 allocation[task.goal] = new_bid
@@ -653,5 +691,9 @@ class TaskAllocatorExecutor(Executor):
         log.info(result[0])
         return result
 
-    def notify_goal_realisation(self, events: "list[Event]"):
+    def notify_goal_realisation(self, events):
+        """
+        :param events: list[Event]
+        :return:
+        """
         self.event_executor.agent_based_events.extend(events)

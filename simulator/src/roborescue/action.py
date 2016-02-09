@@ -407,7 +407,7 @@ class Observe(Action):
 class EventAction(Action):
     """
     :type agent: str
-    :type events: list[tuple[str]]
+    :type events: tuple[tuple[str]]
     """
     agent = None
     events = None

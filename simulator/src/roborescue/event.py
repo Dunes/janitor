@@ -15,11 +15,12 @@ Predicate = namedtuple("Predicate", "name becomes")
 
 class Event(metaclass=ABCMeta):
 
-    def __init__(self, time, id_, predicates, hidden=False):
+    def __init__(self, time, id_, predicates, hidden=False, external=True):
         self.time = time
         self.id_ = id_
         self.predicates = predicates
         self.hidden = hidden
+        self.external = external
 
     @abstractmethod
     def find_object(self, model):
@@ -51,7 +52,7 @@ class Event(metaclass=ABCMeta):
         return self.id_
 
     def __repr__(self):
-        return "Event(time={time}, id_={id_!r}, predicates={predicates}, hidden={hidden})" \
+        return "Event(time={time}, id_={id_!r}, predicates={predicates}, hidden={hidden}, external={external})" \
             .format_map(vars(self))
 
 

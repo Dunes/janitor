@@ -62,20 +62,3 @@ def get_text_file_handle(filename):
         return TextIOWrapper(filename)
     else:
         return filename
-
-
-class CleaningWindowTil:
-
-    def __init__(self, time, room, add):
-        self.time = time
-        self.room = room
-        self.add = add
-
-    def as_predicate(self):
-        predicate = ["cleaning-window", self.room]
-        if not self.add:
-            predicate = ["not", predicate]
-        return ["at", (self.time if self.add else as_next_end_time(self.time)), predicate]
-
-    def __repr__(self):
-        return "CleaningWindowTil(time={!s}, room={!r}, add={})".format(self.time, self.room, self.add)

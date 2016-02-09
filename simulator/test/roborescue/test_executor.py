@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
-from hamcrest import assert_that, equal_to, contains_inanyorder, has_length
+from hamcrest import assert_that, equal_to, contains_inanyorder, has_length, has_key, is_not
 
 from operator import attrgetter
 from decimal import Decimal
@@ -10,7 +10,7 @@ from util.roborescue.builder import ModelBuilder
 from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor
 from roborescue.goal import Goal, Task, Bid
 from roborescue.action import Move
-from roborescue.event import ObjectEvent, Predicate
+from roborescue.event import ObjectEvent, EdgeEvent, Predicate
 
 
 ZERO = Decimal(0)
@@ -440,3 +440,90 @@ class TestMedicGenerateBid(TestCase):
         expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=ONE),
         assert_that(bid.requirements, equal_to(expected_requirement))
 
+
+class TestMedicPreparingForPlanning(TestCase):
+
+    def test_transform_events_for_planning_removes_rescue_events(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        events = [
+            ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=False,
+                predicates=[Predicate(name="rescued", becomes=True)])
+        ]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = medic.transform_events_for_planning(events, goals)
+
+        # then
+        assert_that(actual, equal_to([]))
+
+    def test_transform_events_for_planning_keeps_external_events(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        events = [
+            ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=True,
+                predicates=[Predicate(name="alive", becomes=False)]),
+        ]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = medic.transform_events_for_planning(events, goals)
+
+        # then
+        assert_that(actual, equal_to(events))
+
+    def test_transform_events_for_planning_keeps_unblock_events(self):
+        # given
+        medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        events = [
+            EdgeEvent(time=ZERO, id_="node0 node1", hidden=False, external=False,
+                predicates=[Predicate(name="edge", becomes=True)]),
+        ]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = medic.transform_events_for_planning(events, goals)
+
+        # then
+        assert_that(actual, equal_to(events))
+
+    def test_transform_model_for_planning_removes_unrelated_agents(self):
+        # given
+        medic = MedicExecutor(agent="medic0", planning_time=ZERO)
+        model = ModelBuilder() \
+            .with_agent("medic0") \
+            .with_agent("medic1") \
+            .with_agent("police0") \
+            .with_object("civ0", type="civilian") \
+            .model
+        goals = []
+
+        # when
+        actual = medic.transform_model_for_planning(model, goals)
+
+        # then
+        objects = actual["objects"]
+        assert_that(objects, has_key("medic"))
+        assert_that(objects, is_not(has_key("police")))
+        medics = objects["medic"]
+        assert_that(medics, has_key("medic0"))
+        assert_that(medics, is_not(has_key("medic1")))
+
+    def test_transform_model_for_planning_removes_unrelated_civilians(self):
+        # given
+        medic = MedicExecutor(agent="medic0", planning_time=ZERO)
+        model = ModelBuilder() \
+            .with_agent("medic0") \
+            .with_object("civ0", type="civilian") \
+            .with_object("civ1", type="civilian") \
+            .model
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = medic.transform_model_for_planning(model, goals)
+
+        # then
+        civilians = actual["objects"]["civilian"]
+        assert_that(civilians, has_key("civ0"))
+        assert_that(civilians, is_not(has_key("civ1")))
