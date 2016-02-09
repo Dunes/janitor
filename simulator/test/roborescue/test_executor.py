@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from util.roborescue.builder import ModelBuilder
 
-from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor
+from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, PoliceExecutor
 from roborescue.goal import Goal, Task, Bid
 from roborescue.action import Move
 from roborescue.event import ObjectEvent, EdgeEvent, Predicate
@@ -443,47 +443,54 @@ class TestMedicGenerateBid(TestCase):
 
 class TestMedicPreparingForPlanning(TestCase):
 
-    def test_transform_events_for_planning_removes_rescue_events(self):
+    def test_transform_events_for_planning_removes_hidden_events(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        events = [
-            ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=False,
-                predicates=[Predicate(name="rescued", becomes=True)])
-        ]
+        model = ModelBuilder(bidirectional=True).with_edge(from_node="building0", to_node="building1").model
+        events = [EdgeEvent(time=ZERO, id_="building0 building1", hidden=True, external=True,
+            predicates=[Predicate(name="edge", becomes=True)])]
         goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
 
         # when
-        actual = medic.transform_events_for_planning(events, goals)
+        actual = medic.transform_events_for_planning(events, goals, model)
 
         # then
         assert_that(actual, equal_to([]))
 
-    def test_transform_events_for_planning_keeps_external_events(self):
+    def test_transform_events_for_planning_removes_unrelated_civ_events(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        events = [
-            ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=True,
-                predicates=[Predicate(name="alive", becomes=False)]),
-        ]
+        model = ModelBuilder() \
+            .with_object("civ0", type="civilian") \
+            .model
+        keep_event = ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=True,
+            predicates=[Predicate(name="alive", becomes=False)])
+        discard_event = ObjectEvent(time=ZERO, id_="civ1", hidden=False, external=True,
+            predicates=[Predicate(name="alive", becomes=False)])
         goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
 
         # when
-        actual = medic.transform_events_for_planning(events, goals)
+        actual = medic.transform_events_for_planning([keep_event, discard_event], goals, model)
 
         # then
-        assert_that(actual, equal_to(events))
+        assert_that(actual, equal_to([keep_event]))
 
-    def test_transform_events_for_planning_keeps_unblock_events(self):
+    def test_transform_events_for_planning_keeps_edge_events(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
+        model = ModelBuilder(bidirectional=True) \
+            .with_edge(from_node="building0", to_node="building1") \
+            .model
         events = [
-            EdgeEvent(time=ZERO, id_="node0 node1", hidden=False, external=False,
+            EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=False,
                 predicates=[Predicate(name="edge", becomes=True)]),
+            EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=True,
+                predicates=[Predicate(name="edge", becomes=True)])
         ]
         goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
 
         # when
-        actual = medic.transform_events_for_planning(events, goals)
+        actual = medic.transform_events_for_planning(events, goals, model)
 
         # then
         assert_that(actual, equal_to(events))
@@ -527,3 +534,98 @@ class TestMedicPreparingForPlanning(TestCase):
         civilians = actual["objects"]["civilian"]
         assert_that(civilians, has_key("civ0"))
         assert_that(civilians, is_not(has_key("civ1")))
+
+
+class TestPolicePreparingForPlanning(TestCase):
+
+    def test_transform_events_for_planning_removes_hidden_events(self):
+        # given
+        police = PoliceExecutor(agent="police", planning_time=ZERO)
+        model = ModelBuilder(bidirectional=True).with_edge(from_node="building0", to_node="building1").model
+        events = [EdgeEvent(time=ZERO, id_="building0 building1", hidden=True, external=True,
+            predicates=[Predicate(name="edge", becomes=True)])]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = police.transform_events_for_planning(events, goals, model)
+
+        # then
+        assert_that(actual, equal_to([]))
+
+    def test_transform_events_for_planning_removes_civ_events(self):
+        # given
+        police = PoliceExecutor(agent="police", planning_time=ZERO)
+        model = ModelBuilder().model
+        events = [
+            ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=True,
+                predicates=[Predicate(name="alive", becomes=False)])
+        ]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = police.transform_events_for_planning(events, goals, model)
+
+        # then
+        assert_that(actual, equal_to([]))
+
+    def test_transform_events_for_planning_keeps_external_edge_events(self):
+        """
+        Discard other agents clearing edges as we would not know this in advance of planning
+        :return:
+        """
+        # given
+        police = PoliceExecutor(agent="police", planning_time=ZERO)
+        model = ModelBuilder(bidirectional=True) \
+            .with_edge(from_node="building0", to_node="building1") \
+            .with_object("civ0", type="civilian") \
+            .with_object("civ1", type="civilian") \
+            .model
+        discard_event = EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=False,
+            predicates=[Predicate(name="edge", becomes=True)])
+        keep_event = EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=True,
+            predicates=[Predicate(name="edge", becomes=True)])
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = police.transform_events_for_planning([discard_event, keep_event], goals, model)
+
+        # then
+        assert_that(actual, equal_to([keep_event]))
+
+    def test_transform_model_for_planning_removes_unrelated_agents(self):
+        # given
+        police = PoliceExecutor(agent="police0", planning_time=ZERO)
+        model = ModelBuilder() \
+            .with_agent("police0") \
+            .with_agent("police1") \
+            .with_agent("medic0") \
+            .with_object("civ0", type="civilian") \
+            .model
+        goals = []
+
+        # when
+        actual = police.transform_model_for_planning(model, goals)
+
+        # then
+        objects = actual["objects"]
+        assert_that(objects, has_key("police"))
+        assert_that(objects, is_not(has_key("medic")))
+        polices = objects["police"]
+        assert_that(polices, has_key("police0"))
+        assert_that(polices, is_not(has_key("police1")))
+
+    def test_transform_model_for_planning_removes_civilians(self):
+        # given
+        police = PoliceExecutor(agent="police0", planning_time=ZERO)
+        model = ModelBuilder() \
+            .with_agent("police0") \
+            .with_object("civ0", type="civilian") \
+            .with_object("civ1", type="civilian") \
+            .model
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+
+        # when
+        actual = police.transform_model_for_planning(model, goals)
+
+        # then
+        assert_that(actual["objects"], is_not(has_key("civilian")))

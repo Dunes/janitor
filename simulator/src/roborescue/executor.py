@@ -144,6 +144,7 @@ class EventExecutor(Executor):
 class AgentExecutor(Executor):
 
     type_ = None
+    ignore_internal_events = None
 
     def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), central_executor_id=None,
                  halted=False):
@@ -182,11 +183,12 @@ class AgentExecutor(Executor):
         if isinstance(action_state.action, LocalPlan):
             planner = self.central_executor.planner
             action_ = action_state.action
+            planning_model = self.transform_model_for_planning(model, action_.goals)
             new_plan, time_taken = planner.get_plan_and_time_taken(
-                self.transform_model_for_planning(model, action_.goals), duration=action_.duration,
+                planning_model, duration=action_.duration,
                 agent=self.agent, goals=action_.goals, metric=action_.metric, time=action_state.time,
                 events=self.transform_events_for_planning(self.central_executor.event_executor.known_events,
-                    action_.goals)
+                                                          planning_model)
             )
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
@@ -316,21 +318,31 @@ class AgentExecutor(Executor):
             del objects[key]
         return model
 
-    @staticmethod
-    def transform_events_for_planning(events, goals):
+    def transform_events_for_planning(self, events, model):
         """
-        removes extraneous events given a set of goals.
-        default implementation removes agent based events (external = False)
+        removes events not pertinent to the planning problem.
         :param events: list[Event]
         :param goals: list[Goal]
-        :return:
+        :param model:
+        :return: list[Event]
         """
-        return [e for e in events if e.external]
+        new_events = []
+        for event in events:
+            if event.hidden or (self.ignore_internal_events and not event.external):
+                continue
+            try:
+                event.find_object(model)
+            except KeyError:
+                continue
+
+            new_events.append(event)
+        return new_events
 
 
 class PoliceExecutor(AgentExecutor):
 
     type_ = "police"
+    ignore_internal_events = True
 
     def extract_events(self, plan, goals):
         """
@@ -393,6 +405,7 @@ class PoliceExecutor(AgentExecutor):
 class MedicExecutor(AgentExecutor):
 
     type_ = "medic"
+    ignore_internal_events = False
 
     def extract_events(self, plan, goals):
         """
@@ -482,15 +495,14 @@ class MedicExecutor(AgentExecutor):
                                             if civ_id in civ_ids_to_keep}
         return new_model
 
-    @staticmethod
-    def transform_events_for_planning(events, goals):
-        new_events = []
-        for e in events:
-            if e.external:
-                new_events.append(e)
-            elif isinstance(e, EdgeEvent):
-                new_events.append(e)
-        return new_events
+    # def transform_events_for_planning(self, events, goals):
+    #     new_events = []
+    #     for e in events:
+    #         if e.external:
+    #             new_events.append(e)
+    #         elif isinstance(e, EdgeEvent):
+    #             new_events.append(e)
+    #     return new_events
 
 
 class TaskAllocatorExecutor(Executor):
