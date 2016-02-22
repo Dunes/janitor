@@ -8,8 +8,12 @@ from inspect import signature
 class Logger(object):
 
     @classmethod
-    def get_log_file_name(cls, problem_name, planning_time):
-        return splitext(basename(problem_name))[0] + "-planning_time({}).log".format(planning_time)
+    def get_log_file_name(cls, problem_name, planning_time, heuristic_planning_time=None):
+        if heuristic_planning_time is None:
+            return splitext(basename(problem_name))[0] + "-planning_time({}).log".format(planning_time)
+        else:
+            return splitext(basename(problem_name))[0] + "-planning_time({})-heuristic_time({}).log".format(
+                planning_time, heuristic_planning_time)
 
     @classmethod
     def get_plan_log_file_name(cls, log_file_name):

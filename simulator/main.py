@@ -115,7 +115,8 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
 
     args = parser().parse_args()
     log.info(args)
-    log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
+    log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time,
+                                                    args.heuristic_planning_time)
     log.info("log: {}", log_file_name)
 
     # load model
