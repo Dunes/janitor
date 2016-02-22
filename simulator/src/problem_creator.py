@@ -4,7 +4,7 @@ import argparse
 import re
 from collections import namedtuple
 from copy import deepcopy
-from itertools import chain
+from itertools import chain, cycle
 from random import randint as rand, choice, sample
 
 from problem_parser import encode
@@ -110,17 +110,17 @@ def create_objects(civilians, buriedness, medics, police, size, hospitals):
     building_objects = {name: {} for name in building_names}
     police_objects = {"police{}".format(i):
                           {
-                              "at": [True, choice(hospital_names)],
+                              "at": [True, hospital],
                               "available": True
                           }
-                      for i in range(police)}
+                      for i, hospital in zip(range(police), cycle(hospital_names))}
     medic_objects = {"medic{}".format(i):
                          {
-                             "at": [True, choice(hospital_names)],
+                             "at": [True, hospital],
                              "available": True,
                              "empty": True
                          }
-                     for i in range(medics)}
+                     for i, hospital in zip(range(medics), cycle(hospital_names))}
     civilian_objects = {"civ{}".format(i): {
         "known": {
             "at": [True, choice(building_names)],

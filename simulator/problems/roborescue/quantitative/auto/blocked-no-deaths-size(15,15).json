@@ -233,17 +233,17 @@
             },
             "building0-1 hospital0-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-10 building0-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -265,8 +265,10 @@
             },
             "building0-11 building0-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -299,28 +301,22 @@
             },
             "building0-12 building0-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-12 building1-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-13 building0-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -335,10 +331,8 @@
             },
             "building0-13 building1-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -369,60 +363,53 @@
             },
             "building0-2 building0-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-2 building1-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building0-3 building0-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-3 building0-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building0-3 building1-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building0-4 building0-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building0-4 building0-5": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building0-4 building1-4": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -431,17 +418,28 @@
                 },
                 "unknown": {}
             },
-            "building0-5 building0-4": {
+            "building0-4 building1-4": {
                 "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
+            "building0-5 building0-4": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
+                },
+                "unknown": {}
+            },
             "building0-5 building0-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -454,8 +452,10 @@
             },
             "building0-6 building0-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -495,10 +495,8 @@
             },
             "building0-7 building1-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -589,10 +587,8 @@
             },
             "building1-1 building1-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -623,15 +619,19 @@
             },
             "building1-10 building1-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-10 building2-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -655,65 +655,65 @@
             },
             "building1-11 building1-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-11 building2-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-12 building0-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-12 building1-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-12 building1-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-12 building2-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-13 building0-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-13 building1-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -726,8 +726,10 @@
             },
             "building1-13 building2-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -756,17 +758,17 @@
             },
             "building1-2 building0-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-2 building1-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -788,10 +790,8 @@
             },
             "building1-3 building0-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -804,19 +804,14 @@
             },
             "building1-3 building1-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building1-3 building2-3": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building1-4 building0-4": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -825,10 +820,19 @@
                 },
                 "unknown": {}
             },
-            "building1-4 building1-3": {
+            "building1-4 building0-4": {
                 "known": {
                     "distance": 120,
                     "edge": true
+                },
+                "unknown": {}
+            },
+            "building1-4 building1-3": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -862,19 +866,15 @@
             },
             "building1-5 building1-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-5 building2-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -887,17 +887,17 @@
             },
             "building1-6 building1-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building1-6 building1-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -912,26 +912,24 @@
             },
             "building1-7 building0-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
-            "building1-7 building1-6": {
-                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building1-7 building1-8": {
+            "building1-7 building1-6": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
                     "edge": false
+                },
+                "unknown": {}
+            },
+            "building1-7 building1-8": {
+                "known": {
+                    "distance": 120,
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -955,10 +953,8 @@
             },
             "building1-8 building1-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -989,8 +985,10 @@
             },
             "building1-9 building1-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1003,22 +1001,28 @@
             },
             "building1-9 building2-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building10-0 building10-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building10-0 building11-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1033,8 +1037,10 @@
             },
             "building10-1 building10-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1047,17 +1053,17 @@
             },
             "building10-1 building11-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-1 building9-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1070,15 +1076,19 @@
             },
             "building10-10 building10-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building10-10 building11-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1100,10 +1110,8 @@
             },
             "building10-11 building10-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1125,17 +1133,17 @@
             },
             "building10-12 building10-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-12 building10-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1157,8 +1165,10 @@
             },
             "building10-13 building10-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1219,53 +1229,45 @@
             },
             "building10-2 building10-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-2 building11-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-2 building9-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-3 building10-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-3 building10-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-3 building11-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1278,10 +1280,8 @@
             },
             "building10-4 building10-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1303,8 +1303,10 @@
             },
             "building10-4 building9-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1317,10 +1319,8 @@
             },
             "building10-5 building10-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1335,19 +1335,15 @@
             },
             "building10-5 building9-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-6 building10-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1369,8 +1365,10 @@
             },
             "building10-6 building9-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1383,6 +1381,13 @@
             },
             "building10-7 building10-8": {
                 "known": {
+                    "distance": 120,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building10-7 building11-7": {
+                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -1390,37 +1395,24 @@
                 },
                 "unknown": {}
             },
-            "building10-7 building11-7": {
+            "building10-7 building9-7": {
                 "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building10-7 building9-7": {
-                "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
             "building10-8 building10-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building10-8 building10-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1435,26 +1427,24 @@
             },
             "building10-8 building9-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
-            "building10-9 building10-10": {
-                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building10-9 building10-8": {
+            "building10-9 building10-10": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
                     "edge": false
+                },
+                "unknown": {}
+            },
+            "building10-9 building10-8": {
+                "known": {
+                    "distance": 120,
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1467,24 +1457,26 @@
             },
             "building10-9 building9-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building11-0 building10-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building11-0 building11-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1499,19 +1491,15 @@
             },
             "building11-1 building10-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-1 building11-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1533,8 +1521,10 @@
             },
             "building11-10 building10-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1558,10 +1548,8 @@
             },
             "building11-10 building12-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1583,19 +1571,15 @@
             },
             "building11-11 building11-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-11 building12-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1610,28 +1594,22 @@
             },
             "building11-12 building11-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-12 building11-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-12 building12-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1644,17 +1622,17 @@
             },
             "building11-13 building11-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-13 building11-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1674,8 +1652,10 @@
             },
             "building11-14 building11-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1690,10 +1670,8 @@
             },
             "building11-2 building10-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1708,12 +1686,21 @@
             },
             "building11-2 building11-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
+                },
+                "unknown": {}
+            },
+            "building11-2 building12-2": {
+                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building11-2 building12-2": {
+            "building11-3 building10-3": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -1722,17 +1709,12 @@
                 },
                 "unknown": {}
             },
-            "building11-3 building10-3": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building11-3 building11-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1745,8 +1727,10 @@
             },
             "building11-3 building12-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1768,19 +1752,15 @@
             },
             "building11-4 building11-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-4 building12-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1795,28 +1775,22 @@
             },
             "building11-5 building11-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-5 building11-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-5 building12-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1831,19 +1805,15 @@
             },
             "building11-6 building11-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-6 building11-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1858,33 +1828,33 @@
             },
             "building11-7 building10-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building11-7 building11-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-7 building11-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building11-7 building12-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -1899,10 +1869,8 @@
             },
             "building11-8 building11-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1945,10 +1913,8 @@
             },
             "building11-9 building12-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1963,10 +1929,8 @@
             },
             "building12-0 building12-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -1986,17 +1950,17 @@
             },
             "building12-1 building12-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building12-1 building12-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2009,26 +1973,24 @@
             },
             "building12-10 building11-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
-            "building12-10 building12-11": {
-                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building12-10 building12-9": {
+            "building12-10 building12-11": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
                     "edge": false
+                },
+                "unknown": {}
+            },
+            "building12-10 building12-9": {
+                "known": {
+                    "distance": 120,
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2041,17 +2003,17 @@
             },
             "building12-11 building11-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building12-11 building12-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2066,17 +2028,17 @@
             },
             "building12-11 building13-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building12-12 building11-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2091,8 +2053,10 @@
             },
             "building12-12 building12-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2112,24 +2076,26 @@
             },
             "building12-13 building12-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building12-13 building12-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building12-13 building13-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2144,19 +2110,14 @@
             },
             "building12-14 building12-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building12-14 building13-14": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building12-2 building11-2": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -2165,10 +2126,19 @@
                 },
                 "unknown": {}
             },
-            "building12-2 building12-1": {
+            "building12-2 building11-2": {
                 "known": {
                     "distance": 120,
                     "edge": true
+                },
+                "unknown": {}
+            },
+            "building12-2 building12-1": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2190,8 +2160,10 @@
             },
             "building12-3 building11-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2215,19 +2187,15 @@
             },
             "building12-3 building13-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building12-4 building11-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2251,19 +2219,15 @@
             },
             "building12-4 building13-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building12-5 building11-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2314,8 +2278,10 @@
             },
             "building12-6 building12-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2330,15 +2296,19 @@
             },
             "building12-7 building11-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building12-7 building12-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2353,8 +2323,10 @@
             },
             "building12-7 building13-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2392,19 +2364,15 @@
             },
             "building12-9 building11-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building12-9 building12-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2417,8 +2385,10 @@
             },
             "building12-9 building13-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2440,8 +2410,10 @@
             },
             "building13-0 building14-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2463,17 +2435,17 @@
             },
             "building13-1 building13-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-1 building14-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2486,10 +2458,8 @@
             },
             "building13-10 building13-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2502,22 +2472,13 @@
             },
             "building13-10 building14-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-11 building12-11": {
                 "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building13-11 building13-10": {
-                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -2525,10 +2486,19 @@
                 },
                 "unknown": {}
             },
-            "building13-11 building13-12": {
+            "building13-11 building13-10": {
                 "known": {
                     "distance": 120,
                     "edge": true
+                },
+                "unknown": {}
+            },
+            "building13-11 building13-12": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2548,8 +2518,10 @@
             },
             "building13-12 building13-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2562,19 +2534,15 @@
             },
             "building13-12 building14-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-13 building12-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2603,8 +2571,10 @@
             },
             "building13-14 building12-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2619,10 +2589,8 @@
             },
             "building13-14 hospital14-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2635,10 +2603,8 @@
             },
             "building13-2 building13-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2653,19 +2619,15 @@
             },
             "building13-2 building14-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-3 building12-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2680,37 +2642,29 @@
             },
             "building13-3 building13-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-3 building14-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-4 building12-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building13-4 building13-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2755,8 +2709,10 @@
             },
             "building13-5 building14-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2792,8 +2748,10 @@
             },
             "building13-7 building12-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2813,10 +2771,8 @@
             },
             "building13-7 building14-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2845,15 +2801,19 @@
             },
             "building13-8 building14-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building13-9 building12-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -2882,13 +2842,22 @@
             },
             "building14-0 building13-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building14-0 building14-1": {
                 "known": {
+                    "distance": 120,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building14-1 building13-1": {
+                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -2896,37 +2865,24 @@
                 },
                 "unknown": {}
             },
-            "building14-1 building13-1": {
+            "building14-1 building14-0": {
                 "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building14-1 building14-0": {
-                "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
             "building14-1 building14-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building14-10 building13-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -2964,12 +2920,21 @@
             },
             "building14-11 building14-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
+                },
+                "unknown": {}
+            },
+            "building14-12 building13-12": {
+                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building14-12 building13-12": {
+            "building14-12 building14-11": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -2978,17 +2943,12 @@
                 },
                 "unknown": {}
             },
-            "building14-12 building14-11": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building14-12 building14-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3001,60 +2961,54 @@
             },
             "building14-13 building14-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building14-13 hospital14-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building14-2 building13-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building14-2 building14-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building14-2 building14-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building14-3 building13-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building14-3 building14-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3096,8 +3050,10 @@
             },
             "building14-5 building13-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3144,10 +3100,8 @@
             },
             "building14-7 building13-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3160,6 +3114,13 @@
             },
             "building14-7 building14-8": {
                 "known": {
+                    "distance": 120,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building14-8 building13-8": {
+                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -3167,28 +3128,17 @@
                 },
                 "unknown": {}
             },
-            "building14-8 building13-8": {
+            "building14-8 building14-7": {
                 "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building14-8 building14-7": {
-                "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
             "building14-8 building14-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3210,10 +3160,8 @@
             },
             "building14-9 building14-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3226,8 +3174,10 @@
             },
             "building2-0 building2-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3249,8 +3199,10 @@
             },
             "building2-1 building2-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3270,17 +3222,17 @@
             },
             "building2-10 building1-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building2-10 building2-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3304,19 +3256,15 @@
             },
             "building2-11 building1-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building2-11 building2-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3338,10 +3286,8 @@
             },
             "building2-12 building1-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3356,35 +3302,30 @@
             },
             "building2-12 building2-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building2-12 building3-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building2-13 building1-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building2-13 building2-12": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building2-13 building2-14": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -3393,10 +3334,19 @@
                 },
                 "unknown": {}
             },
-            "building2-13 building3-13": {
+            "building2-13 building2-14": {
                 "known": {
                     "distance": 120,
                     "edge": true
+                },
+                "unknown": {}
+            },
+            "building2-13 building3-13": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3409,17 +3359,17 @@
             },
             "building2-14 building2-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building2-14 building3-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3450,15 +3400,19 @@
             },
             "building2-2 building3-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building2-3 building1-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3510,19 +3464,15 @@
             },
             "building2-4 building3-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building2-5 building1-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3546,8 +3496,10 @@
             },
             "building2-5 building3-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3580,10 +3532,8 @@
             },
             "building2-6 building3-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3607,8 +3557,10 @@
             },
             "building2-7 building2-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3632,8 +3584,10 @@
             },
             "building2-8 building2-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3655,8 +3609,10 @@
             },
             "building2-9 building1-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3696,8 +3652,10 @@
             },
             "building3-0 building3-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3717,8 +3675,10 @@
             },
             "building3-1 building3-0": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3793,17 +3753,17 @@
             },
             "building3-11 building4-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building3-12 building2-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3816,10 +3776,8 @@
             },
             "building3-12 building3-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3834,17 +3792,17 @@
             },
             "building3-13 building2-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building3-13 building3-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -3866,8 +3824,10 @@
             },
             "building3-14 building2-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3880,17 +3840,17 @@
             },
             "building3-14 building4-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building3-2 building2-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3910,8 +3870,10 @@
             },
             "building3-2 building4-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3931,8 +3893,10 @@
             },
             "building3-3 building3-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3947,17 +3911,17 @@
             },
             "building3-4 building2-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building3-4 building3-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -3981,8 +3945,10 @@
             },
             "building3-5 building2-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4004,19 +3970,15 @@
             },
             "building3-5 building4-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building3-6 building2-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4065,8 +4027,10 @@
             },
             "building3-7 building3-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4088,8 +4052,10 @@
             },
             "building3-8 building3-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4152,19 +4118,15 @@
             },
             "building4-0 building4-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building4-0 building5-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4177,28 +4139,22 @@
             },
             "building4-1 building4-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building4-1 building4-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building4-1 building5-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4229,15 +4185,19 @@
             },
             "building4-10 building5-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-11 building3-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4282,15 +4242,19 @@
             },
             "building4-12 building4-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-12 building5-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4305,40 +4269,42 @@
             },
             "building4-13 building4-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-13 building4-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-13 building5-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building4-14 building3-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building4-14 building4-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4351,17 +4317,17 @@
             },
             "building4-2 building3-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-2 building4-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4404,10 +4370,8 @@
             },
             "building4-3 building5-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4438,17 +4402,17 @@
             },
             "building4-4 building5-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building4-5 building3-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4463,8 +4427,10 @@
             },
             "building4-5 building4-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4488,8 +4454,10 @@
             },
             "building4-6 building4-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4525,8 +4493,10 @@
             },
             "building4-7 building4-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4546,8 +4516,10 @@
             },
             "building4-8 building4-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4605,46 +4577,36 @@
             },
             "building5-0 building4-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-0 building5-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-0 building6-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-1 building4-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-1 building5-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4657,17 +4619,17 @@
             },
             "building5-1 building6-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-10 building4-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4714,8 +4676,10 @@
             },
             "building5-11 building5-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4728,15 +4692,19 @@
             },
             "building5-12 building4-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building5-12 building5-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4751,17 +4719,17 @@
             },
             "building5-12 building6-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building5-13 building4-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4810,10 +4778,8 @@
             },
             "building5-14 building6-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4842,17 +4808,17 @@
             },
             "building5-2 building6-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building5-3 building4-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -4867,30 +4833,35 @@
             },
             "building5-3 building5-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-3 building6-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building5-4 building4-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
+                },
+                "unknown": {}
+            },
+            "building5-4 building5-3": {
+                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building5-4 building5-3": {
+            "building5-4 building5-5": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -4899,17 +4870,12 @@
                 },
                 "unknown": {}
             },
-            "building5-4 building5-5": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building5-4 building6-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4924,8 +4890,10 @@
             },
             "building5-5 building5-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4940,8 +4908,10 @@
             },
             "building5-5 building6-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4963,8 +4933,10 @@
             },
             "building5-6 building5-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -4986,15 +4958,19 @@
             },
             "building5-7 building5-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building5-7 building5-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5014,8 +4990,10 @@
             },
             "building5-8 building5-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5030,10 +5008,8 @@
             },
             "building5-8 building6-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5066,17 +5042,17 @@
             },
             "building5-9 building6-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-0 building5-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5098,10 +5074,8 @@
             },
             "building6-1 building5-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5139,19 +5113,15 @@
             },
             "building6-10 building6-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-10 building6-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5173,51 +5143,47 @@
             },
             "building6-11 building6-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-11 building6-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-11 building7-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-12 building5-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-12 building6-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-12 building6-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5239,17 +5205,17 @@
             },
             "building6-13 building6-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-13 building6-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5262,17 +5228,17 @@
             },
             "building6-14 building5-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-14 building6-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5285,8 +5251,10 @@
             },
             "building6-2 building5-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5308,17 +5276,17 @@
             },
             "building6-2 building7-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-3 building5-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5331,8 +5299,10 @@
             },
             "building6-3 building6-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5345,15 +5315,19 @@
             },
             "building6-4 building5-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-4 building6-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5368,17 +5342,17 @@
             },
             "building6-4 building7-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-5 building5-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5393,17 +5367,17 @@
             },
             "building6-5 building6-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-5 building7-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5418,6 +5392,13 @@
             },
             "building6-6 building6-5": {
                 "known": {
+                    "distance": 120,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building6-6 building6-7": {
+                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -5425,17 +5406,12 @@
                 },
                 "unknown": {}
             },
-            "building6-6 building6-7": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building6-6 building7-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5448,47 +5424,51 @@
             },
             "building6-7 building6-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-7 building6-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-7 building7-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-8 building5-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
-            "building6-8 building6-7": {
-                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building6-8 building6-9": {
+            "building6-8 building6-7": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
                     "edge": false
+                },
+                "unknown": {}
+            },
+            "building6-8 building6-9": {
+                "known": {
+                    "distance": 120,
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5501,26 +5481,24 @@
             },
             "building6-9 building5-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building6-9 building6-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building6-9 building6-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5542,10 +5520,8 @@
             },
             "building7-0 building7-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5567,10 +5543,8 @@
             },
             "building7-1 building7-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5610,26 +5584,24 @@
             },
             "building7-10 building7-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building7-10 building8-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building7-11 building6-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5653,10 +5625,8 @@
             },
             "building7-11 building8-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5678,15 +5648,19 @@
             },
             "building7-12 building7-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building7-12 building8-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5699,24 +5673,26 @@
             },
             "building7-13 building7-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building7-13 building7-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building7-13 building8-13": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5729,8 +5705,10 @@
             },
             "building7-14 building7-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5745,8 +5723,10 @@
             },
             "building7-2 building6-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5761,10 +5741,8 @@
             },
             "building7-2 building7-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5784,17 +5762,17 @@
             },
             "building7-3 building7-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building7-3 building7-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5809,17 +5787,17 @@
             },
             "building7-4 building6-4": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building7-4 building7-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5843,8 +5821,10 @@
             },
             "building7-5 building6-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5866,15 +5846,19 @@
             },
             "building7-5 building8-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building7-6 building6-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5887,28 +5871,21 @@
             },
             "building7-6 building7-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building7-6 building8-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building7-7 building6-7": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
-            "building7-7 building7-6": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
@@ -5917,17 +5894,28 @@
                 },
                 "unknown": {}
             },
-            "building7-7 building7-8": {
+            "building7-7 building7-6": {
                 "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
+            "building7-7 building7-8": {
+                "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "edge": false
+                },
+                "unknown": {}
+            },
             "building7-7 building8-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5940,8 +5928,10 @@
             },
             "building7-8 building7-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -5970,10 +5960,8 @@
             },
             "building7-9 building7-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -5986,8 +5974,10 @@
             },
             "building7-9 building8-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6032,10 +6022,8 @@
             },
             "building8-1 building8-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6048,10 +6036,8 @@
             },
             "building8-10 building7-10": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6082,10 +6068,8 @@
             },
             "building8-11 building7-11": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6107,15 +6091,19 @@
             },
             "building8-11 building9-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building8-12 building7-12": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6128,22 +6116,29 @@
             },
             "building8-12 building8-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building8-12 building9-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building8-13 building7-13": {
                 "known": {
+                    "distance": 120,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "building8-13 building8-12": {
+                "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
@@ -6151,17 +6146,12 @@
                 },
                 "unknown": {}
             },
-            "building8-13 building8-12": {
-                "known": {
-                    "distance": 120,
-                    "edge": true
-                },
-                "unknown": {}
-            },
             "building8-13 building8-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6183,8 +6173,10 @@
             },
             "building8-14 building8-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6204,10 +6196,8 @@
             },
             "building8-2 building8-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6254,10 +6244,8 @@
             },
             "building8-3 building9-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6297,8 +6285,10 @@
             },
             "building8-5 building7-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6313,8 +6303,10 @@
             },
             "building8-5 building8-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6329,15 +6321,19 @@
             },
             "building8-6 building7-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building8-6 building8-5": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6350,17 +6346,17 @@
             },
             "building8-6 building9-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building8-7 building7-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6403,8 +6399,10 @@
             },
             "building8-8 building8-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6419,8 +6417,10 @@
             },
             "building8-9 building7-9": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6433,17 +6433,17 @@
             },
             "building8-9 building8-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building8-9 building9-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6465,17 +6465,17 @@
             },
             "building9-0 building9-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building9-1 building10-1": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6488,10 +6488,8 @@
             },
             "building9-1 building9-0": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6522,8 +6520,10 @@
             },
             "building9-10 building9-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6545,15 +6545,19 @@
             },
             "building9-11 building8-11": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building9-11 building9-10": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6575,10 +6579,8 @@
             },
             "building9-12 building8-12": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6621,8 +6623,10 @@
             },
             "building9-13 building9-14": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6644,17 +6648,17 @@
             },
             "building9-14 building9-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building9-2 building10-2": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6674,8 +6678,10 @@
             },
             "building9-2 building9-3": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6688,17 +6694,17 @@
             },
             "building9-3 building8-3": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "building9-3 building9-2": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6713,8 +6719,10 @@
             },
             "building9-4 building10-4": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
@@ -6747,10 +6755,8 @@
             },
             "building9-5 building10-5": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6781,17 +6787,17 @@
             },
             "building9-6 building10-6": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building9-6 building8-6": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6811,10 +6817,8 @@
             },
             "building9-7 building10-7": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6834,17 +6838,17 @@
             },
             "building9-7 building9-8": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building9-8 building10-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6859,33 +6863,33 @@
             },
             "building9-8 building9-7": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             },
             "building9-8 building9-9": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
-                    "distance": 120,
-                    "edge": false
-                },
-                "unknown": {}
-            },
-            "building9-9 building10-9": {
-                "known": {
                     "distance": 120,
                     "edge": true
                 },
                 "unknown": {}
             },
-            "building9-9 building8-9": {
+            "building9-9 building10-9": {
                 "known": {
                     "blocked-edge": true,
                     "blockedness": 300,
                     "distance": 120,
                     "edge": false
+                },
+                "unknown": {}
+            },
+            "building9-9 building8-9": {
+                "known": {
+                    "distance": 120,
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6898,19 +6902,15 @@
             },
             "building9-9 building9-8": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "hospital0-0 building0-1": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
@@ -6923,17 +6923,17 @@
             },
             "hospital14-14 building13-14": {
                 "known": {
-                    "blocked-edge": true,
-                    "blockedness": 300,
                     "distance": 120,
-                    "edge": false
+                    "edge": true
                 },
                 "unknown": {}
             },
             "hospital14-14 building14-13": {
                 "known": {
+                    "blocked-edge": true,
+                    "blockedness": 300,
                     "distance": 120,
-                    "edge": true
+                    "edge": false
                 },
                 "unknown": {}
             }
@@ -7180,7 +7180,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-12"
+                        "building6-1"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7192,7 +7192,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building3-13"
+                        "building13-14"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7204,7 +7204,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-12"
+                        "building10-1"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7216,7 +7216,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building3-5"
+                        "building10-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7228,7 +7228,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building6-0"
+                        "building7-3"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7240,7 +7240,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building10-0"
+                        "building9-0"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7252,7 +7252,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-13"
+                        "building1-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7264,7 +7264,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building8-10"
+                        "building5-13"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7276,7 +7276,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-4"
+                        "building1-3"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7288,7 +7288,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building7-10"
+                        "building5-3"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7300,7 +7300,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building4-1"
+                        "building10-0"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7312,7 +7312,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-6"
+                        "building4-9"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7324,7 +7324,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-8"
+                        "building11-4"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7336,7 +7336,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-13"
+                        "building4-3"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7348,7 +7348,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building10-9"
+                        "building3-5"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7360,7 +7360,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building8-0"
+                        "building11-7"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7372,7 +7372,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building0-6"
+                        "building12-10"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7384,7 +7384,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building0-9"
+                        "building7-4"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7396,7 +7396,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building4-14"
+                        "building0-4"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7408,7 +7408,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building14-11"
+                        "building4-13"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7420,7 +7420,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building14-7"
+                        "building0-14"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7432,7 +7432,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-4"
+                        "building2-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7444,7 +7444,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building7-11"
+                        "building2-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7456,7 +7456,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building3-2"
+                        "building4-9"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7468,7 +7468,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building0-7"
+                        "building13-6"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7480,7 +7480,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-11"
+                        "building2-9"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7492,7 +7492,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building3-13"
+                        "building7-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7504,7 +7504,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building13-4"
+                        "building11-6"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7516,7 +7516,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building13-7"
+                        "building8-12"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7528,7 +7528,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building7-8"
+                        "building4-6"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7540,7 +7540,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building13-3"
+                        "building12-14"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7552,7 +7552,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building2-5"
+                        "building13-11"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7564,7 +7564,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building10-13"
+                        "building1-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7576,7 +7576,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building14-1"
+                        "building10-13"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7588,7 +7588,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building0-7"
+                        "building5-1"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7600,7 +7600,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-8"
+                        "building3-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7612,7 +7612,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building7-9"
+                        "building8-5"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7624,7 +7624,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building9-13"
+                        "building8-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7636,7 +7636,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-8"
+                        "building1-14"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7648,7 +7648,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building9-9"
+                        "building8-5"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7660,7 +7660,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-4"
+                        "building8-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7672,7 +7672,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building5-6"
+                        "building7-12"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7684,7 +7684,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-2"
+                        "building1-3"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7696,7 +7696,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building10-9"
+                        "building2-10"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7708,7 +7708,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building4-7"
+                        "building1-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7720,7 +7720,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building12-3"
+                        "building9-7"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7732,7 +7732,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-12"
+                        "building2-5"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7744,7 +7744,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-2"
+                        "building5-8"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7756,7 +7756,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building1-6"
+                        "building0-5"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7768,7 +7768,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building7-12"
+                        "building0-4"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7780,7 +7780,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building11-9"
+                        "building10-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7792,7 +7792,7 @@
                     "alive": true,
                     "at": [
                         true,
-                        "building14-10"
+                        "building9-2"
                     ],
                     "buried": true,
                     "buriedness": 120
@@ -7808,7 +7808,7 @@
             "medic0": {
                 "at": [
                     true,
-                    "hospital14-14"
+                    "hospital0-0"
                 ],
                 "available": true,
                 "empty": true
