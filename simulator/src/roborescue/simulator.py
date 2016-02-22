@@ -161,7 +161,8 @@ class Simulator:
         time_waiting_for_actions_to_finish = self.get_time_waiting_for_actions_to_finish()
         time_waiting_for_planner_to_finish = self.get_time_waiting_for_planner_to_finish()
 
-        time_taken = max(as_start_time(a.end_time) for a in self.executed if not isinstance(a, EventAction))
+        time_taken = max((as_start_time(a.end_time) for a in self.executed if not isinstance(a, EventAction)),
+                         default=0)
 
         log.info("Goal achieved: {}", goal_achieved)
         log.info("Planner called: {}", planner_called)

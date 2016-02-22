@@ -197,6 +197,8 @@ class AgentExecutor(Executor):
             else:
                 plan_action = action_.copy_with(failed=True, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
+                raise ValueError("failed to find any plan for {} trying to achieve {}".format(
+                    self.agent, action_.goals))
         else:
             self.executing = action_state.start()
 
@@ -362,7 +364,7 @@ class PoliceExecutor(AgentExecutor):
                     events.append(self.create_clear_edge_event(as_start_time(u.end_time), end, start))
                     break
             else:
-                raise ValueError("no matching unblock for unblock goal: {}".format(edge))
+                log.debug("failed to achieve goal: no matching unblock for unblock goal: {}", edge)
 
         return events
 
@@ -685,8 +687,8 @@ class TaskAllocatorExecutor(Executor):
             bids = [b for b in bids if b is not None]  # filter out failed bids
 
             if not bids:
+                log.debug("no bids for {}", task)
                 continue
-                # raise ValueError("no bids for {}".format(task))
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
