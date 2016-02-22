@@ -10,7 +10,8 @@ function usage {
 	echo "Record problems where a solution was not found (failed runs) to a log file."
 	echo "When FILE is -, read standard input."
 	echo ""
-	echo "  -t TIME            Run problems with a planning time of TIME. (default 30)"
+	echo "  -t TIME            Run problems with a planning time of TIME. (default 10)"
+	echo "  -q HEURISTIC       Run problems with a heuristic planning time of HEURISTIC"
 	echo "  -d PROBLEM_DIR     Use directory as problem source rather than FILE"
 	echo "  -e ERROR_OUTPUT    The file to record failed problems to. "
 	echo "                       (default \`unsolved-problems.txt')"
@@ -22,11 +23,12 @@ function usage {
 }
 
 # defaults
-time_opt="30"
+time_opt="10"
+heuristic_opt="1"
 log_dir="logs"
 error_log_file="unsolved-problems.txt"
 
-args=`getopt t:e:l:d: $*`
+args=`getopt t:e:l:d:q: $*`
 if [[ $? -ne 0 ]]
 then
 	usage
@@ -50,6 +52,10 @@ do
 	-d)
 		shift
 		problem_dir="$1"
+		;;
+	-q)
+		shift
+		heuristic_opt="$1"
 		;;
 	--)
 		shift
@@ -79,7 +85,7 @@ function process_file {
     file_name="$1"
 	base_file_name="`basename ${file_name}`"
 	echo "starting $file_name"
-	./main.sh "$file_name" -t "$time_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
+	./main.sh "$file_name" -t "$time_opt" -q "$heuristic_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
 	exit_val="${PIPESTATUS[0]}"
 	if [[ "$exit_val" != 0 ]]
 	then
