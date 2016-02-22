@@ -690,7 +690,7 @@ class TaskAllocatorExecutor(Executor):
 
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
-            winning_bid = min(bids, key=attrgetter("additional_cost"))
+            winning_bid = min(bids, key=attrgetter("estimated_endtime"))
 
             # notify winner of winning bid
             allocation[winning_bid.task.goal] = winning_bid

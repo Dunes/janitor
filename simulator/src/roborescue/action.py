@@ -150,13 +150,18 @@ class Unblock(Action):
             return False
         if agent["at"][1] not in (self.start_node, self.end_node):
             return False
-        edge = model["graph"]["edges"][self.start_node + " " + self.end_node]
-        return edge["known"].get("blocked-edge", False)
+        return True
+        # edge = model["graph"]["edges"][self.start_node + " " + self.end_node]
+        # return edge["known"].get("blocked-edge", False)
 
     def apply(self, model):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
         edge = model["graph"]["edges"][self.start_node + " " + self.end_node]["known"]
         inverse_edge = model["graph"]["edges"][self.end_node + " " + self.start_node]["known"]
+        if edge["edge"]:
+            log.info("{} attempting to unblock {} {} edge, which is already unblocked.", self.agent, self.start_node,
+                     self.end_node)
+            return
         edge["edge"] = True
         del edge["blockedness"]
         del edge["blocked-edge"]
