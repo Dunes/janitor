@@ -12,7 +12,7 @@ import importlib
 import itertools
 import copy
 
-logging.config.fileConfig("logging-info.conf")
+logging.config.fileConfig("logging.conf")
 
 from planner import Planner
 

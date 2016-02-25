@@ -1,18 +1,20 @@
 from enum import Enum
 from copy import deepcopy
-from collections import namedtuple, Iterable
+from collections import namedtuple, Iterable, OrderedDict
 from itertools import count
 from decimal import Decimal
 from logging import getLogger
 from fractions import Fraction
+from simplejson import dump
 
 from accuracy import quantize, as_end_time, as_start_time
-from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue, EventAction
+from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue, EventAction, Allocate
 from action_state import ExecutionState, ActionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
 from priority_queue import MultiActionStateQueue
-from jsonencoder import json_dumps
+from jsonencoder import ActionEncoder
+from period import get_contiguous_periods
 
 __author__ = 'jack'
 
@@ -155,30 +157,34 @@ class Simulator:
 
     def print_results(self, logger):
         goal_achieved = self.is_goal_in_model()
-        plan_actions = [a for a in self.executed if type(a) is Plan]
-        planner_called = len(plan_actions)
-        time_planning = sum(a.duration for a in self.executed if type(a) is Plan)
-        time_waiting_for_actions_to_finish = self.get_time_waiting_for_actions_to_finish()
-        time_waiting_for_planner_to_finish = self.get_time_waiting_for_planner_to_finish()
+        allocation_actions = [a for a in self.executed if isinstance(a, Allocate)]
+        plan_actions = [a for a in self.executed if isinstance(a, Plan)]
 
         time_taken = max((as_start_time(a.end_time) for a in self.executed if not isinstance(a, EventAction)),
                          default=0)
+        time_allocating = sum(a.duration for a in allocation_actions)
+        time_planning_total = sum(a.duration for a in plan_actions)
+        time_planning_makespan = sum(p.duration for p in get_contiguous_periods(plan_actions))
+
+        execution = [action for action in self.executed if type(action) is not Observe]
+
+        data = OrderedDict((
+            ("goal_achieved", float(goal_achieved)),
+            ("end_simulation_time", time_taken),
+            ("time_allocating", time_allocating),
+            ("time_planning_total", time_planning_total),
+            ("time_planning_makespan", time_planning_makespan),
+            ("execution", execution),
+        ))
 
         log.info("Goal achieved: {}", goal_achieved)
-        log.info("Planner called: {}", planner_called)
         log.info("Total time taken: {}", time_taken)
-        log.info("Time spent planning: {}", time_planning)
-        log.info("time_waiting_for_actions_to_finish {}", time_waiting_for_actions_to_finish)
-        log.info("time_waiting_for_planner_to_finish {}", time_waiting_for_planner_to_finish)
+        log.info("Time spent allocating: {}", time_allocating)
+        log.info("Total time spent planning: {}", time_planning_total)
+        log.info("Makespan of time spent planning: {}", time_planning_makespan)
 
-        logger.log_property("goal_achieved", goal_achieved)
-        logger.log_property("planner_called", planner_called)
-        logger.log_property("end_simulation_time", time_taken)
-        logger.log_property("total_time_planning", time_planning)
-        logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
-        logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
-        logger.log_property("execution", [action for action in self.executed
-                                          if type(action) is not Observe], stringify=json_dumps)
+        with open(logger.log_file_name, "w") as f:
+            dump(data, f, cls=ActionEncoder)
 
         log.info("remaining temp nodes: {}",
             [(name, node) for name, node in self.model["graph"]["edges"].items() if name.startswith("temp")])
