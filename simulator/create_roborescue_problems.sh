@@ -23,7 +23,7 @@ do
 	    hospitals="0,0 $((i-1)),$((i-1))"
 	    
 	    # without deaths
-	    name="blocked-with-deaths-size($size).json"
+	    name="blocked-with-deaths-size($size)-agents($a).json"
 	    problem_name="auto-blocked-with-deaths"
 	    
 	    python3 src/problem_creator.py --output="$dir/$name" \
