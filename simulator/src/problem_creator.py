@@ -66,6 +66,8 @@ def parser():
     p.add_argument("--civilians", "-c", required=True, type=int)
     p.add_argument("--edge-length", "-el", default=100, type=int)
 
+    p.add_argument("--max-survival", "-sur", default=-1, type=int)
+
     p.add_argument("--medics", "-m", required=True, type=int)
     p.add_argument("--police", "-p", required=True, type=int)
     p.add_argument("--hospitals", "-ho", required=True, nargs="+", action=PointAction)
@@ -76,7 +78,7 @@ def parser():
 
 
 def create_problem(output, size, buriedness, blockedness, blocked_percentage, civilians, edge_length,
-                   medics, police, hospitals, problem_name, domain):
+                   medics, police, hospitals, problem_name, domain, max_survival):
 
     problem = {
         "problem": problem_name,
@@ -84,7 +86,7 @@ def create_problem(output, size, buriedness, blockedness, blocked_percentage, ci
         "assumed-values": {},
         "objects": create_objects(civilians, buriedness, medics, police, size, hospitals),
         "graph": create_graph(size, hospitals, edge_length, blockedness, blocked_percentage),
-        "events": [],
+        "events": create_death_events(civilians, max_survival),
         "goal": {"soft-goals": [["rescued", "civ{}".format(i)] for i in range(civilians)]},
         "metric": {
             "type": "minimize",
@@ -195,6 +197,21 @@ def create_hospital_names(hospitals):
 def create_building_names(size, hospitals):
     coords = [(x, y) for x in range(size.x) for y in range(size.y)]
     return ["building{}-{}".format(x, y) for x, y in coords if (x, y) not in hospitals]
+
+
+def create_death_events(civilians: int, max_survival: int) -> list:
+    if max_survival == -1:
+        return []
+    else:
+        return [
+            {
+                "time": choice(range(0, max_survival+1, 10)),
+                "object_id": "civ{}".format(i),
+                "predicate": "alive",
+                "becomes": False
+            }
+            for i in range(civilians)
+        ]    
 
 
 if __name__ == "__main__":
