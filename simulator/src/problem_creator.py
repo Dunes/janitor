@@ -206,9 +206,12 @@ def create_death_events(civilians: int, max_survival: int) -> list:
         return [
             {
                 "time": choice(range(0, max_survival+1, 10)),
-                "object_id": "civ{}".format(i),
-                "predicate": "alive",
-                "becomes": False
+                "id": "civ{}".format(i),
+                "type": "object",
+                "predicates": [{
+                    "name": "alive",
+                    "becomes": False
+                }]
             }
             for i in range(civilians)
         ]    
