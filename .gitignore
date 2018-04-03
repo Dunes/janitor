@@ -5,3 +5,4 @@ temp_problems/
 *.pyc
 tfd-src-0.3/
 __pycache__
+.idea
