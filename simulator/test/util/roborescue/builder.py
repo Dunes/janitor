@@ -2,8 +2,8 @@ __author__ = 'jack'
 
 from inspect import getargspec
 from collections import OrderedDict
-from roborescue import action
-from roborescue.problem_encoder import find_object
+from markettaskallocation.roborescue import action
+from markettaskallocation.common.problem_encoder import find_object
 from util.builder import ActionBuilder as ActionBuilderBase
 
 

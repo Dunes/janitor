@@ -2,7 +2,7 @@ from functools import partial
 from simplejson import JSONEncoder, dumps
 
 from action import Action
-from roborescue.event import Event
+from markettaskallocation.common.event import Event
 
 __author__ = 'jack'
 __all__ = ["json_dumps", "ActionEncoder"]

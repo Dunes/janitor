@@ -7,10 +7,10 @@ from decimal import Decimal
 
 from util.roborescue.builder import ModelBuilder
 
-from roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, PoliceExecutor
-from roborescue.goal import Goal, Task, Bid
-from roborescue.action import Move
-from roborescue.event import ObjectEvent, EdgeEvent, Predicate
+from markettaskallocation.roborescue.executor import TaskAllocatorExecutor, AgentExecutor, MedicExecutor, PoliceExecutor
+from markettaskallocation.common.goal import Goal, Task, Bid
+from markettaskallocation.roborescue import Move
+from markettaskallocation.roborescue import ObjectEvent, EdgeEvent, Predicate
 
 
 ZERO = Decimal(0)

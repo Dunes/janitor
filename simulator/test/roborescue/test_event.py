@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from roborescue.event import ObjectEvent, EdgeEvent, Predicate, decode_event
+from markettaskallocation.roborescue import ObjectEvent, EdgeEvent, Predicate, decode_event
 
 __author__ = 'jack'
 

@@ -1,5 +1,5 @@
 import simplejson
-from roborescue.event import decode_event
+from markettaskallocation.common.event import decode_event
 from decimal import Decimal
 from jsonencoder import ActionEncoder
 

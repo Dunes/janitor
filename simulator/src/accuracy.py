@@ -1,6 +1,9 @@
 from decimal import Decimal, ROUND_DOWN, ROUND_CEILING
 
-__all__ = ["increment", "quantize", "as_end_time", "as_start_time", "to_prev_start_time"]
+__all__ = [
+    "increment", "quantize", "as_end_time", "as_start_time", "to_prev_start_time",
+    "INSTANTANEOUS_ACTION_DURATION",
+]
 
 zero = Decimal("0")
 one = Decimal("1")
@@ -28,6 +31,7 @@ def as_end_time(value: Decimal) -> Decimal:
     if value.is_infinite():
         return value
     return value.quantize(precision, rounding=ROUND_CEILING) - increment
+
 
 def as_next_end_time(value: Decimal) -> Decimal:
     return as_end_time(value) + one

@@ -109,9 +109,13 @@ def run_single_agent_replan_simulator(domain_template="../janitor/{}-domain.pddl
 
 
 def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
-    from roborescue import plan_decoder, problem_encoder
-    from roborescue.simulator import Simulator
-    from roborescue.executor import EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor
+    from markettaskallocation.roborescue import plan_decoder
+    from markettaskallocation.common import problem_encoder
+    from markettaskallocation.common.simulator import Simulator
+    from markettaskallocation.roborescue.executor import (
+        EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor,
+    )
+    from markettaskallocation.roborescue.action import REAL_ACTIONS
 
     args = parser().parse_args()
     log.info(args)
@@ -155,7 +159,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     # setup simulator
     executors = dict({e.agent: e for e in agent_executors},
                      allocator=allocator_executor, event_executor=event_executor)
-    simulator = Simulator(model, executors)
+    simulator = Simulator(model, executors, real_actions=REAL_ACTIONS)
 
     # run simulator
     with logger.Logger(log_file_name, args.log_directory) as result_logger:
@@ -167,6 +171,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
 
     if not result:
         exit(1)
+
 
 if __name__ == "__main__":
     run_roborescue_simulator()

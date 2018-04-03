@@ -1,10 +1,10 @@
 from numbers import Number
 from pddl_parser import get_text_file_handle
 
-from .goal import Goal
+from markettaskallocation.common.goal import Goal
 
 __author__ = 'jack'
-__all__ = ["encode_problem", "encode_problem_to_file"]
+__all__ = ["encode_problem", "encode_problem_to_file", "find_object", "create_predicate"]
 
 
 class PddlGoal:

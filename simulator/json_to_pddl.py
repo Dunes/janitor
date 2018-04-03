@@ -8,7 +8,7 @@ if not any(pathlib.Path(p).resolve() == src for p in sys.path):
     sys.path.append(str(src))
 
 import argparse
-from roborescue.problem_encoder import encode_problem_to_file
+from markettaskallocation.common.problem_encoder import encode_problem_to_file
 from problem_parser import decode
 
 

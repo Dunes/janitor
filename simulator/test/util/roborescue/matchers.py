@@ -10,7 +10,7 @@ from hamcrest import anything, is_, is_not
 from hamcrest.core.core.isanything import IsAnything
 
 
-from roborescue.problem_encoder import find_object
+from markettaskallocation.common.problem_encoder import find_object
 
 __all__ = ["has_agent", "has_edge", "has_node"]
 

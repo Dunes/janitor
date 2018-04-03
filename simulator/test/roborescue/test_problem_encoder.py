@@ -6,11 +6,11 @@ from decimal import Decimal
 
 from util.roborescue import make_bidirectional
 
-from roborescue.problem_encoder import (encode_objects, encode_init, encode_graph, collate_objects, encode_goal,
-                                        encode_metric, create_predicate, collate_object_types, encode_deadlines,
-                                        convert_goals)
+from markettaskallocation.common.problem_encoder import (encode_objects, encode_init, encode_graph, collate_objects, encode_goal,
+                                                         encode_metric, create_predicate, collate_object_types, encode_deadlines,
+                                                         convert_goals)
 
-from roborescue.goal import Goal
+from markettaskallocation.common.goal import Goal
 
 __author__ = 'jack'
 

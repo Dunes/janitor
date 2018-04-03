@@ -6,10 +6,11 @@ from decimal import Decimal
 from logging import getLogger
 from fractions import Fraction
 from simplejson import dump
+from typing import Sequence
 
 from accuracy import quantize, as_end_time, as_start_time
-from roborescue.action import Plan, Observe, Move, Unblock, Load, Unload, Rescue, EventAction, Allocate
-from action_state import ExecutionState, ActionState
+from markettaskallocation.common.action import Action, Plan, Observe, EventAction, Allocate
+from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
 from priority_queue import MultiActionStateQueue
@@ -36,7 +37,7 @@ class Simulator:
 
     ID_COUNTER = count()
 
-    def __init__(self, model, executors, plan_logger=None, time=quantize(0)):
+    def __init__(self, model, executors, plan_logger=None, time=quantize(0), *, real_actions: Sequence[Action]):
         self.model = model
         self.executors = executors
         self.plan_logger = plan_logger if plan_logger else DummyLogger()
@@ -44,6 +45,7 @@ class Simulator:
         self.stalled = set()
         self.time = time
         self.start_time = self.time
+        self.real_actions = tuple(real_actions)
         self.id = next(self.ID_COUNTER)
 
     def copy_with(self, *, model=None, executors=None, plan_logger=None, time=None):
@@ -51,8 +53,9 @@ class Simulator:
         executors = executors if executors else [executor.copy() for executor in self.executors]
         plan_logger = plan_logger if plan_logger else DummyLogger()
         time = time if time else self.time
-        return Simulator(model=model, executors=executors, plan_logger=plan_logger,
-            time=time)
+        return Simulator(
+            model=model, executors=executors, plan_logger=plan_logger, time=time, real_actions=self.real_actions
+        )
 
     def run(self, *, deadline=Decimal("Infinity")):
         log.info("Simulator({}).run() deadline={}", self.id, deadline)
@@ -193,7 +196,7 @@ class Simulator:
 
     def get_time_waiting_for_actions_to_finish(self):
         plan_actions = [a for a in self.executed if type(a) is Plan]
-        real_actions = [a for a in self.executed if type(a) in (Move, Unblock, Unload, Load, Rescue)]
+        real_actions = [a for a in self.executed if type(a) in self.real_actions]
 
         total_time = 0
         for p in plan_actions:
@@ -206,7 +209,7 @@ class Simulator:
 
     def get_time_waiting_for_planner_to_finish(self):
         plan_actions = [a for a in self.executed if type(a) is Plan]
-        real_actions = [a for a in self.executed if type(a) in (Move, Unblock, Unload, Load, Rescue)]
+        real_actions = [a for a in self.executed if type(a) in self.real_actions]
 
         total_time = 0
         for p in plan_actions:

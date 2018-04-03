@@ -3,7 +3,7 @@ from logger import StyleAdapter
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 
-from .problem_encoder import find_object, create_predicate
+from markettaskallocation.common.problem_encoder import find_object, create_predicate
 
 
 log = StyleAdapter(getLogger(__name__))

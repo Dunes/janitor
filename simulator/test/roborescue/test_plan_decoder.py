@@ -1,7 +1,7 @@
 from unittest import TestCase
 from io import StringIO
-from roborescue import plan_decoder
-from roborescue.action import Move, Rescue, Load, Unload, Unblock, Clear
+from markettaskallocation.roborescue import plan_decoder
+from markettaskallocation.roborescue import Move, Rescue, Load, Unload, Unblock
 
 
 class TestPlanDecoder(TestCase):

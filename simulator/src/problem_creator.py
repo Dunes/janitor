@@ -8,7 +8,7 @@ from itertools import chain, cycle
 from random import randint as rand, choice, sample
 
 from problem_parser import encode
-from roborescue.action import Observe
+from markettaskallocation.common.action import Observe
 from accuracy import quantize
 from decimal import Decimal
 
