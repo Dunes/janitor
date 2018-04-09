@@ -1,0 +1,110 @@
+{
+	"domain": "janitor",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["cleaned", "rm"],
+			["cleaned", "rm-extra-dirty"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+		"extra-dirty": false,
+		"dirty": true,
+		"dirtiness": "max",
+		"cleaned": false
+	},
+	"objects": {
+		"agent": {
+			"bob": {
+				"available": true,
+				"at": [true, "empty-rm"]
+			},
+			"alice": {
+				"available": true,
+				"at": [true, "empty-rm"]
+			}
+		},
+		"node": {
+			"empty-rm": {}
+		},
+		"room": {
+			"rm": {
+				"known": {},
+				"unknown": {
+					"dirtiness": {
+						"max": 20.000,
+						"min": 0.000,
+						"actual": 15.000
+					},
+					"extra-dirty": {
+						"actual": false
+					},
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					}
+				}
+			},
+			"rm-extra-dirty": {
+				"known": {},
+				"unknown": {
+					"dirtiness": {
+						"max": 5.000,
+						"min": 0.000,
+						"actual": 5.000
+					},
+					"extra-dirty": {
+						"actual": true
+					},
+					"dirty": {
+						"actual": false
+					},
+					"cleaned": {
+						"actual": false
+					}
+				}
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"empty-rm rm": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"empty-rm rm-extra-dirty": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm empty-rm": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-extra-dirty empty-rm": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			}
+		}
+	}
+}

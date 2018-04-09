@@ -1,0 +1,49 @@
+{
+	"domain": "janitor",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["cleaned", "rm-extra-dirty"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+		"extra-dirty": false,
+		"dirty": true,
+		"dirtiness": "max",
+		"cleaned": false
+	},
+	"objects": {
+		"agent": {
+			"alice": {
+				"available": true,
+				"at": [true, "rm-extra-dirty"]
+			},
+			"bob": {
+				"available": true,
+				"at": [true, "rm-extra-dirty"]
+			}
+		},
+		"node": {
+		},
+		"room": {
+			"rm-extra-dirty": {
+				"known": {
+					"dirtiness": 15.000,
+					"extra-dirty": true
+				},
+				"unknown": {}
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+		}
+	}
+}
