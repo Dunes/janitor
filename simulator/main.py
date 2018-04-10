@@ -109,8 +109,7 @@ def run_single_agent_replan_simulator(domain_template="../janitor/{}-domain.pddl
 
 
 def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
-    from markettaskallocation.roborescue import plan_decoder
-    from markettaskallocation.common import problem_encoder
+    from markettaskallocation.roborescue import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.roborescue.executor import (
         EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor,

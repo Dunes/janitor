@@ -1,0 +1,96 @@
+{
+    "events": [
+        {
+            "time": 1000,
+            "type": "object",
+            "predicates": [
+                {
+                    "name": "alive",
+                    "becomes": false
+                }
+            ],
+            "id": "civ0"
+        }
+    ],
+    "metric": {
+        "type": "minimize",
+        "weights": {
+            "soft-goal-violations": {
+                "rescued": 100000
+            },
+            "total-time": 1
+        }
+    },
+    "problem": "auto-blocked-with-deaths",
+    "objects": {
+        "civilian": {
+            "civ0": {
+                "known": {
+                    "buried": true,
+                    "at": [
+                        true,
+                        "building0-1"
+                    ],
+                    "alive": true,
+                    "buriedness": 120
+                },
+                "unknown": {}
+            }
+        },
+        "hospital": {
+            "hospital0-0": {}
+        },
+        "building": {
+            "building0-1": {}
+        },
+        "medic": {
+            "medic0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true,
+                "empty": true
+            }
+        },
+        "police": {
+            "police0": {
+                "at": [
+                    true,
+                    "hospital0-0"
+                ],
+                "available": true
+            }
+        }
+    },
+    "assumed-values": {},
+    "domain": "roborescue",
+    "goal": {
+        "soft-goals": [
+            ["rescued", "civ0"]
+        ]
+    },
+    "graph": {
+        "edges": {
+            "hospital0-0 building0-1": {
+                "known": {
+                    "edge": false,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "blocked-edge": true
+                },
+                "unknown": {}
+            },
+            "building0-1 hospital0-0": {
+                "known": {
+                    "edge": false,
+                    "blockedness": 300,
+                    "distance": 120,
+                    "blocked-edge": true
+                },
+                "unknown": {}
+            }
+        },
+        "bidirectional": false
+    }
+}
