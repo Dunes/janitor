@@ -3,8 +3,7 @@
 	"problem": "test",
 	"goal": {
 		"hard-goals": [
-			["at", "alice", "rm"],
-			["at", "bob", "rm-extra-dirty"]
+			["cleaned", "rm"]
 		]
 	},
 	"metric": {
@@ -21,10 +20,6 @@
 	},
 	"objects": {
 		"agent": {
-			"bob": {
-				"available": true,
-				"at": [true, "empty-rm"]
-			},
 			"alice": {
 				"available": true,
 				"at": [true, "empty-rm"]
@@ -52,25 +47,6 @@
 						"actual": false
 					}
 				}
-			},
-			"rm-extra-dirty": {
-				"known": {},
-				"unknown": {
-					"dirtiness": {
-						"max": 5.000,
-						"min": 0.000,
-						"actual": 5.000
-					},
-					"extra-dirty": {
-						"actual": true
-					},
-					"dirty": {
-						"actual": false
-					},
-					"cleaned": {
-						"actual": false
-					}
-				}
 			}
 		}
 	},
@@ -84,21 +60,7 @@
 				},
 				"unknown": {}
 			},
-			"empty-rm rm-extra-dirty": {
-				"known": {
-					"edge": true,
-					"distance": 20
-				},
-				"unknown": {}
-			},
 			"rm empty-rm": {
-				"known": {
-					"edge": true,
-					"distance": 20
-				},
-				"unknown": {}
-			},
-			"rm-extra-dirty empty-rm": {
 				"known": {
 					"edge": true,
 					"distance": 20

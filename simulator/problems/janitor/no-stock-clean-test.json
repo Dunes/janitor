@@ -30,6 +30,7 @@
 		"room": {
 			"rm": {
 				"known": {
+					"cleaned": false,
 					"dirtiness": 15.000,
 					"dirty": true
 				},

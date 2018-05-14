@@ -34,6 +34,7 @@
 		"room": {
 			"rm-extra-dirty": {
 				"known": {
+					"cleaned": false,
 					"dirtiness": 15.000,
 					"extra-dirty": true
 				},
