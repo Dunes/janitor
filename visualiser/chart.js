@@ -48,7 +48,11 @@ function parseData($) {
     }
 
     if (is_json) {
-        var result = actionsFromJson(data, chart_colours);
+        var d = data;
+        if (data instanceof Object && data.execution !== undefined) {
+            d = data.execution;
+        }
+        var result = actionsFromJson(d, chart_colours);
     } else {
         var result = actionsFromPython(data, chart_colours);
     }
