@@ -1,5 +1,6 @@
 from logging import getLogger
 from copy import deepcopy
+from decimal import Decimal
 
 from logger import StyleAdapter
 from accuracy import as_start_time
@@ -8,13 +9,55 @@ from markettaskallocation.common.event import Predicate, EdgeEvent, ObjectEvent
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
 from markettaskallocation.common.goal import Goal, Task, Bid
 from markettaskallocation.roborescue.action import Move, Unblock
+from markettaskallocation.common.problem_encoder import find_object
+from markettaskallocation.common.domain_context import DomainContext
 
 
-__all__ = ["PoliceExecutor", "MedicExecutor", "EventExecutor", "TaskAllocatorExecutor"]
+__all__ = ["PoliceExecutor", "MedicExecutor", "EventExecutor", "TaskAllocatorExecutor", "RoborescueDomainContext"]
 
 
 __author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
+
+
+class RoborescueDomainContext(DomainContext):
+
+    @property
+    def goal_key(self):
+        return "soft-goals"
+
+    def compute_tasks(self, model, time):
+        goals = model["goal"][self.goal_key]
+        value = model["metric"]["weights"]["soft-goal-violations"]["rescued"]
+        events = model["events"]
+        objects = model["objects"]
+
+        tasks = []
+        for g in goals:
+            civ_id = g[1]
+            civ = find_object(civ_id, objects)
+            if civ["known"].get("rescued"):
+                # goal already achieved
+                continue
+            for e in events:
+                if e.id_ == civ_id and any((p.name == "alive" and p.becomes is False) for p in e.predicates):
+                    deadline = e.time
+                    break
+            else:
+                deadline = Decimal("inf")
+            if deadline <= time:
+                # deadline already elapsed -- cannot achieve this goal
+                log.info("deadline for rescuing {!r} already elapsed".format(civ_id))
+                continue
+            t = Task(Goal(tuple(g), deadline), value)
+            tasks.append(t)
+        return tasks
+
+    def get_metric_from_tasks(self, tasks, base_metric):
+        metric = deepcopy(base_metric)
+        violations = metric["weights"]["soft-goal-violations"]
+        violations.update((task.goal, task.value) for task in tasks)
+        return metric
 
 
 class PoliceExecutor(AgentExecutor):

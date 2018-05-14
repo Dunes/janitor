@@ -5,6 +5,7 @@ from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
+from typing import List
 
 
 from action_state import ActionState
@@ -14,8 +15,8 @@ from planner import Planner
 from planning_exceptions import ExecutionError
 from priority_queue import PriorityQueue
 from markettaskallocation.common.action import Plan, LocalPlan, Observe, EventAction, Allocate
-from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.common.problem_encoder import find_object
+from markettaskallocation.common.goal import Task, Bid
+from markettaskallocation.common.domain_context import DomainContext
 
 
 __all__ = ["Executor", "AgentExecutor", "EventExecutor", "TaskAllocatorExecutor"]
@@ -81,18 +82,6 @@ class Executor(metaclass=ABCMeta):
     def _adjust_plan_helper(plan):
         for action in plan:
             yield action
-
-    @staticmethod
-    def get_metric_from_tasks(tasks, base_metric):
-        """
-        :param tasks: list[Task]
-        :param base_metric: dict
-        :return: dict[Goal, Decimal]
-        """
-        metric = deepcopy(base_metric)
-        violations = metric["weights"]["soft-goal-violations"]
-        violations.update((task.goal, task.value) for task in tasks)
-        return metric
 
 
 class EventExecutor(Executor):
@@ -349,7 +338,7 @@ class TaskAllocatorExecutor(Executor):
     valid_goals = True
 
     def __init__(self, *, agent, planning_time, executor_ids, agent_names, deadline=Decimal("Infinity"), planner,
-                 event_executor):
+                 event_executor, domain_context: DomainContext):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.valid_plan = False
         self.planner = planner
@@ -357,6 +346,7 @@ class TaskAllocatorExecutor(Executor):
         self.executor_ids = executor_ids
         assert len(executor_ids) == len(agent_names)
         self.agent_executor_map = {name: id_ for name, id_ in zip(agent_names, executor_ids)}
+        self.domain_context = domain_context
 
     def copy(self):
         raise NotImplementedError
@@ -410,9 +400,7 @@ class TaskAllocatorExecutor(Executor):
             e.halt(action_state.time)
         self.event_executor.agent_based_events.clear()
 
-        tasks = self.compute_tasks(model["goal"]["soft-goals"],
-                                   model["metric"]["weights"]["soft-goal-violations"]["rescued"],
-                                   model["events"], model["objects"], action_state.time)
+        tasks = self.domain_context.compute_tasks(model, action_state.time)
         if not tasks:
             log.info("All goals are in the past or achieved -- halting")
             # nothing more to do
@@ -451,7 +439,7 @@ class TaskAllocatorExecutor(Executor):
                 start_time = plan_start
 
             goals = [b.task.goal for b in agent_bids]
-            metric = self.get_metric_from_tasks([b.task for b in agent_bids], model["metric"])
+            metric = self.domain_context.get_metric_from_tasks([b.task for b in agent_bids], model["metric"])
             executor.new_plan([LocalPlan(
                 start_time=start_time,
                 duration=self.planning_time,
@@ -471,38 +459,6 @@ class TaskAllocatorExecutor(Executor):
         # tell all agents to stop immediately
         for e_id in self.executor_ids:
             self.EXECUTORS[e_id].halt(time)
-
-    @staticmethod
-    def compute_tasks(goals, value, events, objects, time):
-        """
-        Takes a set of goals and events from a model and computes a list of Tasks for it
-        :param goals:
-        :param value: Decimal
-        :param events: list[Event]
-        :param objects:
-        :param time:
-        :return: list[Task]
-        """
-        tasks = []
-        for g in goals:
-            civ_id = g[1]
-            civ = find_object(civ_id, objects)
-            if civ["known"].get("rescued"):
-                # goal already achieved
-                continue
-            for e in events:
-                if e.id_ == civ_id and any((p.name == "alive" and p.becomes is False) for p in e.predicates):
-                    deadline = e.time
-                    break
-            else:
-                deadline = Decimal("inf")
-            if deadline <= time:
-                # deadline already elapsed -- cannot achieve this goal
-                log.info("deadline for rescuing {!r} already elapsed".format(civ_id))
-                continue
-            t = Task(Goal(tuple(g), deadline), value)
-            tasks.append(t)
-        return tasks
 
     def compute_allocation(self, tasks, model, time):
         tasks = PriorityQueue(tasks, key=attrgetter("goal.deadline", "goal.predicate"))

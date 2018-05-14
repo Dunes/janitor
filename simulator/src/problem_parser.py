@@ -1,4 +1,5 @@
 import simplejson
+import json
 from markettaskallocation.common.event import decode_event
 from decimal import Decimal
 from jsonencoder import ActionEncoder
@@ -16,4 +17,4 @@ def decode(filename):
 
 def encode(filename, obj, **kwargs):
     with open(filename, mode="w") as fh:
-        simplejson.dump(obj, fh, use_decimal=True, cls=ActionEncoder, **kwargs)
+        json.dump(obj, fh, cls=ActionEncoder, **kwargs)

@@ -5,11 +5,12 @@ from itertools import count
 from decimal import Decimal
 from logging import getLogger
 from fractions import Fraction
-from simplejson import dump
+from json import dump
 from typing import Sequence
 
 from accuracy import quantize, as_end_time, as_start_time
 from markettaskallocation.common.action import Action, Plan, Observe, EventAction, Allocate
+from markettaskallocation.common.domain_context import DomainContext
 from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
@@ -37,7 +38,8 @@ class Simulator:
 
     ID_COUNTER = count()
 
-    def __init__(self, model, executors, plan_logger=None, time=quantize(0), *, real_actions: Sequence[Action]):
+    def __init__(self, model, executors, plan_logger=None, time=quantize(0), *, real_actions: Sequence[Action],
+                 domain_context: DomainContext):
         self.model = model
         self.executors = executors
         self.plan_logger = plan_logger if plan_logger else DummyLogger()
@@ -47,6 +49,7 @@ class Simulator:
         self.start_time = self.time
         self.real_actions = tuple(real_actions)
         self.id = next(self.ID_COUNTER)
+        self.domain_context = domain_context
 
     def copy_with(self, *, model=None, executors=None, plan_logger=None, time=None):
         model = model if model else deepcopy(self.model)
@@ -54,7 +57,8 @@ class Simulator:
         plan_logger = plan_logger if plan_logger else DummyLogger()
         time = time if time else self.time
         return Simulator(
-            model=model, executors=executors, plan_logger=plan_logger, time=time, real_actions=self.real_actions
+            model=model, executors=executors, plan_logger=plan_logger, time=time, real_actions=self.real_actions,
+            domain_context=self.domain_context,
         )
 
     def run(self, *, deadline=Decimal("Infinity")):
@@ -135,7 +139,7 @@ class Simulator:
                 self.executors[agent].notify_action_finishing(action_state, self.model)
 
     def is_goal_in_model(self):
-        goals = self.model["goal"]["soft-goals"]
+        goals = self.model["goal"][self.domain_context.goal_key]
         total_goals = len(goals)
         goal = list(tuple(g) for g in goals)
         for obj_type, objects in self.model["objects"].items():
@@ -187,6 +191,7 @@ class Simulator:
         log.info("Makespan of time spent planning: {}", time_planning_makespan)
 
         with open(logger.log_file_name, "w") as f:
+            import pdb; pdb.set_trace()
             dump(data, f, cls=ActionEncoder)
 
         log.info("remaining temp nodes: {}",

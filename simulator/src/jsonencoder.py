@@ -1,5 +1,6 @@
 from functools import partial
-from simplejson import JSONEncoder, dumps
+from json import JSONEncoder, dumps
+from decimal import Decimal
 
 from action import Action
 from markettaskallocation.common.event import Event
@@ -22,6 +23,11 @@ class ActionEncoder(JSONEncoder):
             d = dict(vars(o), id=o.id_, type=o.type)
             d.pop("id_")
             return d
+        elif isinstance(o, Decimal):
+            if o.is_finite():
+                return float(o)
+            else:
+                return str(o)
         return super().default(o)
 
 

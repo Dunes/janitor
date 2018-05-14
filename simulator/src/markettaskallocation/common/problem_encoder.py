@@ -5,7 +5,7 @@ from markettaskallocation.common.goal import Goal
 from abc import ABC, abstractmethod
 
 __author__ = 'jack'
-__all__ = ["ProblemEncoder", "find_object", "create_predicate"]
+__all__ = ["ProblemEncoder", "PddlGoal", "find_object", "create_predicate"]
 
 
 def find_object(object_id, objects, return_type=False):
