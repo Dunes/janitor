@@ -170,7 +170,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
         exit(1)
 
 
-def run_decentralised_janitor_simulator(domain_template="../janitor/{}-domain.pddl"):
+def run_decentralised_janitor_simulator(domain_template="../janitor/{}-decentralised-planner-domain.pddl"):
     from markettaskallocation.janitor import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.janitor.executor import (

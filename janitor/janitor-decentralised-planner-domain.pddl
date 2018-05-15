@@ -14,6 +14,7 @@
 		(dirty ?rm - room)
 		(extra-dirty ?rm - room)
 		(cleaned ?rm - room) ; clean is a keyword
+		(cleaning-assist ?rm - room)
 	)
 	
 	(:functions
@@ -51,24 +52,36 @@
 	)
 	
 	(:durative-action extra-clean
-		:parameters (?a1 - agent ?a2 - agent ?rm - room)
+		:parameters (?a - agent ?rm - room)
 		:duration (= ?duration (dirtiness ?rm))
 		:condition (and
 		    (at start (extra-dirty ?rm))
-			(at start (not (= ?a1 ?a2)))
-			(at start (available ?a1))
-			(at start (available ?a2))
-			(over all (at ?a1 ?rm))
-			(over all (at ?a2 ?rm))
+			(at start (available ?a))
+			(over all (cleaning-assist ?rm))
+			(over all (at ?a ?rm))
 		)
 		:effect (and
 		    (at start (not (extra-dirty ?rm)))
 			(at end (cleaned ?rm))
-			(at start (not (available ?a1)))
-			(at start (not (available ?a2)))
-			(at end (available ?a1))
-			(at end (available ?a1))
+			(at start (not (available ?a)))
+			(at end (available ?a))
 		)
-	)	
+	)
+
+	(:durative-action extra-clean-assist
+		:parameters (?a - agent ?rm - room)
+		:duration (= ?duration (+ 0.001 (dirtiness ?rm)))
+		:condition (and
+		    (at start (extra-dirty ?rm))
+			(at start (available ?a))
+			(over all (at ?a ?rm))
+		)
+		:effect (and
+			(at start (cleaning-assist ?rm))
+			(at end (not (cleaning-assist ?rm)))
+			(at start (not (available ?a)))
+			(at end (available ?a))
+		)
+	)
 	
 )
