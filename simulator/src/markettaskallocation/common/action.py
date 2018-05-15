@@ -1,5 +1,3 @@
-from itertools import chain
-
 from action import Action, Plan, LocalPlan, GetExecutionHeuristic
 from accuracy import as_end_time, INSTANTANEOUS_ACTION_DURATION
 from markettaskallocation.common.problem_encoder import find_object
@@ -33,38 +31,36 @@ class Observe(Action):
         assert self.is_applicable(model), "tried to apply action in an invalid state"
 
         # check if new knowledge
-        changes = []
+        changed = False
         # check to see if observe any objects
-        for object_id, object_ in chain.from_iterable((v.items() for v in model["objects"].values())):
-            unknown = object_.get("unknown")
-            if unknown and object_["known"].get("at", self._default_at)[1] == self.node:
-                object_["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
-                if self._check_new_knowledge(unknown, model["assumed-values"]):
-                    changes.append(object_id)
-                unknown.clear()
+        node = find_object(self.node, model["objects"])
+        unknown = node.get("unknown")
+        if unknown:
+            node["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
+            if self._check_new_knowledge(unknown, model["assumed-values"]):
+                changed = self.node
+            unknown.clear()
 
-        # check to see if observe any edges
-        for object_id, object_ in model["graph"]["edges"].items():
-            unknown = object_.get("unknown")
-            if unknown and self.node in object_id:
-                object_["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
-                if self._check_new_knowledge(unknown, model["assumed-values"]):
-                    changes.append(object_id)
-                unknown.clear()
-
-        return changes
+        # # check to see if observe any edges
+        # for object_id, object_ in model["graph"]["edges"].items():
+        #     unknown = object_.get("unknown")
+        #     if unknown and self.node in object_id:
+        #         object_["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
+        #         if self._check_new_knowledge(unknown, model["assumed-values"]):
+        #             changes.append(object_id)
+        #         unknown.clear()
+        return changed
 
     @staticmethod
     def _get_actual_value(value):
         actual = value["actual"]  # sometimes produces a key referring to another value in `value'
         return actual if actual not in value else value[actual]
 
-    @staticmethod
-    def _check_new_knowledge(unknown_values, assumed_values):
+    def _check_new_knowledge(self, unknown_values, assumed_values):
         no_match = object()
         for key, unknown_value in unknown_values.items():
             assumed_value = assumed_values[key]
-            if unknown_value["actual"] not in (assumed_value, unknown_value.get(assumed_value, no_match)):
+            if self._get_actual_value(unknown_value) not in (assumed_value, unknown_value.get(assumed_value, no_match)):
                 return True
         return False
 

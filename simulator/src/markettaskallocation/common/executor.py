@@ -41,7 +41,7 @@ class Executor(metaclass=ABCMeta):
         self.executed = []
 
     @property
-    def central_executor(self):
+    def central_executor(self) -> "Executor":
         return self.EXECUTORS[self.central_executor_id]
 
     @abstractmethod
@@ -208,24 +208,24 @@ class AgentExecutor(Executor):
             else:
                 self.new_plan(self.adjust_plan(action_state.action.apply(model)))
         else:
-            changes = action_state.action.apply(model)
-            if changes:
+            changed = action_state.action.apply(model)
+            if changed:
                 # new knowledge
-                self.central_executor.notify_new_knowledge(action_state.time, changes)
+                self.central_executor.notify_new_knowledge(action_state.time, changed)
 
-    def notify_new_knowledge(self, time, changes):
+    def notify_new_knowledge(self, time, changed):
         if not self.plan:
             return
-        for change in changes:
-            for action_ in self.plan:
-                if action_.is_effected_by_change(change):
-                    raise NotImplementedError("need to create metric from tasks")
-                    # goals = [bid.task.goal for bid in self.won_bids]
-                    # self.halt(time)
-                    # # No metric. Can either still complete all goals or not
-                    # self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
-                    #                          self.agent, goals=goals, metric=None)])
-                    # return
+        effected = []
+        for action_ in self.plan:
+            if action_.is_effected_by_change(changed):
+                effected.append(action_)
+        if effected:
+            self.resolve_effected_plan(time, changed, effected)
+
+    @abstractmethod
+    def resolve_effected_plan(self, time, changed, effected):
+        raise NotImplementedError
 
     def new_plan(self, plan):
         self.plan = plan

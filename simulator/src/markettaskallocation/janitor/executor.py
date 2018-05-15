@@ -6,11 +6,9 @@ from typing import List, Dict
 from logger import StyleAdapter
 from accuracy import as_start_time
 from planner import Planner
-from markettaskallocation.common.event import Predicate, EdgeEvent, ObjectEvent
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
 from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.roborescue.action import Move, Unblock
-from markettaskallocation.common.problem_encoder import find_object
+from markettaskallocation.janitor.action import Move, Observe, LocalPlan
 from markettaskallocation.common.domain_context import DomainContext
 
 
@@ -99,3 +97,21 @@ class JanitorExecutor(AgentExecutor):
 
     def transform_model_for_planning(self, model, goals):
         return deepcopy(model)
+
+    def resolve_effected_plan(self, time, changed_id, effected):
+        self.central_executor.notify_planning_failure(self.id, time)
+        # goals = [bid.task.goal for bid in self.won_bids]
+        # self.halt(time)new_pla
+        # # No metric. Can either still complete all goals or not
+        # self.new_plan([LocalPlan(as_start_time(time), self.central_executor.planning_time,
+        #                          self.agent, goals=goals, metric=None)])
+        # return
+
+    def new_plan(self, plan):
+        new_plan = []
+        for action in plan:
+            new_plan.append(action)
+            if isinstance(action, Move):
+                new_plan.append(Observe(action.end_time, action.agent, action.end_node))
+        super().new_plan(new_plan)
+

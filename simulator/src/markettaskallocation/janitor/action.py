@@ -176,6 +176,9 @@ class Clean(Action):
 		room["dirtiness"] -= self.duration
 		assert room["dirtiness"] > 0
 
+	def is_effected_by_change(self, id_):
+		return self.room == id_
+
 
 class ExtraClean(Action):
 	"""
