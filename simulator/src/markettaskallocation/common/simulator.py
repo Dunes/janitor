@@ -112,9 +112,9 @@ class Simulator:
                 plan_action_states.append(action_state)
             elif not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agent, action_state.action)
-                log.error("agent state: {}", self.model["agents"][action_state.action.agent])
+                log.error("agent state: {}", self.domain_context.get_agent(self.model, action_state.action.agent))
                 if hasattr(action_state.action, "room"):
-                    log.error("room state: {}", self.model["nodes"][action_state.action.room])
+                    log.error("room state: {}", self.domain_context.get_node(self.model, action_state.action.room))
                 # agents should never stall when they are in charge of replanning locally.
                 raise ExecutionError("agent has stalled")
             else:
@@ -191,7 +191,6 @@ class Simulator:
         log.info("Makespan of time spent planning: {}", time_planning_makespan)
 
         with open(logger.log_file_name, "w") as f:
-            import pdb; pdb.set_trace()
             dump(data, f, cls=ActionEncoder)
 
         log.info("remaining temp nodes: {}",

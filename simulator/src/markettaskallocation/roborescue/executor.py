@@ -1,6 +1,7 @@
 from logging import getLogger
 from copy import deepcopy
 from decimal import Decimal
+import itertools
 
 from logger import StyleAdapter
 from accuracy import as_start_time
@@ -58,6 +59,12 @@ class RoborescueDomainContext(DomainContext):
         violations = metric["weights"]["soft-goal-violations"]
         violations.update((task.goal, task.value) for task in tasks)
         return metric
+
+    def get_agent(self, model, key):
+        return self._try_get_object(model, ("police", "medic"), key)
+
+    def get_node(self, model, key):
+        return self._try_get_object(model, ("building", "hospital"), key)
 
 
 class PoliceExecutor(AgentExecutor):

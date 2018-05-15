@@ -35,7 +35,7 @@ class JanitorDomainContext(DomainContext):
         tasks = []
         for g in goals:
             room_id = g[1]
-            room = find_object(room_id, objects)
+            room = self.get_node(model, room_id)
             if room["known"].get("cleaned"):
                 # goal already achieved
                 continue
@@ -50,6 +50,12 @@ class JanitorDomainContext(DomainContext):
         metric["weights"] = {"total-time": 1, "soft-goal-violations": {task.goal: task.value for task in tasks}}
         return metric
 
+    def get_agent(self, model, key):
+        return self._try_get_object(model, ("agent",), key)
+
+    def get_node(self, model, key):
+        return self._try_get_object(model, ("room", "node"), key)
+
 
 class JanitorExecutor(AgentExecutor):
 
@@ -63,7 +69,6 @@ class JanitorExecutor(AgentExecutor):
         :param goals: list[Goal]
         :return: list[Event]
         """
-        log.warning("{}", goals)
         if not all(g.predicate[0] == "cleaned" for g in goals):
             raise NotImplementedError("don't know how to produce events for {}".format(
                 list(g.predicate for g in goals if g.predicate[0] != "cleaned")

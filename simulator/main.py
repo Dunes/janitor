@@ -112,7 +112,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     from markettaskallocation.roborescue import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.roborescue.executor import (
-        EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor,
+        EventExecutor, MedicExecutor, PoliceExecutor, TaskAllocatorExecutor, RoborescueDomainContext
     )
     from markettaskallocation.roborescue.action import REAL_ACTIONS
 
@@ -131,8 +131,6 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
         for key in list(edges):
             new_key = " ".join(reversed(key.split(" ")))
             edges[new_key] = copy.deepcopy(edges[key])
-    # add agents key
-    model["agents"] = dict(itertools.chain(model["objects"]["police"].items(), model["objects"]["medic"].items()))
 
     # create planner
     planner = Planner(decoder=decoder,
@@ -149,7 +147,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     allocator_executor = TaskAllocatorExecutor(agent="allocator", planning_time=args.planning_time,
                                                executor_ids=[e.id for e in agent_executors],
                                                agent_names=[e.agent for e in agent_executors], planner=planner,
-                                               event_executor=event_executor)
+                                               event_executor=event_executor, domain_context=RoborescueDomainContext())
 
     event_executor.central_executor_id = allocator_executor.id
     for e in agent_executors:

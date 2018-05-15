@@ -20,3 +20,22 @@ class DomainContext(metaclass=ABCMeta):
 	@abstractmethod
 	def get_metric_from_tasks(self, tasks: List[Task], base_metric: dict) -> Dict[Goal, Decimal]:
 		raise NotImplementedError
+
+	@abstractmethod
+	def get_agent(self, model, key):
+		raise NotImplementedError
+
+	@abstractmethod
+	def get_node(self, model, key):
+		raise NotImplementedError
+
+	@staticmethod
+	def _try_get_object(model, types, key):
+
+		for type_ in types:
+			dict_ = model["objects"][type_]
+			try:
+				return dict_[key]
+			except KeyError:
+				pass
+		raise KeyError(key)
