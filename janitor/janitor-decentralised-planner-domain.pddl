@@ -15,6 +15,7 @@
 		(extra-dirty ?rm - room)
 		(cleaned ?rm - room) ; clean is a keyword
 		(cleaning-assist ?rm - room)
+		(cleaning-assisted ?rm - room)
 	)
 	
 	(:functions
@@ -78,6 +79,7 @@
 		)
 		:effect (and
 			(at start (cleaning-assist ?rm))
+			(at start (cleaning-assisted ?rm))
 			(at end (not (cleaning-assist ?rm)))
 			(at start (not (available ?a)))
 			(at end (available ?a))
