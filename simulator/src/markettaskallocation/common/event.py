@@ -10,7 +10,11 @@ log = StyleAdapter(getLogger(__name__))
 __author__ = 'jack'
 
 
-Predicate = namedtuple("Predicate", "name becomes")
+class Predicate:
+    def __init__(self, name, becomes, was=None):
+        self.name = name
+        self.becomes = becomes
+        self.was = was
 
 
 class Event(metaclass=ABCMeta):
@@ -35,8 +39,11 @@ class Event(metaclass=ABCMeta):
         pddl_predicates = []
         for p in self.predicates:
             if p.becomes is False:
-                obj = self.find_object(model)
-                predicate_value = obj["known"][p.name]
+                if p.was is not None:
+                    predicate_value = p.was
+                else:
+                    obj = self.find_object(model)
+                    predicate_value = obj["known"][p.name]
                 predicate = "not", create_predicate(p.name, predicate_value, self.id_)
             else:
                 predicate = create_predicate(p.name, p.becomes, self.id_)
