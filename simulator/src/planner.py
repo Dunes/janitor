@@ -50,7 +50,7 @@ class Planner(object):
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     @synchronized(_lock)
-    def get_plan(self, model, *, duration, agent, goals, metric, time, events):
+    def get_plan(self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None):
         log.debug("Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration, agent,
             goals, metric, time, events)
         problem_file = self.create_problem_file(model, agent, goals, metric, time + duration, events)
@@ -63,6 +63,8 @@ class Planner(object):
             args = self.planner_location, "-N", self.domain_file, problem_file
             report = False
             single_pass = True
+        if effective_start_time is None:
+            effective_start_time = time + duration
 
         p = Popen(args, stdin=None, stdout=PIPE, cwd=self.working_directory)
         # Thread(target=self.problem_encoder.encode_problem_to_file, name="problem-writer",
@@ -76,7 +78,7 @@ class Planner(object):
             while True:
                 try:
                     plan = list(self.decoder.decode_plan_from_optic(
-                        process_output, time=time + duration, report_incomplete_plan=report))
+                        process_output, time=effective_start_time, report_incomplete_plan=report))
                 except IncompletePlanException:
                     break
                 if single_pass:
@@ -90,9 +92,12 @@ class Planner(object):
                 f.write(repr(plan))
         return plan
 
-    def get_plan_and_time_taken(self, model, *, duration, agent, goals, metric, time, events):
+    def get_plan_and_time_taken(self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None):
         start = _time()
-        plan = self.get_plan(model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events)
+        plan = self.get_plan(
+            model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events,
+            effective_start_time=effective_start_time,
+        )
         end = _time()
         return plan, min(Decimal(end - start).quantize(_precision, rounding=ROUND_DOWN), duration)
 
