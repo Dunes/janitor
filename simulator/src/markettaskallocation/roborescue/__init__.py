@@ -18,9 +18,12 @@ class RoborescuePddlGoal(PddlGoal):
 	def is_main_goal(goal: Goal) -> bool:
 		return goal.predicate[0] == "rescued"
 
-	@property
-	def sub_goal_map(self):
-		return self._SUB_GOAL_MAP
+	def as_sub_goal(self, goal, required_symbol):
+		return (
+				(self._SUB_GOAL_MAP[goal.predicate[0]],)
+				+ goal.predicate[1:]
+				+ (required_symbol,)
+		)
 
 
 problem_encoder = ProblemEncoder(RoborescuePddlGoal, ("police", "medic"))

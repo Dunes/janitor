@@ -175,12 +175,19 @@ class AgentExecutor(Executor):
         if isinstance(action_state.action, LocalPlan):
             planner = self.central_executor.planner
             action_ = action_state.action
+            # we have to wait for both sets of planning to finish before we can act
+            effective_start_time = action_state.time + action_.duration
+            if self.bidding_state == "won-extra-dirty-assist":
+                # TODO: remove this hack (only works for janitor domain currently) (might passively work for roborescue though)
+                effective_start_time += action_.duration
             planning_model = self.transform_model_for_planning(model, action_.goals)
             new_plan, time_taken = planner.get_plan_and_time_taken(
                 planning_model, duration=action_.duration,
-                agent=self.agent, goals=action_.goals, metric=action_.metric, time=action_state.time,
+                agent=self.agent, goals=action_.goals, metric=action_.metric,
+                time=action_state.time,
                 events=self.transform_events_for_planning(self.central_executor.event_executor.known_events,
-                                                          planning_model)
+                                                          planning_model),
+                effective_start_time=effective_start_time,
             )
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
@@ -272,7 +279,7 @@ class AgentExecutor(Executor):
                     assert False
                 self.executing = ActionState(new_action).start()
 
-    def notify_bid_won(self, bid: Bid):
+    def notify_bid_won(self, bid: Bid, model):
         self.won_bids.append(bid)
 
     def compute_bid_value(self, task, plan, time):
@@ -489,7 +496,7 @@ class TaskAllocatorExecutor(Executor):
 
             # notify winner of winning bid
             allocation[winning_bid.task.goal] = winning_bid
-            self.executor_by_name(winning_bid.agent).notify_bid_won(winning_bid)
+            self.executor_by_name(winning_bid.agent).notify_bid_won(winning_bid, model)
 
             # add additional goals if not already met
             tasks.extend(winning_bid.requirements)

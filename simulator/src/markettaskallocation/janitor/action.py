@@ -10,7 +10,7 @@ from decimal import Decimal
 log = StyleAdapter(getLogger(__name__))
 
 __all__ = [
-	"Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Clean", "ExtraClean",
+	"Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Move", "Clean", "ExtraClean", "ExtraCleanAssist",
 	"Observe", "Allocate", "EventAction", "REAL_ACTIONS",
 ]
 
@@ -182,29 +182,25 @@ class Clean(Action):
 
 class ExtraClean(Action):
 	"""
-	:type agent1: str
-	:type agent2: str
+	:type agent: str
 	:type room: str
 	"""
-	agent1 = None
-	agent2 = None
+	agent = None
 	room = None
 
-	_format_attrs = ("start_time", "duration", "agent1", "agent2", "room", "partial")
+	_format_attrs = ("start_time", "duration", "agent", "room", "partial")
 
-	def __init__(self, start_time, duration, agent1, agent2, room, partial=None):
+	def __init__(self, start_time, duration, agent, room, partial=None):
 		super().__init__(start_time, duration, partial)
-		object.__setattr__(self, "agent1", agent1)
-		object.__setattr__(self, "agent2", agent2)
+		object.__setattr__(self, "agent", agent)
 		object.__setattr__(self, "room", room)
 
 	def is_applicable(self, model):
-		for agent_str in self.agents():
-			agent = model["objects"]["agent"].get(agent_str)
-			if agent is None:
-				return False
-			if agent["at"][1] != self.room:
-				return False
+		agent = model["objects"]["agent"].get(self.agent)
+		if agent is None:
+			return False
+		if agent["at"][1] != self.room:
+			return False
 		room = model["objects"]["room"][self.room]["known"]
 		if "extra-dirty" not in room or not room["extra-dirty"]:
 			return False
@@ -227,8 +223,42 @@ class ExtraClean(Action):
 		room["dirtiness"] -= self.duration
 		assert room["dirtiness"] > 0
 
-	def agents(self) -> set:
-		return {self.agent1, self.agent2}
+
+class ExtraCleanAssist(Action):
+	"""
+	:type agent: str
+	:type room: str
+	"""
+	agent = None
+	room = None
+
+	_format_attrs = ("start_time", "duration", "agent", "room", "partial")
+
+	def __init__(self, start_time, duration, agent, room, partial=None):
+		super().__init__(start_time, duration, partial)
+		object.__setattr__(self, "agent", agent)
+		object.__setattr__(self, "room", room)
+
+	def is_applicable(self, model):
+		agent = model["objects"]["agent"].get(self.agent)
+		if agent is None:
+			return False
+		if agent["at"][1] != self.room:
+			return False
+		room = model["objects"]["room"][self.room]["known"]
+		if "extra-dirty" not in room or not room["extra-dirty"]:
+			return False
+		return True
+
+	def apply(self, model):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		room = model["objects"]["room"][self.room]["known"]
+
+	def partially_apply(self, model, deadline):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		room = model["objects"]["room"][self.room]["known"]
+		room["dirtiness"] -= self.duration
+		assert room["dirtiness"] > 0
 
 
-REAL_ACTIONS = (Move, Clean, ExtraClean)
+REAL_ACTIONS = (Move, Clean, ExtraClean, ExtraCleanAssist)

@@ -80,20 +80,15 @@ class PddlGoal(ABC):
         else:
             return self.as_pddl_predicate(goal, required_symbol)
 
-    @property
     @abstractmethod
-    def sub_goal_map(self):
+    def as_sub_goal(self, goal: Goal, required_symbol: str):
         raise NotImplementedError
 
     def as_pddl_predicate(self, goal: Goal, required_symbol: str) -> tuple:
         if self.is_main_goal(goal):
             return goal.predicate
         else:
-            return (
-                    (self.sub_goal_map[goal.predicate[0]],)
-                    + goal.predicate[1:]
-                    + (required_symbol,)
-            )
+            return self.as_sub_goal(goal, required_symbol)
 
 
 class ProblemEncoder:

@@ -1,0 +1,15 @@
+
+
+	# -- planner encode goals as preferences (for janitor)
+	# -- actions stalling not fatal?
+	# -- assist and extra clean is_applicable is correct
+
+
+* Start to trial planner on bigger domains
+* Get planner running on big domains in cloud
+
+* get simulator working with roborescue again (is it broken, I don;t know)
+* rerun problem in cloud
+
+* add third domain to decentralised planner
+* run problems in cloud
