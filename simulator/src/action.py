@@ -15,6 +15,7 @@ class Action(object):
     duration = None
 
     _ordinal = 1
+    assist_action = False
 
     def __init__(self, start_time, duration, partial=None):
         object.__setattr__(self, "start_time", start_time)
@@ -42,6 +43,9 @@ class Action(object):
 
     def is_applicable(self, model):
         raise NotImplementedError()
+
+    def start(self, model):
+        pass
 
     def apply(self, model):
         raise NotImplementedError()

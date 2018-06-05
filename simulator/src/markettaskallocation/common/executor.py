@@ -200,6 +200,7 @@ class AgentExecutor(Executor):
                     self.agent, action_.goals))
         else:
             self.executing = action_state.start()
+            action_state.action.start(model)
 
     def notify_action_finishing(self, action_state: ActionState, model):
         if self.halted and action_state != self.executing:

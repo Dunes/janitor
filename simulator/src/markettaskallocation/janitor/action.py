@@ -180,6 +180,9 @@ class Clean(Action):
 		return self.room == id_
 
 
+CLEANING_ASSIST = "cleaning-assist-not-for-planner"
+
+
 class ExtraClean(Action):
 	"""
 	:type agent: str
@@ -202,7 +205,9 @@ class ExtraClean(Action):
 		if agent["at"][1] != self.room:
 			return False
 		room = model["objects"]["room"][self.room]["known"]
-		if "extra-dirty" not in room or not room["extra-dirty"]:
+		if not room.get("extra-dirty", False):
+			return False
+		if not room.get(CLEANING_ASSIST, False):
 			return False
 		return True
 
@@ -233,6 +238,7 @@ class ExtraCleanAssist(Action):
 	room = None
 
 	_format_attrs = ("start_time", "duration", "agent", "room", "partial")
+	assist_action = True
 
 	def __init__(self, start_time, duration, agent, room, partial=None):
 		super().__init__(start_time, duration, partial)
@@ -245,20 +251,22 @@ class ExtraCleanAssist(Action):
 			return False
 		if agent["at"][1] != self.room:
 			return False
-		room = model["objects"]["room"][self.room]["known"]
-		if "extra-dirty" not in room or not room["extra-dirty"]:
-			return False
 		return True
+
+	def start(self, model):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		room = model["objects"]["room"][self.room]["known"]
+		assert CLEANING_ASSIST not in room
+		room[CLEANING_ASSIST] = True
 
 	def apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		room = model["objects"]["room"][self.room]["known"]
+		assert CLEANING_ASSIST in room
+		del room[CLEANING_ASSIST]
 
 	def partially_apply(self, model, deadline):
-		assert self.is_applicable(model), "tried to apply action in an invalid state"
-		room = model["objects"]["room"][self.room]["known"]
-		room["dirtiness"] -= self.duration
-		assert room["dirtiness"] > 0
+		self.apply(model)
 
 
 REAL_ACTIONS = (Move, Clean, ExtraClean, ExtraCleanAssist)

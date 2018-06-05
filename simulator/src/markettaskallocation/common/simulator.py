@@ -106,11 +106,17 @@ class Simulator:
                 .format(first.state, first.time, first.action))
 
     def start_actions(self, action_states):
-        plan_action_states = []
-        for action_state in action_states:
-            if isinstance(action_state.action, Plan):
-                plan_action_states.append(action_state)
-            elif not action_state.action.is_applicable(self.model):
+        def sort_key(as_):
+            return (
+                not as_.action.assist_action,  # assist actions first
+                isinstance(as_.action, Plan),  # plan actions last
+                as_.action.agent == "planner",  # central planner very last
+            )
+
+        sorted_action_states = sorted(action_states, key=sort_key)
+
+        for action_state in sorted_action_states:
+            if not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agent, action_state.action)
                 log.error("agent state: {}", self.domain_context.get_agent(self.model, action_state.action.agent))
                 if hasattr(action_state.action, "room"):
@@ -121,15 +127,12 @@ class Simulator:
                 agent = action_state.action.agent
                 self.executors[agent].notify_action_starting(action_state, self.model)
 
-        # sort so central planner is last
-        plan_action_states = sorted(plan_action_states, key=lambda as_: "planner" == as_.action.agent)
-        for action_state in plan_action_states:
-            agent = action_state.action.agent
-            new_action_state = self.executors[agent].notify_action_starting(action_state, self.model)
-            # self.plan_logger.log_plan(new_action_state.action.plan)
-
     def finish_actions(self, action_states):
-        for action_state in action_states:
+        def sort_key(as_):
+            return as_.action.assist_action,  # non-assist actions first
+
+        sorted_action_states = sorted(action_states, key=sort_key)
+        for action_state in sorted_action_states:
             if not action_state.action.is_applicable(self.model):
                 log.error("{} has stalled attempting: {}", action_state.action.agent, action_state.action)
                 # agents should never stall when they are in charge of replanning locally.
