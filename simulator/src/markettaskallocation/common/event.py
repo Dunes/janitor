@@ -16,6 +16,12 @@ class Predicate:
         self.becomes = becomes
         self.was = was
 
+    def __repr__(self):
+        if self.was is None:
+            return "Predicate(name={!r}, becomes={!r})".format(self.name, self.becomes)
+        else:
+            return "Predicate(name={!r}, becomes={!r}, was={!r})".format(self.name, self.becomes, self.was)
+
 
 class Event(metaclass=ABCMeta):
 

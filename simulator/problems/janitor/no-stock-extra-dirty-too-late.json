@@ -1,0 +1,87 @@
+{
+	"description": "force alice to assist, and bob to clean the extra-dirty room first, even though it would be slower == needs hack to make the extra-dirty room first to be auctioned",
+	"domain": "janitor",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["cleaned", "rm-extra-dirty"],
+			["cleaned", "rm-easy-win"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+		"extra-dirty": false,
+		"dirty": true,
+		"dirtiness": "max",
+		"cleaned": false
+	},
+	"objects": {
+		"agent": {
+			"alice": {
+				"available": true,
+				"at": [true, "assist-start"]
+			},
+			"bob": {
+				"available": true,
+				"at": [true, "rm-easy-win"]
+			}
+		},
+		"node": {
+			"assist-start": {
+				"known": {},
+				"unknown": {}
+			}
+
+		},
+		"room": {
+			"rm-extra-dirty": {
+				"known": {
+					"cleaned": false,
+					"dirtiness": 30,
+					"extra-dirty": true,
+					"required": true
+				},
+				"unknown": {}
+			},
+			"rm-easy-win": {
+				"known": {
+					"cleaned": false,
+					"dirtiness": 40,
+					"dirty": true
+				},
+				"unknown": {}
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"assist-start rm-extra-dirty": {
+				"known": {
+					"edge": true,
+					"distance": 50
+				},
+				"unknown": {}
+			},
+			"rm-extra-dirty rm-easy-win": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-easy-win rm-extra-dirty": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			}
+		}
+	}
+}

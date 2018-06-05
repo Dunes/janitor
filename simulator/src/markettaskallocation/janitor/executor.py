@@ -24,7 +24,7 @@ WON_NOTHING = "won-nothing"
 WON_EXTRA_DIRTY_MAIN = "won-extra-dirty-main"
 WON_EXTRA_DIRTY_ASSIST = "won-extra-dirty-assist"
 
-MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.001')
+MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.500')
 
 
 class JanitorDomainContext(DomainContext):
@@ -95,7 +95,7 @@ class JanitorExecutor(AgentExecutor):
                         time=action_.start_time + action_.duration + MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS,
                         id_=action_.room,
                         predicates=[
-                            Predicate(name="cleaning-assist", becomes=False, was=True),
+                            Predicate(name="required", becomes=False),
                         ],
                         hidden=False,
                         external=False,

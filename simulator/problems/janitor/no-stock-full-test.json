@@ -54,7 +54,9 @@
 				}
 			},
 			"rm-extra-dirty": {
-				"known": {},
+				"known": {
+					"required": true
+				},
 				"unknown": {
 					"dirtiness": {
 						"max": 5.000,

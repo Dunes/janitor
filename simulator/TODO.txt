@@ -1,6 +1,5 @@
 
-
-	# -- planner encode goals as preferences (for janitor)
+	# -- make sure all test domains are correct (especially no-stock-large-test.json)
 
 * Start to trial planner on bigger domains
 * Get planner running on big domains in cloud
