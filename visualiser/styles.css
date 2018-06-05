@@ -2,7 +2,7 @@ div.input {
 	float:left;
 }
 
-div {
+div:not(.google-visualization-tooltip) {
     margin: 5px;
 }
 
