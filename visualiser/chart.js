@@ -24,11 +24,13 @@ function parseData($) {
         // janitor actions
         "Clean": "#FFA500",
         "ExtraClean": "#006400",
-        "ExtraCleanPart": "#006400",
+        "ExtraCleanPart": "#4d934d",
+        "ExtraCleanAssist": "#4d934d",
 		// partial janitor actions
         "Partial Clean": "#ffc04d",
         "Partial ExtraClean": "#4d934d",
-        "Partial ExtraCleanPart": "#4d934d",
+        "Partial ExtraCleanPart": "#9ccb9c",
+        "Partial ExtraCleanAssist": "#9ccb9c",
 
         // roborescue actions
         "Unblock": "#FFA500",
@@ -119,10 +121,12 @@ function actionLabel(name, components, chart_colours, colours, partial) {
         label = name + " " + components.room;
     } else if (name === "ExtraCleanPart") {
         label = "ExtraClean " + components.room;
-    } else if (name == "Rescue") {
+    } else if (name === "Rescue") {
     	label = "Rescue " + components.target
-    } else if (name == "Unblock") {
+    } else if (name === "Unblock") {
     	label = "Unblock " + components.end_node
+    } else if (name === "ExtraCleanAssist") {
+        label = "ExtraCleanAssist " + components.room;
     }
 
 
