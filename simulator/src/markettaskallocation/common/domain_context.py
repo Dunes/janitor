@@ -29,6 +29,10 @@ class DomainContext(metaclass=ABCMeta):
 	def get_node(self, model, key):
 		raise NotImplementedError
 
+	@abstractmethod
+	def task_key_for_allocation(self, task):
+		raise NotImplementedError
+
 	@staticmethod
 	def _try_get_object(model, types, key):
 

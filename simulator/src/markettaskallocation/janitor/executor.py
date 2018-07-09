@@ -29,6 +29,11 @@ MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.500')
 
 class JanitorDomainContext(DomainContext):
 
+    TASK_ALLOCATION_ORDER = {
+        "cleaning-assisted": 0,
+        "cleaned": 1
+    }
+
     @property
     def goal_key(self):
         return "hard-goals"
@@ -61,6 +66,9 @@ class JanitorDomainContext(DomainContext):
 
     def get_node(self, model, key):
         return self._try_get_object(model, ("room", "node"), key)
+
+    def task_key_for_allocation(self, task):
+        return self.TASK_ALLOCATION_ORDER[task.goal.predicate[0]], task.goal.deadline, task.goal.predicate
 
 
 class JanitorExecutor(AgentExecutor):

@@ -5,7 +5,6 @@ from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
-from typing import List
 
 
 from action_state import ActionState
@@ -13,7 +12,7 @@ from logger import StyleAdapter
 from accuracy import as_start_time
 from planner import Planner
 from planning_exceptions import ExecutionError
-from priority_queue import PriorityQueue
+from priority_queue import KeyBasedPriorityQueue
 from markettaskallocation.common.action import Plan, LocalPlan, Observe, EventAction, Allocate
 from markettaskallocation.common.goal import Task, Bid
 from markettaskallocation.common.domain_context import DomainContext
@@ -469,7 +468,7 @@ class TaskAllocatorExecutor(Executor):
             self.EXECUTORS[e_id].halt(time)
 
     def compute_allocation(self, tasks, model, time):
-        tasks = PriorityQueue(tasks, key=attrgetter("goal.deadline", "goal.predicate"))
+        tasks = KeyBasedPriorityQueue(tasks, key=self.domain_context.task_key_for_allocation)
         allocation = {}
         computation_time = 0
 

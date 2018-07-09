@@ -66,6 +66,9 @@ class RoborescueDomainContext(DomainContext):
     def get_node(self, model, key):
         return self._try_get_object(model, ("building", "hospital"), key)
 
+    def task_key_for_allocation(self, task):
+        return task.goal.deadline, task.goal.predicate
+
 
 class PoliceExecutor(AgentExecutor):
 
