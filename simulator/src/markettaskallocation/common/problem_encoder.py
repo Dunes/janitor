@@ -58,7 +58,12 @@ class PddlGoal(ABC):
 
     @property
     def explicit_deadline(self):
-        return not self.is_main_goal(self.goal)
+        raise NotImplementedError
+        # return not self.is_main_goal(self.goal)
+
+    @property
+    def explicit_earliest(self):
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
@@ -96,12 +101,15 @@ class ProblemEncoder:
     def __init__(self, pddl_goal_type, agent_type_names):
         self.pddl_goal_type = pddl_goal_type
         self.agent_type_names = agent_type_names
+        self.indent = 0
 
     def encode_problem_to_file(self, filename, model, agent, goals, metric, time, events):
         with get_text_file_handle(filename) as fh:
             self.encode_problem(fh, model, agent, goals, metric, time, events)
 
     def encode_problem(self, out, model, agent, goals, metric, time, events):
+        self.indent = 0
+
         # convert data
         use_preferences = metric is not None
         goals = self.convert_goals(goals, use_preferences)
@@ -133,26 +141,33 @@ class ProblemEncoder:
 
     @staticmethod
     def encode_objects(out, objects):
-        out.write("(:objects ")
+        out.write("(:objects \n")
         for type_, instances in objects.items():
             if instances:
+                out.write("    ")
                 out.write(" ".join(instances))
                 out.write(" - ")
                 out.write(type_)
-                out.write(" ")
+                out.write("\n")
         out.write(")\n")
 
     def encode_init(self, out, objects, goals, graph, assumed_values, events=None, model=None, time=None,
                     predicates=None):
-        out.write("(:init ")
+        out.write("(:init \n")
+        self.indent += 1
+        out.write("\n    ; objects\n")
         self.encode_init_helper(out, objects, assumed_values)
         if predicates:
-            self.encode_deadlines(out, goals)
+            out.write("\n    ; timings\n")
+            self.encoding_timings(out, goals)
+        out.write("\n    ; events\n")
         self.encode_events(out, events, time, model)
+        out.write("\n    ; graph\n")
         self.encode_graph(out, graph, assumed_values)
-        out.write(") ")
+        out.write(")\n")
+        self.indent -= 1
 
-    def encode_deadlines(self, out, goals):
+    def encoding_timings(self, out, goals):
         """
         :param out: io.StringIO
         :param goals: list[PddlGoal]
@@ -162,15 +177,15 @@ class ProblemEncoder:
             if not goal.explicit_deadline:
                 continue
             predicate = "required", goal.required_symbol
-            self.encode_predicate(out, predicate)
+            self.encode_predicate(out, predicate, indent="    ")
             if goal.goal.deadline.is_finite():
-                self.encode_predicate(out, ("at", goal.goal.deadline, ("not", predicate)))
+                self.encode_predicate(out, ("at", goal.goal.deadline, ("not", predicate)), indent="    ")
 
     def encode_events(self, out, events, time, model):
         if events:
             for event in events:
                 for pred in event.get_predicates(time, model):
-                    self.encode_predicate(out, pred)
+                    self.encode_predicate(out, pred, indent="    ")
 
     def encode_init_helper(self, out, items, assumed_values):
         for object_name, object_values in items.items():
@@ -185,7 +200,7 @@ class ProblemEncoder:
             value = value_getter(possible_values, value_name, assumed_values)
             predicate = create_predicate(value_name, value, object_name)
             if predicate is not None:
-                self.encode_predicate(out, predicate)
+                self.encode_predicate(out, predicate, indent="    ")
 
     @staticmethod
     def unknown_value_getter(possible_values, object_name, assumed_values):
@@ -197,7 +212,8 @@ class ProblemEncoder:
         else:
             return value
 
-    def encode_predicate(self, out, args):
+    def encode_predicate(self, out, args, indent=''):
+        out.write(indent)
         out.write("(")
         for arg in args:
             if isinstance(arg, (list, tuple)):
@@ -206,6 +222,8 @@ class ProblemEncoder:
                 out.write(str(arg))
             out.write(" ")
         out.write(") ")
+        if indent:
+            out.write("\n")
 
     def encode_function(self, out, args, value):
         out.write("(= ")
@@ -217,9 +235,9 @@ class ProblemEncoder:
         self.encode_init_helper(out, graph["edges"], assumed_values)
 
     def encode_goal(self, out, goals):
-        out.write("(:goal (and ")
+        out.write("(:goal (and \n")
         for goal in goals:
-            self.encode_predicate(out, goal.goal_tuple)
+            self.encode_predicate(out, goal.goal_tuple, indent="    ")
         out.write("))\n")
 
     def encode_metric(self, out, metric, goals):
