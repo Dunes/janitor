@@ -1,26 +1,21 @@
 from collections import namedtuple
+from decimal import Decimal
+from typing import Sequence
 
 __author__ = 'jack'
 
 
-class Goal(namedtuple("Goal", "predicate deadline")):
-    """
-    :type predicate: tuple[str]
-    :type deadline: decimal.Decimal
-    """
-    def __init__(self, predicate, deadline):
+class Goal(namedtuple("Goal", "predicate deadline relative_earliest")):
+    def __init__(self, predicate: Sequence[str], deadline: Decimal, relative_earliest: Decimal):
         super().__init__()
         self.predicate = predicate
         self.deadline = deadline
+        self.relative_earliest = relative_earliest
     del __init__
 
 
 class Task(namedtuple("Task", "goal value")):
-    """
-    :type goal: Goal
-    :type value: decimal.Decimal
-    """
-    def __init__(self, goal, value):
+    def __init__(self, goal: Goal, value: Decimal):
         super().__init__()
         self.goal = goal
         self.value = value
@@ -44,15 +39,15 @@ class Task(namedtuple("Task", "goal value")):
 
 
 class Bid(namedtuple("Bid", "agent estimated_endtime additional_cost task requirements computation_time")):
-    """
-    :type agent: str
-    :type estimated_endtime: decimal.Decimal
-    :type additional_cost: decimal.Decimal
-    :type task: Task
-    :type requirements: tuple[Task]
-    :type computation_time: decimal.Decimal
-    """
-    def __init__(self, agent, estimated_endtime, additional_cost, task, requirements, computation_time):
+    def __init__(
+            self,
+            agent: str,
+            estimated_endtime: Decimal,
+            additional_cost: Decimal,
+            task: Task,
+            requirements: Sequence[Task],
+            computation_time: Decimal,
+    ):
         super().__init__()
         self.agent = agent
         self.estimated_endtime = estimated_endtime

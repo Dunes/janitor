@@ -50,7 +50,7 @@ class RoborescueDomainContext(DomainContext):
                 # deadline already elapsed -- cannot achieve this goal
                 log.info("deadline for rescuing {!r} already elapsed".format(civ_id))
                 continue
-            t = Task(Goal(tuple(g), deadline), value)
+            t = Task(Goal(tuple(g), deadline, relative_earliest=Decimal(0)), value)
             tasks.append(t)
         return tasks
 
@@ -75,7 +75,7 @@ class PoliceExecutor(AgentExecutor):
     type_ = "police"
     ignore_internal_events = True
 
-    def extract_events(self, plan, goals):
+    def extract_events_from_plan(self, plan, goals):
         """
 
         :param plan: list[Action]
@@ -138,7 +138,7 @@ class MedicExecutor(AgentExecutor):
     type_ = "medic"
     ignore_internal_events = False
 
-    def extract_events(self, plan, goals):
+    def extract_events_from_plan(self, plan, goals):
         """
 
         :param plan: list[Action]
@@ -204,8 +204,9 @@ class MedicExecutor(AgentExecutor):
             task_value = task.value / len(blocked_edge_actions)
             spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
             requirements = tuple(
-                Task(goal=Goal(predicate=("edge", a.start_node, a.end_node),
-                    deadline=a.start_time + spare_time), value=task_value)
+                Task(goal=Goal(
+                    predicate=("edge", a.start_node, a.end_node), deadline=a.start_time + spare_time,
+                    relative_earliest=Decimal(0)), value=task_value)
                 for a in blocked_edge_actions
             )
         else:

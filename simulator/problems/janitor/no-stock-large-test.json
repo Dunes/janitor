@@ -30,403 +30,678 @@
 			["cleaned", "rm-ed3"]
 		]
 	},
-	"objects": {
-		"agent": {
-			"agent1": {
-				"agent": true,
-				"at": [
-					true,
-					"empty-rm1"
-				],
-				"available": true
-			},
-			"agent2": {
-				"agent": true,
-				"at": [
-					true,
-					"empty-rm1"
-				],
-				"available": true
-			},
-			"agent3": {
-				"agent": true,
-				"at": [
-					true,
-					"empty-rm1"
-				],
-				"available": true
-			}
-		},
-		"node": {
-			"empty-rm1": {},
-			"rm-ed1": {
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"rm5 rm-ed2": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 32,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": false
-					},
-					"extra-dirty": {
-						"actual": true
-					}
-				}
+				"unknown": {}
 			},
-			"rm-ed2": {
+			"rm11 rm-ed3": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 38,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": false
-					},
-					"extra-dirty": {
-						"actual": true
-					}
-				}
+				"unknown": {}
 			},
-			"rm-ed3": {
+			"empty-rm1 rm-ed1": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 22,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": false
-					},
-					"extra-dirty": {
-						"actual": true
-					}
-				}
+				"unknown": {}
 			},
-			"rm1": {
+			"rm-ed2 rm3": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 38,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm10": {
+			"empty-rm1 rm4": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 26,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm11": {
+			"rm11 rm10": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 23,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm12": {
+			"rm3 rm-ed2": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 35,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm2": {
+			"rm4 rm1": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 34,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm3": {
+			"rm4 empty-rm1": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 24,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm4": {
+			"rm-ed2 rm5": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 39,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm5": {
+			"rm10 rm6": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 39,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm6": {
+			"rm7 rm8": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 21,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm7": {
+			"rm-ed1 rm1": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 34,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm8": {
+			"rm9 rm12": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 28,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
 			},
-			"rm9": {
+			"rm12 rm9": {
 				"known": {
-					"is-room": true
+					"edge": true,
+					"distance": 20
 				},
-				"unknown": {
-					"cleaned": {
-						"actual": false
-					},
-					"dirtiness": {
-						"actual": 37,
-						"max": 40,
-						"min": 20
-					},
-					"dirty": {
-						"actual": true
-					},
-					"extra-dirty": {
-						"actual": false
-					}
-				}
+				"unknown": {}
+			},
+			"rm7 rm6": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed1 rm2": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed2 rm9": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm6 rm10": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm9 rm-ed2": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm8 rm7": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm8 rm9": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm5 rm8": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm6 rm7": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm2 rm-ed1": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm8 rm-ed3": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"empty-rm1 rm5": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm9 rm8": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm2 rm5": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed1 empty-rm1": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm8 rm5": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed3 rm11": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm1 rm-ed1": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm7 rm11": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm1 rm4": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm6 rm4": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm3 rm2": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed3 rm8": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm2 rm3": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm5 rm2": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm5 empty-rm1": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm4 rm6": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"empty-rm1 rm7": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm12 rm-ed3": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm-ed3 rm12": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm7 empty-rm1": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm11 rm7": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
+			},
+			"rm10 rm11": {
+				"known": {
+					"edge": true,
+					"distance": 20
+				},
+				"unknown": {}
 			}
 		}
 	},
-	"graph": {
-		"bidirectional": false,
-		"edges": [
-			["rm1", "rm4", 20],
-			["rm1", "rm-ed1", 20],
-			["rm-ed1", "empty-rm1", 20],
-			["rm-ed1", "rm1", 20],
-			["rm-ed1", "rm2", 20],
-			["rm2", "rm5", 20],
-			["rm2", "rm-ed1", 20],
-			["rm2", "rm3", 20],
-			["rm3", "rm-ed2", 20],
-			["rm3", "rm2", 20],
-			["rm4", "rm1", 20],
-			["rm4", "rm6", 20],
-			["rm4", "empty-rm1", 20],
-			["empty-rm1", "rm-ed1", 20],
-			["empty-rm1", "rm7", 20],
-			["empty-rm1", "rm4", 20],
-			["empty-rm1", "rm5", 20],
-			["rm5", "rm2", 20],
-			["rm5", "rm8", 20],
-			["rm5", "empty-rm1", 20],
-			["rm5", "rm-ed2", 20],
-			["rm-ed2", "rm3", 20],
-			["rm-ed2", "rm9", 20],
-			["rm-ed2", "rm5", 20],
-			["rm6", "rm4", 20],
-			["rm6", "rm10", 20],
-			["rm6", "rm7", 20],
-			["rm7", "empty-rm1", 20],
-			["rm7", "rm11", 20],
-			["rm7", "rm6", 20],
-			["rm7", "rm8", 20],
-			["rm8", "rm5", 20],
-			["rm8", "rm-ed3", 20],
-			["rm8", "rm7", 20],
-			["rm8", "rm9", 20],
-			["rm9", "rm-ed2", 20],
-			["rm9", "rm12", 20],
-			["rm9", "rm8", 20],
-			["rm10", "rm6", 20],
-			["rm10", "rm11", 20],
-			["rm11", "rm7", 20],
-			["rm11", "rm10", 20],
-			["rm11", "rm-ed3", 20],
-			["rm-ed3", "rm8", 20],
-			["rm-ed3", "rm11", 20],
-			["rm-ed3", "rm12", 20],
-			["rm12", "rm9", 20],
-			["rm12", "rm-ed3", 20]
-		]
+	"objects": {
+		"node": {
+			"empty-rm1": {
+				"known": {},
+				"unknown": {}
+			}
+		},
+		"room": {
+			"rm-ed1": {
+				"unknown": {
+					"dirty": {
+						"actual": false
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 32
+					},
+					"extra-dirty": {
+						"actual": true
+					}
+				},
+				"known": {
+				}
+			},
+			"rm5": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 39
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm6": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 21
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm7": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 34
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm-ed2": {
+				"unknown": {
+					"dirty": {
+						"actual": false
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 38
+					},
+					"extra-dirty": {
+						"actual": true
+					}
+				},
+				"known": {
+				}
+			},
+			"rm-ed3": {
+				"unknown": {
+					"dirty": {
+						"actual": false
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 22
+					},
+					"extra-dirty": {
+						"actual": true
+					}
+				},
+				"known": {
+				}
+			},
+			"rm4": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 39
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm8": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 28
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm2": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 34
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm11": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 23
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm3": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 24
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm9": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 37
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+
+				}
+			},
+			"rm10": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 26
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+				}
+			},
+			"rm1": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 38
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+				}
+			},
+			"rm12": {
+				"unknown": {
+					"dirty": {
+						"actual": true
+					},
+					"cleaned": {
+						"actual": false
+					},
+					"dirtiness": {
+						"min": 20,
+						"max": 40,
+						"actual": 35
+					},
+					"extra-dirty": {
+						"actual": false
+					}
+				},
+				"known": {
+				}
+			}
+		},
+		"agent": {
+			"agent1": {
+				"at": [true, "empty-rm1"],
+				"available": true
+			},
+			"agent3": {
+				"at": [true, "empty-rm1"],
+				"available": true
+			},
+			"agent2": {
+				"at": [true, "empty-rm1"],
+				"available": true
+			}
+		}
 	}
 }

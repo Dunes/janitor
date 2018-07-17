@@ -53,7 +53,7 @@ class TestTaskAllocatorExecutor(TestCase):
         goals = [["rescue", "civ0"]]
         events = []
         value = Decimal(1000)
-        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf")), value=value)
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=Decimal("inf"), relative_earliest=Decimal(0)), value=value)
         model = ModelBuilder().with_object("civ0").model
 
         # when
@@ -71,7 +71,7 @@ class TestTaskAllocatorExecutor(TestCase):
         deadline = Decimal(1)
         value = Decimal(1000)
         events = [ObjectEvent(time=deadline, id_="civ0", predicates=[Predicate(name="alive", becomes=False)])]
-        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=deadline), value=value)
+        expected = Task(goal=Goal(predicate=("rescue", "civ0"), deadline=deadline, relative_earliest=Decimal(0)), value=value)
         model = ModelBuilder().with_object("civ0").model
 
         # when
@@ -99,7 +99,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_allocate_goals_in_deadline_order(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate=("a",), deadline=ONE), ZERO), Task(Goal(predicate=("b",), deadline=ZERO), ZERO)]
+        tasks = [Task(Goal(predicate=("a",), deadline=ONE, relative_earliest=Decimal(0)), ZERO), Task(
+            Goal(predicate=("b",), deadline=ZERO, relative_earliest=Decimal(0)), ZERO)]
         bids = {t: Bid(agent=executor.agent, estimated_endtime=ONE, additional_cost=ONE, task=t, requirements=(),
                        computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
@@ -115,7 +116,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_duplicated_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE)] * 2
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ONE)] * 2
         summed_tasks = Task.combine(tasks)
         bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=summed_tasks,
                   requirements=(), computation_time=ZERO)
@@ -131,7 +132,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_duplicated_tasks_with_different_value(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        goal = Goal(predicate=("a",), deadline=ZERO)
+        goal = Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0))
         tasks = [Task(goal, ZERO), Task(goal, ONE)]
         summed_tasks = Task.combine(tasks)
         bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=summed_tasks,
@@ -148,7 +149,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_no_merge_tasks_with_same_deadlines(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE), Task(Goal(predicate=("b",), deadline=ZERO), ONE)]
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ONE), Task(
+            Goal(predicate=("b",), deadline=ZERO, relative_earliest=Decimal(0)), ONE)]
         bids = {t: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=t, requirements=(),
                        computation_time=ZERO) for t in tasks}
         executor.generate_bid.side_effect = lambda task, planner, model, time, events: bids[task]
@@ -164,9 +166,9 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_some_tasks_with_same_deadlines(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        tasks = [Task(Goal(predicate=("a",), deadline=ZERO), ONE),
-                 Task(Goal(predicate=("b",), deadline=ZERO), ONE),
-                 Task(Goal(predicate=("a",), deadline=ZERO), ONE)]
+        tasks = [Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ONE),
+                 Task(Goal(predicate=("b",), deadline=ZERO, relative_earliest=Decimal(0)), ONE),
+                 Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ONE)]
         a_tasks = Task.combine([tasks[0], tasks[2]])
         b_task = tasks[1]
         bids = {
@@ -189,8 +191,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_allocates_sub_tasks(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        primary_task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
-        secondary_task = Task(Goal(predicate=("b",), deadline=ONE), ZERO)
+        primary_task = Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ZERO)
+        secondary_task = Task(Goal(predicate=("b",), deadline=ONE, relative_earliest=Decimal(0)), ZERO)
         bids = {
             primary_task: Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=primary_task,
                               requirements=(secondary_task,), computation_time=ZERO),
@@ -210,8 +212,8 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
     def test_merge_same_tasks_when_added_later(self):
         # given
         allocator, (executor,) = self.set_up_executors(1)
-        needed_twice_task = Task(Goal(predicate=("a",), deadline=ZERO), ONE)
-        requiring_task = Task(Goal(predicate=("b",), deadline=ONE), ONE)
+        needed_twice_task = Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ONE)
+        requiring_task = Task(Goal(predicate=("b",), deadline=ONE, relative_earliest=Decimal(0)), ONE)
         tasks = [needed_twice_task, requiring_task]
 
         needed_twice_bid = Bid(agent=executor.agent, estimated_endtime=ZERO, additional_cost=ZERO,
@@ -231,7 +233,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         # given
         ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
-        task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
+        task = Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ZERO)
         bids = [Bid(agent=e.agent, estimated_endtime=ZERO, additional_cost=e.id * ten, task=task, requirements=(),
                     computation_time=ZERO) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
@@ -247,7 +249,7 @@ class TestTaskAllocatorExecutorComputeAllocation(TestCase):
         # given
         ten = Decimal(10)
         allocator, executors = self.set_up_executors(2)
-        task = Task(Goal(predicate=("a",), deadline=ZERO), ZERO)
+        task = Task(Goal(predicate=("a",), deadline=ZERO, relative_earliest=Decimal(0)), ZERO)
         bids = [Bid(agent=e.agent, estimated_endtime=ZERO, additional_cost=ZERO, task=task, requirements=(),
                     computation_time=e.id * ten) for e in executors]
         executors[0].generate_bid.return_value = bids[0]
@@ -265,7 +267,7 @@ class TestAgentExecutor(TestCase):
     def test_first_compute_bid_value(self):
         # given
         agent = MedicExecutor(agent="agent", planning_time=ZERO)
-        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
         plan = [Move(ZERO, Decimal(10), "agent", "x", "y")]
 
@@ -277,7 +279,7 @@ class TestAgentExecutor(TestCase):
 
     def test_subsequent_compute_bid_value(self):
         agent = MedicExecutor(agent="agent", planning_time=ZERO)
-        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("at", "agent", "y"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
         agent.notify_bid_won(Bid(
             agent="agent",
@@ -301,7 +303,7 @@ class TestMedicGenerateBid(TestCase):
     def test_one_length_plan(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b").model
@@ -322,7 +324,7 @@ class TestMedicGenerateBid(TestCase):
     def test_two_length_plan(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b").model
@@ -343,7 +345,7 @@ class TestMedicGenerateBid(TestCase):
     def test_generate_correct_requirements_from_plan(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b", blockedness=ONE).model
@@ -360,14 +362,14 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(ONE))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0)),
                                     value=ONE)
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_only_factor_in_blocked_edge_in_requirements(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b", blockedness=ONE).with_edge("b", "c").model
@@ -386,14 +388,14 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(Decimal(3)))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")),
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0)),
                                     value=Decimal(1))
         assert_that(bid.requirements, equal_to((expected_requirement,)))
 
     def test_value_requirements_equally(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b", blockedness=ONE).with_edge("b", "c", blockedness=ONE).model
@@ -413,15 +415,15 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(Decimal(3)))
         expected_requirement = (
-            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity")), value=Decimal("0.5")),
-            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity")), value=Decimal("0.5")),
+            Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0)), value=Decimal("0.5")),
+            Task(goal=Goal(predicate=("edge", "b", "c"), deadline=Decimal("Infinity"), relative_earliest=Decimal(0)), value=Decimal("0.5")),
         )
         assert_that(bid.requirements, equal_to(expected_requirement))
 
     def test_generate_correct_finite_deadline(self):
         # given
         medic = MedicExecutor(agent="medic", planning_time=ZERO)
-        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal(10))
+        goal = Goal(predicate=("rescued", "civ0"), deadline=Decimal(10), relative_earliest=Decimal(0))
         task = Task(goal=goal, value=ONE)
 
         model = ModelBuilder().with_edge("a", "b", blockedness=ONE).model
@@ -437,7 +439,7 @@ class TestMedicGenerateBid(TestCase):
         assert_that(bid.task, equal_to(task))
         assert_that(bid.computation_time, equal_to(time_taken))
         assert_that(bid.additional_cost, equal_to(ONE))
-        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9)), value=ONE),
+        expected_requirement = Task(goal=Goal(predicate=("edge", "a", "b"), deadline=Decimal(9), relative_earliest=Decimal(0)), value=ONE),
         assert_that(bid.requirements, equal_to(expected_requirement))
 
 
@@ -449,7 +451,7 @@ class TestMedicPreparingForPlanning(TestCase):
         model = ModelBuilder(bidirectional=True).with_edge(from_node="building0", to_node="building1").model
         events = [EdgeEvent(time=ZERO, id_="building0 building1", hidden=True, external=True,
             predicates=[Predicate(name="edge", becomes=True)])]
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = medic.transform_events_for_planning(events, goals, model)
@@ -467,7 +469,7 @@ class TestMedicPreparingForPlanning(TestCase):
             predicates=[Predicate(name="alive", becomes=False)])
         discard_event = ObjectEvent(time=ZERO, id_="civ1", hidden=False, external=True,
             predicates=[Predicate(name="alive", becomes=False)])
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = medic.transform_events_for_planning([keep_event, discard_event], goals, model)
@@ -487,7 +489,7 @@ class TestMedicPreparingForPlanning(TestCase):
             EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=True,
                 predicates=[Predicate(name="edge", becomes=True)])
         ]
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = medic.transform_events_for_planning(events, goals, model)
@@ -525,7 +527,7 @@ class TestMedicPreparingForPlanning(TestCase):
             .with_object("civ0", type="civilian") \
             .with_object("civ1", type="civilian") \
             .model
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = medic.transform_model_for_planning(model, goals)
@@ -544,7 +546,7 @@ class TestPolicePreparingForPlanning(TestCase):
         model = ModelBuilder(bidirectional=True).with_edge(from_node="building0", to_node="building1").model
         events = [EdgeEvent(time=ZERO, id_="building0 building1", hidden=True, external=True,
             predicates=[Predicate(name="edge", becomes=True)])]
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = police.transform_events_for_planning(events, goals, model)
@@ -560,7 +562,7 @@ class TestPolicePreparingForPlanning(TestCase):
             ObjectEvent(time=ZERO, id_="civ0", hidden=False, external=True,
                 predicates=[Predicate(name="alive", becomes=False)])
         ]
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = police.transform_events_for_planning(events, goals, model)
@@ -584,7 +586,7 @@ class TestPolicePreparingForPlanning(TestCase):
             predicates=[Predicate(name="edge", becomes=True)])
         keep_event = EdgeEvent(time=ZERO, id_="building0 building1", hidden=False, external=True,
             predicates=[Predicate(name="edge", becomes=True)])
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = police.transform_events_for_planning([discard_event, keep_event], goals, model)
@@ -622,7 +624,7 @@ class TestPolicePreparingForPlanning(TestCase):
             .with_object("civ0", type="civilian") \
             .with_object("civ1", type="civilian") \
             .model
-        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO)]
+        goals = [Goal(predicate=("rescued", "civ0"), deadline=ZERO, relative_earliest=Decimal(0))]
 
         # when
         actual = police.transform_model_for_planning(model, goals)

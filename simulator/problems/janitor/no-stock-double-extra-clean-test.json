@@ -36,7 +36,6 @@
 		"room": {
 			"rm-extra-dirty-0": {
 				"known": {
-					"required": true
 				},
 				"unknown": {
 					"dirtiness": {
@@ -57,7 +56,6 @@
 			},
 			"rm-extra-dirty-1": {
 				"known": {
-					"required": true
 				},
 				"unknown": {
 					"dirtiness": {

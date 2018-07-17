@@ -9,7 +9,7 @@ from planner import Planner
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
 from markettaskallocation.common.event import ObjectEvent, Predicate
 from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.janitor.action import Move, Observe, Clean, ExtraClean, ExtraCleanAssist
+from markettaskallocation.janitor.action import Move, Observe, Clean, ExtraClean, ExtraCleanAssist, Action
 from markettaskallocation.common.domain_context import DomainContext
 
 
@@ -51,7 +51,8 @@ class JanitorDomainContext(DomainContext):
                 # goal already achieved
                 continue
             deadline = Decimal("inf")
-            t = Task(Goal(tuple(g), deadline), value)
+            earliest = Decimal(0)
+            t = Task(Goal(tuple(g), deadline, earliest), value)
             tasks.append(t)
         return tasks
 
@@ -77,13 +78,7 @@ class JanitorExecutor(AgentExecutor):
     ignore_internal_events = False
     bidding_state = WON_NOTHING
 
-    def extract_events(self, plan, goals):
-        """
-
-        :param plan: list[Action]
-        :param goals: list[Goal]
-        :return: list[Event]
-        """
+    def extract_events_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[ObjectEvent]:
         events = []
         for action_ in plan:
             if isinstance(action_, ExtraCleanAssist):
@@ -92,18 +87,7 @@ class JanitorExecutor(AgentExecutor):
                         time=action_.start_time,
                         id_=action_.room,
                         predicates=[
-                            Predicate(name="cleaning-assist", becomes=True),
-                        ],
-                        hidden=False,
-                        external=False,
-                    )
-                )
-                events.append(
-                    ObjectEvent(
-                        time=action_.start_time + action_.duration + MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS,
-                        id_=action_.room,
-                        predicates=[
-                            Predicate(name="required", becomes=False),
+                            Predicate(name="cleaning-assist", becomes=True, was=False),
                         ],
                         hidden=False,
                         external=False,
@@ -125,13 +109,13 @@ class JanitorExecutor(AgentExecutor):
                 return None
 
         plan, time_taken = planner.get_plan_and_time_taken(
-            model=self.convert_model_for_bid_generation(model, room_id, extra_dirty, assist),
+            model=self.convert_model_for_bid_generation(model, extra_dirty, assist),
             duration=self.planning_time,
             agent=self.agent,
             goals=[task.goal] + [b.task.goal for b in self.won_bids],
             metric=None,
             time=time,
-            events=events
+            events=events + self.create_events_for_bid_generation(model, task.goal, extra_dirty, assist, time + self.planning_time)
         )
         if plan is None:
             return None
@@ -143,8 +127,8 @@ class JanitorExecutor(AgentExecutor):
             requirements = (
                 Task(
                     goal=Goal(
-                        predicate=("cleaning-assisted", room_id),
-                        deadline=action.start_time + spare_time,
+                        predicate=("cleaning-assisted", room_id), deadline=action.start_time + spare_time,
+                        relative_earliest=action.start_time - self.planning_time - time,
                     ),
                     value=task_value
                 ),
@@ -159,23 +143,96 @@ class JanitorExecutor(AgentExecutor):
                    requirements=requirements,
                    computation_time=time_taken)
 
-    def convert_model_for_bid_generation(self, model, room_id: str, extra_dirty: bool, assist: bool):
+    def convert_model_for_bid_generation(self, model, extra_dirty: bool, assist: bool):
         model = deepcopy(model)
         if self.bidding_state == WON_EXTRA_DIRTY_MAIN or (extra_dirty and not assist):
             assert self.bidding_state != WON_EXTRA_DIRTY_ASSIST
-            self._add_assisted_clean_predicate(model)
-
+            self._add_bid_predicates(model, {"can-finish": True, "cleaning-assist": True})
+        elif self.bidding_state == WON_EXTRA_DIRTY_ASSIST or (extra_dirty and assist):
+            assert self.bidding_state != WON_EXTRA_DIRTY_MAIN
+            self._add_bid_predicates(model, {"can-finish": True})
         return model
 
     @staticmethod
-    def _add_assisted_clean_predicate(model):
+    def _add_bid_predicates(model, bid_predicates):
         for room in model["objects"]["room"].values():
             known = room["known"]
             if known.get("extra-dirty", False):
-                known["cleaning-assist"] = True
+                known.update(bid_predicates)
+
+    def create_events_for_bid_generation(self, model, goal: Goal, extra_dirty: bool, assist: bool, time: Decimal) -> List[ObjectEvent]:
+        events = []
+        # add events for new task
+        if extra_dirty:
+            events.append(ObjectEvent(
+                time=time + goal.relative_earliest,
+                id_=goal.predicate[1],
+                predicates=[
+                    Predicate(name="can-start", becomes=True, was=False),
+                ],
+                hidden=False,
+                external=True,
+            ))
+            if goal.deadline.is_finite():
+                end_predicates = [Predicate(name="can-finish", becomes=False, was=True)]
+                if not assist:
+                    end_predicates.append(Predicate(name="cleaning-assist", becomes=False, was=True))
+                events.append(ObjectEvent(
+                    time=goal.deadline,
+                    id_=goal.predicate[1],
+                    predicates=end_predicates,
+                    hidden=False,
+                    external=True,
+                ))
+
+        # add events for previously won tasks
+        events += self.events_from_goals(model, [bid.task.goal for bid in self.won_bids], time + self.planning_time)
+
+        return events
 
     def transform_model_for_planning(self, model, goals):
-        return deepcopy(model)
+        planning_model = deepcopy(model)
+        for goal in goals:
+            planning_model["objects"]["room"][goal.predicate[1]]["known"]["can-finish"] = True
+        return planning_model
+
+    def transform_events_for_planning(self, events, model, goals, execution_start_time):
+        events = super().transform_events_for_planning(events, model, goals, execution_start_time)
+        events += self.events_from_goals(model, goals, execution_start_time)
+        return events
+
+    def events_from_goals(self, model, goals, execution_start_time):
+        if self.bidding_state == WON_NOTHING:
+            return []
+
+        events = []
+        rooms = model["objects"]["room"]
+        if self.bidding_state in (WON_EXTRA_DIRTY_MAIN, WON_EXTRA_DIRTY_ASSIST):
+            for goal in goals:
+                room = rooms[goal.predicate[1]]["known"]
+                if room.get("extra-dirty", False):
+                    events.append(ObjectEvent(
+                        time=execution_start_time + goal.relative_earliest,
+                        id_=goal.predicate[1],
+                        predicates=[
+                            Predicate(name="can-start", becomes=True, was=False),
+                        ],
+                        hidden=False,
+                        external=True,
+                    ))
+
+                    if goal.deadline.is_finite():
+                        events.append(ObjectEvent(
+                            time=goal.deadline,
+                            id_=goal.predicate[1],
+                            predicates=[Predicate(name="can-finish", becomes=False, was=True)],
+                            hidden=False,
+                            external=True,
+                        ))
+        else:
+            raise ValueError("unexpected bidding_state -- {}".format(self.bidding_state))
+
+        return events
 
     def resolve_effected_plan(self, time, changed_id, effected):
         self.central_executor.notify_planning_failure(self.id, time)

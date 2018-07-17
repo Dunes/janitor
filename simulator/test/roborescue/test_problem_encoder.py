@@ -181,8 +181,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_rescued_goal(self):
         # given
         goals = convert_goals([
-            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf")),
-            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"))],
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf"), relative_earliest=Decimal(0)),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"), relative_earliest=Decimal(0))],
             False)
         expected = "" \
             "(:goal (and " \
@@ -200,8 +200,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_rescued_preference(self):
         # given
         goals = convert_goals([
-            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf")),
-            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"))],
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal("inf"), relative_earliest=Decimal(0)),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal("inf"), relative_earliest=Decimal(0))],
             True)
         expected = "" \
             "(:goal (and " \
@@ -218,7 +218,7 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_edge_preference_with_deadline(self):
         # given
-        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], True)
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0), relative_earliest=Decimal(0))], True)
         expected = "" \
             "(:goal (and " \
             "(preference pref-cleared-x-y-0 (cleared x y cleared-x-y-0 )  ) " \
@@ -233,7 +233,7 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_edge_goal_with_deadline(self):
         # given
-        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], False)
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0), relative_earliest=Decimal(0))], False)
         expected = "" \
             "(:goal (and " \
             "(cleared x y cleared-x-y-0 ) " \
@@ -249,8 +249,8 @@ class ProblemEncoderTest(TestCase):
     def test_encode_metric_generic(self):
         # given
         goals = convert_goals([
-            Goal(predicate=("rescued", "civ1"), deadline=Decimal(0)),
-            Goal(predicate=("rescued", "civ2"), deadline=Decimal(0))
+            Goal(predicate=("rescued", "civ1"), deadline=Decimal(0), relative_earliest=Decimal(0)),
+            Goal(predicate=("rescued", "civ2"), deadline=Decimal(0), relative_earliest=Decimal(0))
         ], False)
 
         metric = {
@@ -272,7 +272,7 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_metric_specific(self):
         # given
-        goals = convert_goals([Goal(predicate=("rescued", "civ1"), deadline=Decimal(0))], False)
+        goals = convert_goals([Goal(predicate=("rescued", "civ1"), deadline=Decimal(0), relative_earliest=Decimal(0))], False)
         metric = {
             "type": "minimize",
             "weights": {"soft-goal-violations": {goals[0].goal: 1000}}
@@ -290,7 +290,7 @@ class ProblemEncoderTest(TestCase):
 
     def test_encode_metric_edge(self):
         # given
-        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))], False)
+        goals = convert_goals([Goal(predicate=("edge", "x", "y"), deadline=Decimal(0), relative_earliest=Decimal(0))], False)
         metric = {
             "type": "minimize",
             "weights": {"soft-goal-violations": {"edge": 1000}}
@@ -360,7 +360,7 @@ class TestDeadlineEncoding(TestCase):
     def test_collate_object_types(self):
         # given
         objects = {"some_type": OrderedDict([("some_object_id0", "some_object"), ("some_object_id1", "some_object")])}
-        goals = convert_goals([Goal(predicate=("some_predicate",), deadline=Decimal(0))], True)
+        goals = convert_goals([Goal(predicate=("some_predicate",), deadline=Decimal(0), relative_earliest=Decimal(0))], True)
         expected = {
             "some_type": ["some_object_id0", "some_object_id1"],
             "predicate": ["some_predicate-0"]
@@ -376,9 +376,9 @@ class TestDeadlineEncoding(TestCase):
         # given
         objects = {}
         goals = convert_goals([
-            Goal(predicate=("rescued", "civ0",), deadline=Decimal(0)),
-            Goal(predicate=("some_predicate",), deadline=Decimal(0)),
-            Goal(predicate=("edge", "x", "y"), deadline=Decimal(0))],
+            Goal(predicate=("rescued", "civ0",), deadline=Decimal(0), relative_earliest=Decimal(0)),
+            Goal(predicate=("some_predicate",), deadline=Decimal(0), relative_earliest=Decimal(0)),
+            Goal(predicate=("edge", "x", "y"), deadline=Decimal(0), relative_earliest=Decimal(0))],
             True)
         expected = {
             "predicate": ["some_predicate-0", "cleared-x-y-0"]
@@ -405,7 +405,7 @@ class TestDeadlineEncoding(TestCase):
 
     def test_encode_goals_with_finite_deadlines(self):
         # given
-        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal(0))], True)
+        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal(0), relative_earliest=Decimal(0))], True)
         out = StringIO()
         expected = "(required predicate-0 ) (at 0 (not (required predicate-0 )  )  ) "
 
@@ -418,7 +418,7 @@ class TestDeadlineEncoding(TestCase):
 
     def test_encode_goals_with_infinite_deadlines(self):
         # given
-        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal("inf"))], True)
+        goals = convert_goals([Goal(predicate=("predicate",), deadline=Decimal("inf"), relative_earliest=Decimal(0))], True)
         out = StringIO()
         expected = "(required predicate-Infinity ) "
 
@@ -431,7 +431,7 @@ class TestDeadlineEncoding(TestCase):
 
     def test_encode_goals_without_explicit_deadlines(self):
         # given
-        goals = convert_goals([Goal(predicate=("rescued", "civ0"), deadline=Decimal("inf"))], True)
+        goals = convert_goals([Goal(predicate=("rescued", "civ0"), deadline=Decimal("inf"), relative_earliest=Decimal(0))], True)
         out = StringIO()
         expected = ""
 
@@ -447,7 +447,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_goal_to_pddl_predicate_finite(self):
         # given
-        goal = Goal(predicate=("predicate",), deadline=Decimal(0))
+        goal = Goal(predicate=("predicate",), deadline=Decimal(0), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)
@@ -457,7 +457,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_goal_to_pddl_predicate_infinite(self):
         # given
-        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)
@@ -467,7 +467,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_goal_to_pddl_predicate_compound(self):
         # given
-        goal = Goal(predicate=("complex", "predicate"), deadline=Decimal(0))
+        goal = Goal(predicate=("complex", "predicate"), deadline=Decimal(0), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)
@@ -477,7 +477,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_passes_through_use_preferences(self):
         # given
-        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"), relative_earliest=Decimal(0))
 
         # when
         actual_soft_goal, = convert_goals([goal], True)
@@ -489,7 +489,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_rescue_goal_has_no_explicit_deadline(self):
         # given
-        goal = Goal(predicate=("rescued",), deadline=Decimal("inf"))
+        goal = Goal(predicate=("rescued",), deadline=Decimal("inf"), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)
@@ -499,7 +499,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_non_rescue_goal_has_explicit_deadline(self):
         # given
-        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"))
+        goal = Goal(predicate=("predicate",), deadline=Decimal("inf"), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)
@@ -509,7 +509,7 @@ class ConvertGoalsTest(TestCase):
 
     def test_edge_converted_to_cleared(self):
         # given
-        goal = Goal(predicate=("edge", "x", "y"), deadline=Decimal("inf"))
+        goal = Goal(predicate=("edge", "x", "y"), deadline=Decimal("inf"), relative_earliest=Decimal(0))
 
         # when
         actual, = convert_goals([goal], True)

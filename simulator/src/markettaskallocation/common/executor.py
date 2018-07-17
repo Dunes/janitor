@@ -174,24 +174,31 @@ class AgentExecutor(Executor):
         if isinstance(action_state.action, LocalPlan):
             planner = self.central_executor.planner
             action_ = action_state.action
-            # we have to wait for both sets of planning to finish before we can act
+            # NORMAL CASE:
+            # An agent has to wait for planning to finish before we can act
             effective_start_time = action_state.time + action_.duration
             if self.bidding_state == "won-extra-dirty-assist":
                 # TODO: remove this hack (only works for janitor domain currently) (might passively work for roborescue though)
+                # SPECIAL CASE:
+                # Some agents have to wait until other agents have planned to be able to plan their-self
+                # But all agents have to wait for all agents to finish planning before acting.
                 effective_start_time += action_.duration
             planning_model = self.transform_model_for_planning(model, action_.goals)
+
             new_plan, time_taken = planner.get_plan_and_time_taken(
                 planning_model, duration=action_.duration,
                 agent=self.agent, goals=action_.goals, metric=action_.metric,
                 time=action_state.time,
-                events=self.transform_events_for_planning(self.central_executor.event_executor.known_events,
-                                                          planning_model),
+                events=self.transform_events_for_planning(
+                    self.central_executor.event_executor.known_events, planning_model, action_.goals,
+                    as_start_time(action_.end_time),
+                ),
                 effective_start_time=effective_start_time,
             )
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
-                self.central_executor.notify_goal_realisation(self.extract_events(new_plan, action_.goals))
+                self.central_executor.notify_goal_realisation(self.extract_events_from_plan(new_plan, action_.goals))
             else:
                 plan_action = action_.copy_with(failed=True, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
@@ -252,7 +259,7 @@ class AgentExecutor(Executor):
         raise NotImplementedError
 
     @abstractmethod
-    def extract_events(self, plan, goals):
+    def extract_events_from_plan(self, plan, goals):
         """
         :param plan: list[Action]
         :param goals: list[Goal]
@@ -319,7 +326,7 @@ class AgentExecutor(Executor):
             del objects[key]
         return model
 
-    def transform_events_for_planning(self, events, model):
+    def transform_events_for_planning(self, events, model, goals, execution_start_time):
         """
         removes events not pertinent to the planning problem.
         :param events: list[Event]
@@ -502,7 +509,7 @@ class TaskAllocatorExecutor(Executor):
             tasks.extend(winning_bid.requirements)
 
         result = sorted(allocation.values(), key=attrgetter("task.goal.deadline")), computation_time
-        log.info(result[0])
+        log.info("allocation: {}", result[0])
         return result
 
     def notify_goal_realisation(self, events):

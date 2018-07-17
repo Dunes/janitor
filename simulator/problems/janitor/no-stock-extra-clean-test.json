@@ -36,8 +36,7 @@
 				"known": {
 					"cleaned": false,
 					"dirtiness": 15.000,
-					"extra-dirty": true,
-					"required": true
+					"extra-dirty": true
 				},
 				"unknown": {}
 			}
