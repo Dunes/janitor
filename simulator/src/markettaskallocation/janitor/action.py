@@ -259,14 +259,17 @@ class ExtraCleanAssist(Action):
 		assert CLEANING_ASSIST not in room
 		room[CLEANING_ASSIST] = True
 
-	def apply(self, model):
+	def _apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		room = model["objects"]["room"][self.room]["known"]
 		assert CLEANING_ASSIST in room
 		del room[CLEANING_ASSIST]
 
+	def apply(self, model):
+		self._apply(model)
+
 	def partially_apply(self, model, deadline):
-		self.apply(model)
+		self._apply(model)
 
 
 REAL_ACTIONS = (Move, Clean, ExtraClean, ExtraCleanAssist)
