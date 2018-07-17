@@ -101,15 +101,12 @@ class ProblemEncoder:
     def __init__(self, pddl_goal_type, agent_type_names):
         self.pddl_goal_type = pddl_goal_type
         self.agent_type_names = agent_type_names
-        self.indent = 0
 
     def encode_problem_to_file(self, filename, model, agent, goals, metric, time, events):
         with get_text_file_handle(filename) as fh:
             self.encode_problem(fh, model, agent, goals, metric, time, events)
 
     def encode_problem(self, out, model, agent, goals, metric, time, events):
-        self.indent = 0
-
         # convert data
         use_preferences = metric is not None
         goals = self.convert_goals(goals, use_preferences)
@@ -154,7 +151,6 @@ class ProblemEncoder:
     def encode_init(self, out, objects, goals, graph, assumed_values, events=None, model=None, time=None,
                     predicates=None):
         out.write("(:init \n")
-        self.indent += 1
         out.write("\n    ; objects\n")
         self.encode_init_helper(out, objects, assumed_values)
         if predicates:
@@ -165,7 +161,6 @@ class ProblemEncoder:
         out.write("\n    ; graph\n")
         self.encode_graph(out, graph, assumed_values)
         out.write(")\n")
-        self.indent -= 1
 
     def encoding_timings(self, out, goals):
         """
