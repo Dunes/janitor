@@ -15,7 +15,8 @@
 		(extra-dirty ?rm - room)
 		(cleaned ?rm - room) ; clean is a keyword
 		(cleaning-assist ?rm - room)
-		(required ?rm - room)
+		(can-finish ?rm - room) ; planning conditions to assist with coordination
+		(can-start ?rm - room)  ; planning conditions to assist with coordination
 		(cleaning-assisted ?rm - room)
 	)
 	
@@ -60,7 +61,8 @@
 		    (at start (extra-dirty ?rm))
 			(at start (available ?a))
 			(at start (cleaning-assist ?rm))
-			(at end (required ?rm))
+			(at start (can-start ?rm)) ; planning conditions to assist with coordination
+			(at end (can-finish ?rm))  ;
 			(over all (at ?a ?rm))
 		)
 		:effect (and
@@ -77,6 +79,8 @@
 		:condition (and
 		    (at start (extra-dirty ?rm))
 			(at start (available ?a))
+			(at start (can-start ?rm)) ; planning conditions to assist with coordination
+			(at end (can-finish ?rm))  ;
 			(over all (at ?a ?rm))
 		)
 		:effect (and
