@@ -60,7 +60,7 @@
 		:condition (and
 		    (at start (extra-dirty ?rm))
 			(at start (available ?a))
-			(at start (cleaning-assist ?rm))
+			(over all (cleaning-assist ?rm))
 			(at start (can-start ?rm)) ; planning conditions to assist with coordination
 			(at end (can-finish ?rm))  ;
 			(over all (at ?a ?rm))

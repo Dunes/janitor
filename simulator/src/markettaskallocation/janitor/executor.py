@@ -93,6 +93,17 @@ class JanitorExecutor(AgentExecutor):
                         external=False,
                     )
                 )
+                events.append(
+                    ObjectEvent(
+                        time=as_start_time(action_.end_time),
+                        id_=action_.room,
+                        predicates=[
+                            Predicate(name="cleaning-assist", becomes=False, was=True),
+                        ],
+                        hidden=False,
+                        external=False,
+                    )
+                )
         return events
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
@@ -202,6 +213,8 @@ class JanitorExecutor(AgentExecutor):
         return events
 
     def events_from_goals(self, model, goals, execution_start_time):
+        # TODO: This should be abstracted to the base executor
+        # It relates purely to defining the time windows in which an agent can complete a goal
         if self.bidding_state == WON_NOTHING:
             return []
 

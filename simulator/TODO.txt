@@ -1,17 +1,8 @@
 
-	# -- make sure all test domains are correct (especially no-stock-large-test.json)
-		# does not complete successfully
-		# trial will full knowledge at beginning?
-	# -- only replan on new knowledge
-	# -- Add notification of cooperation amongst agents
-		# prevent plan when no cooperation
-		# avoid goals where no cooperation?
-	# -- log allocation when finished task allocation
-	# -- task allocator not clever enough to reserve one agent for assisting
-		# eg. 3 agents and 3 extra-dirty rooms then all three might get the MAIN status and then
-		not be able to assist.
-		# prioritise assistance of tasks over normal cleaned predicates (on allocate action)
-	
+	# -- make sure no-stock-large-test.json can complete
+	# -- only replan on plan invalidation (because of new knowledge) ### BINGO
+
+# Maybe a good idea to go into debug mode when stall instead of just quiting?
 
 * Start to trial planner on bigger domains
 * Get planner running on big domains in cloud

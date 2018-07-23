@@ -43,8 +43,7 @@
 				"known": {
 					"cleaned": false,
 					"dirtiness": 30,
-					"extra-dirty": true,
-					"required": true
+					"extra-dirty": true
 				},
 				"unknown": {}
 			},
