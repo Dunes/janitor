@@ -1,10 +1,10 @@
 
-	# -- make sure no-stock-large-test.json can complete
 	# -- only replan on plan invalidation (because of new knowledge) ### BINGO
+		# done via changing problems so only get new knowledge when visiting extra dirty rooms
 
 # Maybe a good idea to go into debug mode when stall instead of just quiting?
 
-* Start to trial planner on bigger domains
+
 * Get planner running on big domains in cloud
 
 * get simulator working with roborescue again (is it broken, I don't know)
@@ -14,3 +14,13 @@
 * run problems in cloud
 
 
+
+-- run problems on new code
+-- run problems on centralised planner code
+-- see what the best allocate and local plan times are
+-- compare against centralised planner that replans on new knowledge
+-- What about when we get new knowledge (just for Extra Dirty tasks)
+
+-- get new domain from Rovatos working compare and contrast (on both centralised and decentralised)
+
+-- how many problems is good enough?
