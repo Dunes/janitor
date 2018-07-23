@@ -41,7 +41,6 @@ class JanitorDomainContext(DomainContext):
     def compute_tasks(self, model, time):
         goals = model["goal"][self.goal_key]
         value = Decimal(100000)
-        objects = model["objects"]
 
         tasks = []
         for g in goals:
@@ -52,7 +51,11 @@ class JanitorDomainContext(DomainContext):
                 continue
             deadline = Decimal("inf")
             earliest = Decimal(0)
-            t = Task(Goal(tuple(g), deadline, earliest), value)
+            if room["known"].get("extra-dirty", False):
+                room_value = value * 2
+            else:
+                room_value = value
+            t = Task(Goal(tuple(g), deadline, earliest), room_value)
             tasks.append(t)
         return tasks
 
