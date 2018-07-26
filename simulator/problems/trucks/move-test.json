@@ -3,7 +3,8 @@
 	"problem": "test",
 	"goal": {
 		"hard-goals": [
-			["at", "truck1", "land-node1"]
+			["at", "truck1", "land-node1"],
+			["at", "boat1", "sea-node1"]
 		]
 	},
 	"metric": {
@@ -27,10 +28,10 @@
 		},
 		"location": {
 			"port1": {},
-			"land-node1": {}
+			"land-node1": {},
+			"sea-node1": {}
 		},
 		"package": {
-
 		}
 	},
 	"graph": {
@@ -43,10 +44,10 @@
 				},
 				"unknown": {}
 			},
-			"land-node1 port1": {
+			"port1 sea-node1": {
 				"known": {
-					"connected-by-land": true,
-					"travel-time": 20
+					"connected-by-sea": true,
+					"travel-time": 50
 				},
 				"unknown": {}
 			}

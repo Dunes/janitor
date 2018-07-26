@@ -13,7 +13,7 @@ from markettaskallocation.trucks.action import Action
 from markettaskallocation.common.domain_context import DomainContext
 
 
-__all__ = ["TruckExecutor", "EventExecutor", "TaskAllocatorExecutor"]
+__all__ = ["TruckExecutor", "EventExecutor", "TaskAllocatorExecutor", "TrucksDomainContext"]
 
 
 __author__ = 'jack'
@@ -62,12 +62,6 @@ class TrucksDomainContext(DomainContext):
 
 
 class VehicleExecutor(AgentExecutor):
-    pass  # TODO: might not be needed -- remove?
-
-
-class TruckExecutor(AgentExecutor):
-
-    type_ = "truck"
     ignore_internal_events = False
     bidding_state = WON_NOTHING
 

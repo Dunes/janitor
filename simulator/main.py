@@ -235,7 +235,7 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.trucks.executor import (
         TaskAllocatorExecutor, EventExecutor,
-        TruckExecutor,
+        VehicleExecutor,
         TrucksDomainContext,
     )
     from markettaskallocation.trucks.action import REAL_ACTIONS
@@ -264,10 +264,14 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
 
     # create and setup executors
     truck_executors = [
-        TruckExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
+        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
         for agent_name in model["objects"]["truck"]
     ]
-    agent_executors = truck_executors
+    boat_executors = [
+        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
+        for agent_name in model["objects"]["boat"]
+    ]
+    agent_executors = truck_executors + boat_executors
     event_executor = EventExecutor(events=model.get("events", []))
     allocator_executor = TaskAllocatorExecutor(agent="allocator", planning_time=args.planning_time,
                                                executor_ids=[e.id for e in agent_executors],
