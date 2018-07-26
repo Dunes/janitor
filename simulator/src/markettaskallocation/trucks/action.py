@@ -1,5 +1,7 @@
-from markettaskallocation.common.action import Action, Plan, LocalPlan, GetExecutionHeuristic, Observe, EventAction, \
-	Allocate
+from markettaskallocation.common.action import (
+	Action, Plan, LocalPlan, GetExecutionHeuristic, Allocate, EventAction
+)
+from markettaskallocation.trucks.domain_context import TrucksDomainContext
 from markettaskallocation.common.problem_encoder import find_object
 from planning_exceptions import ExecutionError
 
@@ -17,6 +19,7 @@ __all__ = [
 ]
 
 ZERO = Decimal(0)
+DOMAIN_CONTEXT = TrucksDomainContext()
 
 
 class Move(Action, metaclass=ABCMeta):
@@ -297,7 +300,48 @@ class DeliverOntime(Action):
 
 
 class DeliverAnytime(Action):
-	pass
+	"""
+	:type agent: str
+	:type package: str
+	:type location: str
+	"""
+	agent = None
+	package = None
+	location = None
+
+	_format_attrs = ("start_time", "duration", "agent", "package", "location", "partial")
+
+	def __init__(self, start_time, duration, agent, package, location, partial=None):
+		super().__init__(start_time, duration, partial)
+		object.__setattr__(self, "agent", agent)
+		object.__setattr__(self, "package", package)
+		object.__setattr__(self, "location", location)
+
+	def is_applicable(self, model):
+		package = model["objects"]["package"][self.package]
+		return package["at"][1] == self.location
+
+	def apply(self, model):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		package = model["objects"]["package"][self.package]
+		package["at-destination"] = package.pop("at")
+
+	def as_partial(self, end_time=None, **kwargs):
+		if end_time is not None:
+			assert "duration" not in kwargs
+			assert end_time == self.end_time
+
+		if "duration" in kwargs:
+			assert kwargs["duration"] == self.duration
+
+		obj = self.copy_with(**kwargs)
+		return obj
+
+	def partially_apply(self, model, deadline):
+		raise NotImplementedError
+
+	def is_effected_by_change(self, id_):
+		raise NotImplementedError("expect no new knowledge in trucks domain")
 
 
 REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime,

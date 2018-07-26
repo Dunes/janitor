@@ -1,0 +1,39 @@
+{
+	"domain": "trucks-modified",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["at-destination", "package1", "port1"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+	},
+	"objects": {
+		"truck": {
+			"truck1": {
+				"at": [true, "port1"]
+			}
+		},
+		"boat": {
+		},
+		"location": {
+			"port1": {}
+		},
+		"package": {
+			"package1": {
+				"at": [true, "port1"]
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+		}
+	}
+}

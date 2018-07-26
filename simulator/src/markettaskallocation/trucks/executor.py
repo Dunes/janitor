@@ -1,19 +1,18 @@
 from logging import getLogger
 from copy import deepcopy
 from decimal import Decimal
-from typing import List, Dict
+from typing import List
 
 from logger import StyleAdapter
 from accuracy import as_start_time
 from planner import Planner
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
-from markettaskallocation.common.event import ObjectEvent, Predicate
+from markettaskallocation.common.event import ObjectEvent
 from markettaskallocation.common.goal import Goal, Task, Bid
 from markettaskallocation.trucks.action import Action
-from markettaskallocation.common.domain_context import DomainContext
 
 
-__all__ = ["TruckExecutor", "EventExecutor", "TaskAllocatorExecutor", "TrucksDomainContext"]
+__all__ = ["VehicleExecutor", "EventExecutor", "TaskAllocatorExecutor"]
 
 
 __author__ = 'jack'
@@ -25,40 +24,6 @@ WON_EXTRA_DIRTY_MAIN = "won-extra-dirty-main"  # TODO: modify these variables fo
 WON_EXTRA_DIRTY_ASSIST = "won-extra-dirty-assist"
 
 MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.500')
-
-
-class TrucksDomainContext(DomainContext):
-
-    @property
-    def goal_key(self):
-        return "hard-goals"  # TODO: change to use soft goals (this is a big thing I think)
-
-    def compute_tasks(self, model, time):
-        goals = model["goal"][self.goal_key]
-        value = Decimal(100000)
-
-        tasks = []
-        for g in goals:
-            deadline = Decimal("inf")
-            earliest = Decimal(0)
-            t = Task(Goal(tuple(g), deadline, earliest), value)
-            tasks.append(t)
-        return tasks
-
-    def get_metric_from_tasks(self, tasks: List[Task], base_metric: dict) -> Dict[Goal, Decimal]:
-        metric = deepcopy(base_metric)
-        assert "weight" not in metric
-        metric["weights"] = {"total-time": 1, "soft-goal-violations": {task.goal: task.value for task in tasks}}
-        return metric
-
-    def get_agent(self, model, key):
-        return self._try_get_object(model, ("truck", "boat"), key)
-
-    def get_node(self, model, key):
-        return self._try_get_object(model, ("location",), key)
-
-    def task_key_for_allocation(self, task):
-        return task.goal.deadline, task.goal.predicate
 
 
 class VehicleExecutor(AgentExecutor):

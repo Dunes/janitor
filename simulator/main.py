@@ -236,8 +236,8 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
     from markettaskallocation.trucks.executor import (
         TaskAllocatorExecutor, EventExecutor,
         VehicleExecutor,
-        TrucksDomainContext,
     )
+    from markettaskallocation.trucks.domain_context import TrucksDomainContext
     from markettaskallocation.trucks.action import REAL_ACTIONS
 
     args = parser().parse_args()
