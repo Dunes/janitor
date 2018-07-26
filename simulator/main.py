@@ -230,6 +230,72 @@ def run_decentralised_janitor_simulator(domain_template="../janitor/{}-decentral
         exit(1)
 
 
+def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
+    from markettaskallocation.trucks import plan_decoder, problem_encoder
+    from markettaskallocation.common.simulator import Simulator
+    from markettaskallocation.trucks.executor import (
+        TaskAllocatorExecutor, EventExecutor,
+        TruckExecutor,
+        TrucksDomainContext,
+    )
+    from markettaskallocation.trucks.action import REAL_ACTIONS
+
+    args = parser().parse_args()
+    log.info(args)
+    log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time,
+                                                    args.heuristic_planning_time)
+    log.info("log: {}", log_file_name)
+
+    # load model
+    model = problem_parser.decode(args.problem_file)
+    decoder = plan_decoder
+    # add bidirectionality
+    if model["graph"].get("bidirectional"):
+        edges = model["graph"]["edges"]
+        for key in list(edges):
+            new_key = " ".join(reversed(key.split(" ")))
+            edges[new_key] = copy.deepcopy(edges[key])
+    # add agents key
+
+    # create planner
+    planner = Planner(decoder=decoder,
+                      problem_encoder=problem_encoder,
+                      domain_file=domain_template.format(model["domain"]))
+
+    # create and setup executors
+    truck_executors = [
+        TruckExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
+        for agent_name in model["objects"]["truck"]
+    ]
+    agent_executors = truck_executors
+    event_executor = EventExecutor(events=model.get("events", []))
+    allocator_executor = TaskAllocatorExecutor(agent="allocator", planning_time=args.planning_time,
+                                               executor_ids=[e.id for e in agent_executors],
+                                               agent_names=[e.agent for e in agent_executors], planner=planner,
+                                               event_executor=event_executor, domain_context=TrucksDomainContext())
+
+    event_executor.central_executor_id = allocator_executor.id
+    for e in agent_executors:
+        e.central_executor_id = allocator_executor.id
+
+    # setup simulator
+    executors = dict({e.agent: e for e in agent_executors},
+                     allocator=allocator_executor, event_executor=event_executor)
+    simulator = Simulator(model, executors, real_actions=REAL_ACTIONS, domain_context=TrucksDomainContext())
+
+    # run simulator
+    with logger.Logger(log_file_name, args.log_directory) as result_logger:
+        try:
+            result = simulator.run()
+        finally:
+            simulator.print_results(result_logger)
+            problem_parser.encode("temp_problems/final_model.json", simulator.model)
+
+    if not result:
+        exit(1)
+
+
 if __name__ == "__main__":
     # run_roborescue_simulator()
-    run_decentralised_janitor_simulator()
+    # run_decentralised_janitor_simulator()
+    run_modified_trucks_simulator()

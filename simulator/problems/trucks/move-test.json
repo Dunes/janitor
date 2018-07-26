@@ -1,0 +1,55 @@
+{
+	"domain": "trucks-modified",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["at", "truck1", "land-node1"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+	},
+	"objects": {
+		"truck": {
+			"truck1": {
+				"at": [true, "port1"]
+			}
+		},
+		"boat": {
+			"boat1": {
+				"at": [true, "port1"]
+			}
+		},
+		"location": {
+			"port1": {},
+			"land-node1": {}
+		},
+		"package": {
+
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"port1 land-node1": {
+				"known": {
+					"connected-by-land": true,
+					"travel-time": 20
+				},
+				"unknown": {}
+			},
+			"land-node1 port1": {
+				"known": {
+					"connected-by-land": true,
+					"travel-time": 20
+				},
+				"unknown": {}
+			}
+		}
+	}
+}
