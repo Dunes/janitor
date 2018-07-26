@@ -24,3 +24,22 @@
 -- get new domain from Rovatos working compare and contrast (on both centralised and decentralised)
 
 -- how many problems is good enough?
+
+
+# PDDL domains to look at
+	* airports
+	* pipesworld
+	* satelite
+		* good candidate has multiple satelites and goals
+		* send window is perhaps not great (only one send window
+		* doesn't appear to be any interdependencies between "agents"
+		* best was satellite-complex-time-windows-strips
+	* truck
+		* good candidate, but needs modification
+		* make sea and land delivery routes, such that delivering a package requires cooperation
+	* UMTS
+	* ipc-2004/settlers-strips
+		* model locations as agents?
+		* model vehicle as agents?
+# Airport and UMTS appear to be very hard (see ICAPS-temporal-planning.pdf)
+# see ~/pddl-instances/ipc-{2004,2006}
