@@ -26,7 +26,9 @@ def create_predicate(predicate_name, value, object_name):
     elif isinstance(value, Number):
         return "=", (predicate_name, object_name), value
     elif isinstance(value, (list, tuple)):
-        if isinstance(value[-1], Number):
+        possible_number = value[-1]
+        assert possible_number is not False
+        if value[-1] is not True and isinstance(value[-1], Number):
             return "=", (predicate_name,) + tuple(v if v is not True else object_name for v in value[:-1]), value[-1]
         else:
             return (predicate_name,) + tuple(v if v is not True else object_name for v in value)
