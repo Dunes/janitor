@@ -14,8 +14,8 @@ log = StyleAdapter(getLogger(__name__))
 
 __all__ = [
 	"Action", "Plan", "LocalPlan", "GetExecutionHeuristic",
-	"Drive", "Sail", "Load", "Unload", "DeliverOntime", "DeliverAnytime",
-	"Allocate", "EventAction", "REAL_ACTIONS",
+	"Drive", "Sail", "Load", "Unload", "DeliverOntime", "DeliverAnytime", "DeliverMultiple",
+	"Allocate", "EventAction", "REAL_ACTIONS", "DeliverAction"
 ]
 
 ZERO = Decimal(0)
@@ -139,7 +139,7 @@ class Move(Action, metaclass=ABCMeta):
 		except KeyError:
 			pass
 		if model["graph"]["bidirectional"]:
-			raise NotImplementedError
+			raise RuntimeError
 		raise ExecutionError("Could not find {!r}".format(edge_key))
 
 	def is_effected_by_change(self, id_):
@@ -217,10 +217,10 @@ class Load(Action):
 		return obj
 
 	def partially_apply(self, model, deadline):
-		raise NotImplementedError
+		raise RuntimeError
 
 	def is_effected_by_change(self, id_):
-		raise NotImplementedError
+		raise RuntimeError
 
 
 class Unload(Action):
@@ -280,11 +280,7 @@ class Unload(Action):
 		return id_ in (self.node, self.target)
 
 
-class DeliverOntime(Action):
-	pass
-
-
-class DeliverAnytime(Action):
+class DeliverAction(Action):  # abstract base class
 	"""
 	:type agent: str
 	:type package: str
@@ -303,13 +299,10 @@ class DeliverAnytime(Action):
 		object.__setattr__(self, "location", location)
 
 	def is_applicable(self, model):
-		package = model["objects"]["package"][self.package]
-		return package["at"][1] == self.location
+		raise NotImplementedError
 
 	def apply(self, model):
-		assert self.is_applicable(model), "tried to apply action in an invalid state"
-		package = model["objects"]["package"][self.package]
-		package["at-destination"] = package.pop("at")
+		raise NotImplementedError
 
 	def as_partial(self, end_time=None, **kwargs):
 		if end_time is not None:
@@ -323,13 +316,83 @@ class DeliverAnytime(Action):
 		return obj
 
 	def partially_apply(self, model, deadline):
-		raise NotImplementedError
+		raise RuntimeError
 
 	def is_effected_by_change(self, id_):
-		raise NotImplementedError("expect no new knowledge in trucks domain")
+		raise RuntimeError("expect no new knowledge in trucks domain")
 
 
-REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime,
+class DeliverOntime(DeliverAction):
+
+	def is_applicable(self, model):
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		return package["at"][1] == self.location and package.get("deliverable", False)
+
+	def apply(self, model):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		del package["at"]
+		package["at-destination"] = [True, self.location]
+		package["delivered"] = [True, self.location]
+
+
+class DeliverAnytime(DeliverAction):
+
+	def is_applicable(self, model):
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		return package["at"][1] == self.location
+
+	def apply(self, model):
+		assert self.is_applicable(model), "tried to apply action in an invalid state"
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		del package["at"]
+		package["at-destination"] = [True, self.location]
+
+
+class DeliverMultiple(Action):
+	"""
+	:type agent: str
+	:type deliver_actions: list[DeliverAction]
+	:type location: str
+	"""
+	agent = None
+	deliver_actions = None
+	location = None
+
+	_format_attrs = ("start_time", "duration", "agent", "deliver_actions", "location", "partial")
+
+	def __init__(self, start_time, duration, agent, deliver_actions, location, partial=None):
+		super().__init__(start_time, duration, partial)
+		object.__setattr__(self, "agent", agent)
+		object.__setattr__(self, "deliver_actions", deliver_actions)
+		object.__setattr__(self, "location", location)
+
+	def is_applicable(self, model):
+		return all(action.is_applicable(model) for action in self.deliver_actions)
+
+	def apply(self, model):
+		for action in self.deliver_actions:
+			action.apply(model)
+
+	def as_partial(self, end_time=None, **kwargs):
+		if end_time is not None:
+			assert "duration" not in kwargs
+			assert end_time == self.end_time
+
+		if "duration" in kwargs:
+			assert kwargs["duration"] == self.duration
+
+		obj = self.copy_with(**kwargs)
+		return obj
+
+	def partially_apply(self, model, deadline):
+		raise RuntimeError
+
+	def is_effected_by_change(self, id_):
+		raise RuntimeError("expect no new knowledge in trucks domain")
+
+
+REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime, DeliverMultiple
 
 
 def can_load_area(model, area, agent):
@@ -345,7 +408,7 @@ def can_load_area(model, area, agent):
 		except KeyError:
 			# this area is the closest and the path from this area to the given area was all free
 			return True
-		area = DOMAIN_CONTEXT.get_vehicle_area(model, closer_pred[1])
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, closer_pred[0])
 
 
 def can_unload_area(model, area, agent):
@@ -354,5 +417,5 @@ def can_unload_area(model, area, agent):
 	if "closer" not in area:
 		return True
 	# we can unload this area if we can load the area in front of it
-	closer_area = DOMAIN_CONTEXT.get_vehicle_area(model, area["closer"][1])
+	closer_area = DOMAIN_CONTEXT.get_vehicle_area(model, area["closer"][0])
 	return can_load_area(model, closer_area, agent)

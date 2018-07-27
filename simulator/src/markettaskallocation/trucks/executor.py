@@ -2,6 +2,7 @@ from logging import getLogger
 from copy import deepcopy
 from decimal import Decimal
 from typing import List
+from itertools import groupby
 
 from logger import StyleAdapter
 from accuracy import as_start_time
@@ -9,7 +10,7 @@ from planner import Planner
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
 from markettaskallocation.common.event import ObjectEvent
 from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.trucks.action import Action
+from markettaskallocation.trucks.action import Action, DeliverAction, DeliverMultiple
 
 
 __all__ = ["VehicleExecutor", "EventExecutor", "TaskAllocatorExecutor"]
@@ -129,7 +130,23 @@ class VehicleExecutor(AgentExecutor):
 		self.central_executor.notify_planning_failure(self.id, time)
 
 	def new_plan(self, plan):
-		super().new_plan(plan)
+		# coalesce deliver actions that happen at the same instant
+		def key_func(action):
+			if isinstance(action, DeliverAction):
+				return action.start_time, action.duration, action.agent, action.location
+			else:
+				return None
+
+		new_plan = []
+		for key, iter_ in groupby(plan, key=key_func):
+			if key is None:
+				new_plan.extend(iter_)
+			else:
+				start_time, duration, agent, location = key
+				deliver_actions = list(iter_)
+				new_plan.append(DeliverMultiple(start_time, duration, agent, deliver_actions, location))
+
+		super().new_plan(new_plan)
 
 	def halt(self, time):
 		super().halt(time)

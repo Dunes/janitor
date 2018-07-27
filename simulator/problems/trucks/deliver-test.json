@@ -3,7 +3,8 @@
 	"problem": "test",
 	"goal": {
 		"hard-goals": [
-			["at-destination", "package1", "destination"]
+			["delivered", "package-ontime", "destination"],
+			["at-destination", "package-anytime", "destination"]
 		]
 	},
 	"metric": {
@@ -27,17 +28,21 @@
 			"destination": {}
 		},
 		"package": {
-			"package1": {
+			"package-anytime": {
 				"at": [true, "port"]
+			},
+			"package-ontime": {
+				"at": [true, "port"],
+				"deliverable": [true, "destination"]
 			}
 		},
 		"vehiclearea": {
 			"vehiclearea-nearest-truck1": {
-				"free": [true, "truck1"],
-				"closer": [true, "vehiclearea-furthest-truck1"]
+				"free": [true, "truck1"]
 			},
 			"vehiclearea-furthest-truck1": {
-				"free": [true, "truck1"]
+				"free": [true, "truck1"],
+				"closer": ["vehiclearea-nearest-truck1", true]
 			}
 		}
 	},
