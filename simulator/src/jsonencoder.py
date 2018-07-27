@@ -3,7 +3,7 @@ from json import JSONEncoder, dumps
 from decimal import Decimal
 
 from action import Action
-from markettaskallocation.common.event import Event
+from markettaskallocation.common.event import Event, Predicate
 
 __author__ = 'jack'
 __all__ = ["json_dumps", "ActionEncoder"]
@@ -28,6 +28,8 @@ class ActionEncoder(JSONEncoder):
                 return float(o)
             else:
                 return str(o)
+        elif isinstance(o, Predicate):
+            return vars(o)
         return super().default(o)
 
 
