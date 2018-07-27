@@ -3,7 +3,7 @@
 	"problem": "test",
 	"goal": {
 		"hard-goals": [
-			["at-destination", "package1", "port1"]
+			["at-destination", "package1", "destination"]
 		]
 	},
 	"metric": {
@@ -17,23 +17,41 @@
 	"objects": {
 		"truck": {
 			"truck1": {
-				"at": [true, "port1"]
+				"at": [true, "port"]
 			}
 		},
 		"boat": {
 		},
 		"location": {
-			"port1": {}
+			"port": {},
+			"destination": {}
 		},
 		"package": {
 			"package1": {
-				"at": [true, "port1"]
+				"at": [true, "port"]
+			}
+		},
+		"vehiclearea": {
+			"vehiclearea-nearest-truck1": {
+				"free": [true, "truck1"],
+				"closer": [true, "vehiclearea-furthest-truck1"]
+			},
+			"vehiclearea-furthest-truck1": {
+				"free": [true, "truck1"]
 			}
 		}
 	},
 	"graph": {
 		"bidirectional": false,
 		"edges": {
+			"port destination": {
+				"connected-by-land": true,
+				"travel-time": 30
+			},
+			"destination port": {
+				"connected-by-land": true,
+				"travel-time": 30
+			}
 		}
 	}
 }

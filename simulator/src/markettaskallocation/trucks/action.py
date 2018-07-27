@@ -170,48 +170,40 @@ class Sail(Move):
 
 class Load(Action):
 	"""
+	:type package: str
 	:type agent: str
-	:type target: str
-	:type node: str
+	:type area: str
+	:type location: str
 	"""
+	package = None
 	agent = None
-	target = None
-	node = None
+	area = None
+	location = None
 
-	_format_attrs = ("start_time", "duration", "agent", "target", "node", "partial")
+	_format_attrs = ("start_time", "duration", "package", "agent", "area", "location", "partial")
 
-	def __init__(self, start_time, duration, agent, target, node, partial=None):
+	def __init__(self, start_time, duration, package, agent, area, location, partial=None):
 		super().__init__(start_time, duration, partial)
+		object.__setattr__(self, "package", package)
 		object.__setattr__(self, "agent", agent)
-		object.__setattr__(self, "target", target)
-		object.__setattr__(self, "node", node)
-
-	def get_agent(self, model):
-		return model["objects"]["truck"].get(self.agent) or model["objects"]["boat"].get(self.agent)
+		object.__setattr__(self, "area", area)
+		object.__setattr__(self, "location", location)
 
 	def is_applicable(self, model):
-		agent = self.get_agent(model)
-		raise NotImplementedError("this is complicated")  # need to consider vehicle areas
-		if agent is None:
+		agent = DOMAIN_CONTEXT.get_agent(model, self.agent)
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		if not (self.location == agent["at"][1] == package["at"][1]):
 			return False
-		if agent["at"][1] != self.node:
-			return False
-		carrying = agent.get("carrying")
-		if carrying and carrying[1] != self.target:
-			return False
-		target = find_object(self.target, model["objects"])
-		if self.node not in target["known"].get("at", ()):
-			return False
-		return agent["available"]
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+		return can_load_area(model, area, self.agent)
 
 	def apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
-		raise NotImplementedError("this is complicated")
-		agent = self.get_agent(model)
-		del agent["empty"]
-		agent["carrying"] = [True, self.target]
-		target = find_object(self.target, model["objects"])
-		del target["known"]["at"]
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+		del area["free"]
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		del package["at"]
+		package["in"] = [True, self.agent, self.area]
 
 	def as_partial(self, end_time=None, **kwargs):
 		if end_time is not None:
@@ -228,49 +220,47 @@ class Load(Action):
 		raise NotImplementedError
 
 	def is_effected_by_change(self, id_):
-		return id_ in (self.node, self.target)
+		raise NotImplementedError
 
 
 class Unload(Action):
 	"""
+	:type package: str
 	:type agent: str
-	:type target: str
-	:type node: str
+	:type area: str
+	:type location: str
 	"""
+	package = None
 	agent = None
-	target = None
-	node = None
+	area = None
+	location = None
 
-	_format_attrs = ("start_time", "duration", "agent", "target", "node", "partial")
+	_format_attrs = ("start_time", "duration", "package", "agent", "area", "location", "partial")
 
-	def __init__(self, start_time, duration, agent, target, node, partial=None):
+	def __init__(self, start_time, duration, package, agent, area, location, partial=None):
 		super().__init__(start_time, duration, partial)
+		object.__setattr__(self, "package", package)
 		object.__setattr__(self, "agent", agent)
-		object.__setattr__(self, "target", target)
-		object.__setattr__(self, "node", node)
+		object.__setattr__(self, "area", area)
+		object.__setattr__(self, "location", location)
 
 	def is_applicable(self, model):
-		agent = model["objects"]["medic"].get(self.agent)
-		raise NotImplementedError("this is complicated")
-		if agent is None:
+		agent = DOMAIN_CONTEXT.get_agent(model, self.agent)
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		if not self.location == agent["at"][1]:
 			return False
-		if agent["at"][1] != self.node:
+		if not [True, self.agent, self.area] == package["in"]:
 			return False
-		if agent.get("empty"):
-			return False
-		if not agent.get("available"):
-			return False
-		return agent["carrying"][1] == self.target
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+		return can_unload_area(model, area, self.agent)
 
 	def apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
-		raise NotImplementedError("this is complicated")
-		agent = model["objects"]["medic"][self.agent]
-		agent["empty"] = True
-		del agent["carrying"]
-		target = find_object(self.target, model["objects"])
-		target["known"]["at"] = [True, self.node]
-		target["known"]["rescued"] = True
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+		area["free"] = [True, self.agent]
+		package = DOMAIN_CONTEXT.get_package(model, self.package)
+		package["at"] = [True, self.location]
+		del package["in"]
 
 	def as_partial(self, end_time=None, **kwargs):
 		if end_time is not None:
@@ -340,3 +330,29 @@ class DeliverAnytime(Action):
 
 
 REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime,
+
+
+def can_load_area(model, area, agent):
+	while True:
+		try:
+			free_pred = area["free"]
+		except KeyError:
+			return False
+		if free_pred[1] != agent:
+			return False
+		try:
+			closer_pred = area["closer"]
+		except KeyError:
+			# this area is the closest and the path from this area to the given area was all free
+			return True
+		area = DOMAIN_CONTEXT.get_vehicle_area(model, closer_pred[1])
+
+
+def can_unload_area(model, area, agent):
+	if "free" in area:
+		return False
+	if "closer" not in area:
+		return True
+	# we can unload this area if we can load the area in front of it
+	closer_area = DOMAIN_CONTEXT.get_vehicle_area(model, area["closer"][1])
+	return can_load_area(model, closer_area, agent)

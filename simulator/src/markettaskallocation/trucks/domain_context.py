@@ -36,8 +36,14 @@ class TrucksDomainContext(DomainContext):
     def get_agent(self, model, key):
         return self._try_get_object(model, ("truck", "boat"), key)
 
+    def get_vehicle_area(self, model, key):
+        return self._try_get_object(model, ("vehiclearea",), key)
+
     def get_node(self, model, key):
         return self._try_get_object(model, ("location",), key)
+
+    def get_package(self, model, key):
+        return self._try_get_object(model, ("package",), key)
 
     def task_key_for_allocation(self, task):
         return task.goal.deadline, task.goal.predicate
