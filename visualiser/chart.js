@@ -39,6 +39,17 @@ function parseData($) {
         "Partial Unblock": "#ffc04d",
         "Partial Rescue": "#4d934d",
 
+        // truck actions
+        "Drive": "#8B0000",
+        "Sail": "#8B0000",
+        "Load": "#FFA500",
+        "Unload": "#006400",
+        "DeliverOntime": "#8282ff",
+        "DeliverAnytime": "#8282ff",
+        "DeliverMultiple": "#8282ff",
+        // partial generic actions
+ 		"Partial Drive": "#ae4d4d",
+        "Partial Sail": "#ae4d4d",
     };
 
     var data = $("#input-data").val().trim();
@@ -115,8 +126,8 @@ function createChartElementDataFromPython(components, chart_colours, colours) {
 function actionLabel(name, components, chart_colours, colours, partial) {
     var label = name;
 
-    if (name === "Move") {
-        label = "Move " + components.end_node;
+    if (["Move", "Drive", "Sail"].indexOf(name) != -1) {
+        label = name + " " + components.end_node;
     } else if (name === "Clean" || name === "ExtraClean") {
         label = name + " " + components.room;
     } else if (name === "ExtraCleanPart") {
@@ -127,6 +138,12 @@ function actionLabel(name, components, chart_colours, colours, partial) {
     	label = "Unblock " + components.end_node
     } else if (name === "ExtraCleanAssist") {
         label = "ExtraCleanAssist " + components.room;
+    } else if (["Load", "Unload"].indexOf(name) != -1 && "package" in components) {
+        label = name + " " + components.package;
+    } else if (["DeliverOntime", "DeliverAnytime"].indexOf(name) != -1) {
+        label = name + " " + components.package;
+    } else if (name === "DeliverMultiple") {
+        label = "DeliverMultiple @ " + components.location;
     }
 
 
