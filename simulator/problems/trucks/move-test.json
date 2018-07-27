@@ -38,18 +38,12 @@
 		"bidirectional": false,
 		"edges": {
 			"port1 land-node1": {
-				"known": {
-					"connected-by-land": true,
-					"travel-time": 20
-				},
-				"unknown": {}
+				"connected-by-land": true,
+				"travel-time": 20
 			},
 			"port1 sea-node1": {
-				"known": {
-					"connected-by-sea": true,
-					"travel-time": 50
-				},
-				"unknown": {}
+				"connected-by-sea": true,
+				"travel-time": 50
 			}
 		}
 	}

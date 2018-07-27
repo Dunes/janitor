@@ -62,7 +62,7 @@ class Move(Action, metaclass=ABCMeta):
 			raise AssertionError("agent of type {!r} attempted a {} action".format(self.agent_type, type(self).__name__))
 		return agent["at"][1] == self.start_node \
 			and (
-				model["graph"]["edges"][self.edge]["known"].get(self.edge_type)
+				model["graph"]["edges"][self.edge].get(self.edge_type)
 				or getattr(self, "partial", False)
 			)
 
@@ -94,11 +94,11 @@ class Move(Action, metaclass=ABCMeta):
 
 		distance_moved = deadline - self.start_time
 
-		edges[edge_id]["known"]["distance"] -= distance_moved
-		edges[other_edge_id]["known"]["distance"] += distance_moved
+		edges[edge_id]["distance"] -= distance_moved
+		edges[other_edge_id]["distance"] += distance_moved
 
-		assert edges[edge_id]["known"]["distance"] > 0
-		assert edges[other_edge_id]["known"]["distance"] > 0
+		assert edges[edge_id]["distance"] > 0
+		assert edges[other_edge_id]["distance"] > 0
 
 	def create_temp_node(self, model, deadline):
 		temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
@@ -110,8 +110,8 @@ class Move(Action, metaclass=ABCMeta):
 		# set up edges -- only allow movement out of node
 		edge = self.get_edge(model, self.start_node, self.end_node)
 		distance_moved = deadline - self.start_time
-		distance_remaining = edge["known"]["distance"] - distance_moved
-		blocked = not edge["known"].get(self.edge_type, False)
+		distance_remaining = edge["distance"] - distance_moved
+		blocked = not edge.get(self.edge_type, False)
 		model["graph"]["edges"].update(self._create_temp_edge_pair(
 			temp_node_name, self.start_node, self.end_node, distance_moved, distance_remaining, blocked
 		))
@@ -121,20 +121,15 @@ class Move(Action, metaclass=ABCMeta):
 	def _create_temp_edge_pair(self, temp_node, start_node, end_node, moved, remaining, blocked):
 		if not blocked or remaining < moved:
 			yield (" ".join((temp_node, end_node)), {
-				"known": {
-					"distance": remaining,
-					self.edge_type: True,
-				},
-				"unknown": {}
+				"travel-time": remaining,
+				self.edge_type: True,
+
 			})
 			if remaining < moved:
 				return
 		yield (" ".join((temp_node, start_node)), {
-			"known": {
-				"distance": moved,
-				self.edge_type: True,
-			},
-			"unknown": {}
+			"travel-time": moved,
+			self.edge_type: True,
 		})
 
 	def get_edge(self, model, start_node, end_node):
