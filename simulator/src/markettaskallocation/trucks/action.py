@@ -293,9 +293,9 @@ class DeliverAction(Action):  # abstract base class
 
 	_ordinal = 1.5
 
-	_format_attrs = ("start_time", "duration", "agent", "package", "location", "partial")
+	_format_attrs = ("start_time", "duration", "package", "location", "partial")
 
-	def __init__(self, start_time, duration, agent, package, location, partial=None):
+	def __init__(self, start_time, duration, package, location, partial=None, *, agent=None):
 		super().__init__(start_time, duration, partial)
 		object.__setattr__(self, "agent", agent)
 		object.__setattr__(self, "package", package)

@@ -15,7 +15,7 @@
 	},
 	"events": [
         {
-            "time": 150,
+            "time": 20,
             "type": "object",
             "predicates": [
                 {
@@ -26,7 +26,7 @@
             "id": "package-quick"
         },
 		{
-            "time": 150,
+            "time": 20,
             "type": "object",
             "predicates": [
                 {
@@ -72,11 +72,11 @@
 		"edges": {
 			"port destination": {
 				"connected-by-land": true,
-				"travel-time": 100
+				"travel-time": 10
 			},
 			"destination port": {
 				"connected-by-land": true,
-				"travel-time": 100
+				"travel-time": 10
 			}
 		}
 	}

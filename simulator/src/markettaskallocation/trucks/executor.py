@@ -64,6 +64,7 @@ class VehicleExecutor(AgentExecutor):
 			if isinstance(action_, DeliverAction):
 				# new action that occurs in the instant after the unload occurs
 				new_action = action_.copy_with(
+					agent="event_executor",
 					start_time=as_end_time(action_.start_time),
 					duration=INSTANTANEOUS_ACTION_DURATION
 				)

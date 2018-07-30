@@ -100,10 +100,9 @@
 )
 
 (:durative-action deliver-ontime
-    :parameters (?v - vehicle ?p - package ?l - location)
+    :parameters (?p - package ?l - location)
     :duration (= ?duration 1)
     :condition (and
-        (at start (at ?v ?l))
         (over all (at ?p ?l))
         (at end (deliverable ?p ?l))
     )
@@ -115,10 +114,9 @@
 )
 
 (:durative-action deliver-anytime
-    :parameters (?v - vehicle ?p - package ?l - location)
+    :parameters (?p - package ?l - location)
     :duration (= ?duration 1)
     :condition (and
-        (at start (at ?v ?l))
         (at start (at ?p ?l))
         (over all (at ?p ?l))
     )
