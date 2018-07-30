@@ -1,20 +1,22 @@
 from logging import getLogger
 from operator import attrgetter
 from decimal import Decimal
-from itertools import count, groupby
+from itertools import count, groupby, chain
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
+from typing import List, Sequence
 
 
 from action_state import ActionState
 from logger import StyleAdapter
-from accuracy import as_start_time
+from accuracy import as_start_time, INSTANTANEOUS_ACTION_DURATION
 from planner import Planner
 from planning_exceptions import ExecutionError
 from priority_queue import KeyBasedPriorityQueue
-from markettaskallocation.common.action import Plan, LocalPlan, Observe, EventAction, Allocate
-from markettaskallocation.common.goal import Task, Bid
+from markettaskallocation.common.action import Action, Plan, LocalPlan, Observe, EventAction, Allocate, CombinedAction
+from markettaskallocation.common.event import Event
+from markettaskallocation.common.goal import Task, Bid, Goal
 from markettaskallocation.common.domain_context import DomainContext
 
 
@@ -70,7 +72,7 @@ class Executor(metaclass=ABCMeta):
         self.executed.append(action_state.action)
 
     @abstractmethod
-    def notify_new_knowledge(self, time, node):
+    def notify_new_knowledge(self, model, time, ids: Sequence[str]):
         raise NotImplementedError
 
     @classmethod
@@ -93,34 +95,54 @@ class EventExecutor(Executor):
         for t, events_ in groupby(self.events, key=time):
             self.event_actions.append(EventAction(time=t, events=tuple(events_)))
         self.agent_based_events = []
+        self.common_actions = []
 
     @property
     def known_events(self):
         return [e for e in self.events if not e.hidden] + self.agent_based_events
 
     def copy(self):
-        raise NotImplementedError
+        raise RuntimeError("not implemented for {!r}".format(self))
 
     def deadline(self):
         return self._deadline
 
     @property
     def has_goals(self):
-        return self.executing or bool(self.event_actions)
+        return self.executing or bool(self.event_actions) or bool(self.common_actions)
 
     def next_action(self, time):
         if self.executing:
             return self.executing
-        action = self.event_actions[0]
+        all_combined_actions = sorted(chain(self.event_actions + self.common_actions), key=attrgetter("start_time"))
+        start_time = all_combined_actions[0].start_time
+        to_execute_actions = []
+        for action_ in all_combined_actions:
+            if action_.start_time != start_time:
+                break
+            to_execute_actions.append(action_)
+
+        assert to_execute_actions
+
+        action = CombinedAction(start_time, to_execute_actions)
         return ActionState(action)
 
     def notify_action_starting(self, action_state: ActionState, model):
         self.executing = action_state.start()
-        del self.event_actions[0]
         changes = action_state.action.apply(model)
-        for e in action_state.action.events:
-            self.events.remove(e)
-        self.central_executor.notify_new_knowledge(action_state.time, changes)
+
+        combined_actions = self.executing.action.actions
+        for action_ in combined_actions:
+            if isinstance(action_, EventAction):
+                assert self.event_actions[0] == action_
+                del self.event_actions[0]
+                for e in action_.events:
+                    self.events.remove(e)
+            else:
+                self.common_actions.remove(action_)
+
+        if changes:
+            self.central_executor.notify_new_knowledge(model, action_state.time, changes)
 
     def notify_action_finishing(self, action_state: ActionState, model):
         super().notify_action_finishing(action_state, model)
@@ -128,8 +150,27 @@ class EventExecutor(Executor):
         action_state.finish()
         self.executing = None
 
-    def notify_new_knowledge(self, time, node):
-        pass
+    def notify_new_knowledge(self, model, time, ids):
+        for action_ in self.common_actions:
+            for id_ in ids:
+                if action_.is_effected_by_change(model, id_):
+                    raise RuntimeError("common action {!r} has failed because object {!r} has changed".format(
+                        action_, id_
+                    ))
+
+    def add_agent_based_events(self, events):
+        self.agent_based_events.extend(events)
+
+    def add_common_agent_actions(self, actions):
+        assert all(action_.duration == INSTANTANEOUS_ACTION_DURATION for action_ in actions), \
+            "common actions need to be instantaneous"
+        self.common_actions.extend(actions)
+        self.common_actions.sort(key=attrgetter("start_time"))
+
+    def clear_agent_based_actions_and_events(self):
+        assert self.executing is None
+        self.agent_based_events.clear()
+        self.common_actions.clear()
 
 
 class AgentExecutor(Executor):
@@ -198,7 +239,10 @@ class AgentExecutor(Executor):
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
-                self.central_executor.notify_goal_realisation(self.extract_events_from_plan(new_plan, action_.goals))
+                self.central_executor.notify_goal_realisation(
+                    self.extract_events_from_plan(new_plan, action_.goals),
+                    self.extract_common_actions_from_plan(new_plan, action_.goals)
+                )
             else:
                 plan_action = action_.copy_with(failed=True, duration=time_taken)
                 self.executing = ActionState(plan_action, plan_action.start_time).start()
@@ -225,17 +269,19 @@ class AgentExecutor(Executor):
             changed = action_state.action.apply(model)
             if changed:
                 # new knowledge
-                self.central_executor.notify_new_knowledge(action_state.time, changed)
+                self.central_executor.notify_new_knowledge(model, action_state.time, changed)
 
-    def notify_new_knowledge(self, time, changed):
+    def notify_new_knowledge(self, model, time, ids):
         if not self.plan:
             return
         effected = []
         for action_ in self.plan:
-            if action_.is_effected_by_change(changed):
-                effected.append(action_)
+            for id_ in ids:
+                if action_.is_effected_by_change(model, id_):
+                    effected.append(action_)
+                    break
         if effected:
-            self.resolve_effected_plan(time, changed, effected)
+            self.resolve_effected_plan(time, ids, effected)
 
     @abstractmethod
     def resolve_effected_plan(self, time, changed, effected):
@@ -259,12 +305,10 @@ class AgentExecutor(Executor):
         raise NotImplementedError
 
     @abstractmethod
-    def extract_events_from_plan(self, plan, goals):
-        """
-        :param plan: list[Action]
-        :param goals: list[Goal]
-        :return: list[Event]
-        """
+    def extract_events_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[Event]:
+        raise NotImplementedError
+
+    def extract_common_actions_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[Action]:
         raise NotImplementedError
 
     def halt(self, time):
@@ -412,7 +456,7 @@ class TaskAllocatorExecutor(Executor):
 
         for e in self._executors:
             e.halt(action_state.time)
-        self.event_executor.agent_based_events.clear()
+        self.event_executor.clear_agent_based_actions_and_events()
 
         tasks = self.domain_context.compute_tasks(model, action_state.time)
         if not tasks:
@@ -464,9 +508,9 @@ class TaskAllocatorExecutor(Executor):
 
         self.valid_plan = True
 
-    def notify_new_knowledge(self, time, node):
+    def notify_new_knowledge(self, model, time, ids):
         for executor_id in self.executor_ids:
-            self.EXECUTORS[executor_id].notify_new_knowledge(time, node)
+            self.EXECUTORS[executor_id].notify_new_knowledge(model, time, ids)
 
     def notify_planning_failure(self, executor_id, time):
         self.valid_plan = False
@@ -512,9 +556,11 @@ class TaskAllocatorExecutor(Executor):
         log.info("allocation: {}", result[0])
         return result
 
-    def notify_goal_realisation(self, events):
+    def notify_goal_realisation(self, events, actions):
         """
         :param events: list[Event]
+        :param actions list[Action]
         :return:
         """
-        self.event_executor.agent_based_events.extend(events)
+        self.event_executor.add_agent_based_events(events)
+        self.event_executor.add_common_agent_actions(actions)

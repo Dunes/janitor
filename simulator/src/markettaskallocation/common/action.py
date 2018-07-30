@@ -1,8 +1,13 @@
+from typing import Optional, List
+
 from action import Action, Plan, LocalPlan, GetExecutionHeuristic
 from accuracy import as_end_time, INSTANTANEOUS_ACTION_DURATION
 from markettaskallocation.common.problem_encoder import find_object
+from markettaskallocation.common.event import Event
 
-__all__ = ["Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Observe", "EventAction", "Allocate"]
+__all__ = [
+    "Action", "Plan", "LocalPlan", "GetExecutionHeuristic", "Observe", "EventAction", "Allocate", "CombinedAction",
+]
 
 
 class Observe(Action):
@@ -27,18 +32,18 @@ class Observe(Action):
     def is_applicable(self, model):
         return find_object(self.agent, model["objects"])["at"][1] == self.node
 
-    def apply(self, model):
+    def apply(self, model) -> Optional[List[str]]:
         assert self.is_applicable(model), "tried to apply action in an invalid state"
 
         # check if new knowledge
-        changed = False
+        changed = None
         # check to see if observe any objects
         node = find_object(self.node, model["objects"])
         unknown = node.get("unknown")
         if unknown:
             node["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
             if self._check_new_knowledge(unknown, model["assumed-values"]):
-                changed = self.node
+                changed = [self.node]
             unknown.clear()
 
         # # check to see if observe any edges
@@ -74,7 +79,7 @@ class Observe(Action):
 class EventAction(Action):
     """
     :type agent: str
-    :type events: tuple[tuple[str]]
+    :type events: tuple[Event]
     """
     agent = None
     events = None
@@ -93,10 +98,43 @@ class EventAction(Action):
         changes = set()
         for e in self.events:
             changes.add(e.apply(model))
-        return list(changes)
+        return list(changes) if changes else None
 
     def as_partial(self, **kwargs):
         return TypeError("Should not ask event to partially apply")
+
+    def partially_apply(self, model, deadline):
+        raise NotImplementedError
+
+
+class CombinedAction(Action):
+    """
+    :type agent: str
+    :type actions: list[Action]
+    """
+    agent = None
+    actions = None
+
+    _format_attrs = ("start_time", "actions")
+
+    def __init__(self, start_time, actions):
+        super().__init__(start_time, INSTANTANEOUS_ACTION_DURATION)
+        object.__setattr__(self, "agent", "event_executor")
+        object.__setattr__(self, "actions", actions)
+
+    def is_applicable(self, model):
+        return all(a.is_applicable(model) for a in self.actions)
+
+    def apply(self, model) -> Optional[List[str]]:
+        changes = []
+        for a in self.actions:
+            sub_changes = a.apply(model)
+            if sub_changes:
+                changes += sub_changes
+        return changes if changes else None
+
+    def as_partial(self, **kwargs):
+        return TypeError("Should not ask combined actions to partially apply (they should be instantaneous")
 
     def partially_apply(self, model, deadline):
         raise NotImplementedError

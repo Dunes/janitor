@@ -8,13 +8,14 @@ from planning_exceptions import ExecutionError
 from logger import StyleAdapter
 from logging import getLogger
 from decimal import Decimal
+from typing import Optional, List
 from abc import ABCMeta, abstractmethod
 
 log = StyleAdapter(getLogger(__name__))
 
 __all__ = [
 	"Action", "Plan", "LocalPlan", "GetExecutionHeuristic",
-	"Drive", "Sail", "Load", "Unload", "DeliverOntime", "DeliverAnytime", "DeliverMultiple",
+	"Drive", "Sail", "Load", "Unload", "DeliverOntime", "DeliverAnytime",
 	"Allocate", "EventAction", "REAL_ACTIONS", "DeliverAction"
 ]
 
@@ -66,7 +67,7 @@ class Move(Action, metaclass=ABCMeta):
 				or getattr(self, "partial", False)
 			)
 
-	def apply(self, model):
+	def apply(self, model) -> Optional[List[str]]:
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		model["objects"][self.agent_type][self.agent]["at"][1] = self.end_node
 		if self.start_node.startswith("temp"):
@@ -74,7 +75,7 @@ class Move(Action, metaclass=ABCMeta):
 			edge_ids = [edge_id for edge_id in model["graph"]["edges"] if edge_id.startswith(self.start_node)]
 			for edge_id in edge_ids:
 				del model["graph"]["edges"][edge_id]
-		return False
+		return None
 
 	def partially_apply(self, model, deadline):
 		# create temp node
@@ -83,7 +84,7 @@ class Move(Action, metaclass=ABCMeta):
 			self.modify_temp_node(model, deadline)
 		else:
 			self.create_temp_node(model, deadline)
-		return False
+		return None
 
 	def modify_temp_node(self, model, deadline):
 		temp_node_name = self.start_node
@@ -142,8 +143,8 @@ class Move(Action, metaclass=ABCMeta):
 			raise RuntimeError
 		raise ExecutionError("Could not find {!r}".format(edge_key))
 
-	def is_effected_by_change(self, id_):
-		return self.start_node in id_ and self.end_node in id_
+	def is_effected_by_change(self, model, id_):
+		return False
 
 
 class Drive(Move):
@@ -219,8 +220,8 @@ class Load(Action):
 	def partially_apply(self, model, deadline):
 		raise RuntimeError
 
-	def is_effected_by_change(self, id_):
-		raise RuntimeError
+	def is_effected_by_change(self, model, id_):
+		return False
 
 
 class Unload(Action):
@@ -276,8 +277,8 @@ class Unload(Action):
 	def partially_apply(self, model, deadline):
 		raise NotImplementedError
 
-	def is_effected_by_change(self, id_):
-		return id_ in (self.node, self.target)
+	def is_effected_by_change(self, model, id_):
+		return False
 
 
 class DeliverAction(Action):  # abstract base class
@@ -289,6 +290,8 @@ class DeliverAction(Action):  # abstract base class
 	agent = None
 	package = None
 	location = None
+
+	_ordinal = 1.5
 
 	_format_attrs = ("start_time", "duration", "agent", "package", "location", "partial")
 
@@ -318,81 +321,45 @@ class DeliverAction(Action):  # abstract base class
 	def partially_apply(self, model, deadline):
 		raise RuntimeError
 
-	def is_effected_by_change(self, id_):
-		raise RuntimeError("expect no new knowledge in trucks domain")
-
 
 class DeliverOntime(DeliverAction):
 
 	def is_applicable(self, model):
 		package = DOMAIN_CONTEXT.get_package(model, self.package)
-		return package["at"][1] == self.location and package.get("deliverable", False)
+		return (
+			"delivered" in package
+			or (
+				package["at"][1] == self.location
+				and "deliverable" in package
+			)
+		)
 
 	def apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		package = DOMAIN_CONTEXT.get_package(model, self.package)
-		del package["at"]
 		package["at-destination"] = [True, self.location]
 		package["delivered"] = [True, self.location]
+
+	def is_effected_by_change(self, model, id_):
+		if id_ != self.package:
+			return False
+		package = DOMAIN_CONTEXT.get_package(model, id_)
+		return "delivered" not in package or "deliverable" not in package
 
 
 class DeliverAnytime(DeliverAction):
 
 	def is_applicable(self, model):
 		package = DOMAIN_CONTEXT.get_package(model, self.package)
-		return package["at"][1] == self.location
+		return "at-destination" in package or package["at"][1] == self.location
 
 	def apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		package = DOMAIN_CONTEXT.get_package(model, self.package)
-		del package["at"]
 		package["at-destination"] = [True, self.location]
 
 
-class DeliverMultiple(Action):
-	"""
-	:type agent: str
-	:type deliver_actions: list[DeliverAction]
-	:type location: str
-	"""
-	agent = None
-	deliver_actions = None
-	location = None
-
-	_format_attrs = ("start_time", "duration", "agent", "deliver_actions", "location", "partial")
-
-	def __init__(self, start_time, duration, agent, deliver_actions, location, partial=None):
-		super().__init__(start_time, duration, partial)
-		object.__setattr__(self, "agent", agent)
-		object.__setattr__(self, "deliver_actions", deliver_actions)
-		object.__setattr__(self, "location", location)
-
-	def is_applicable(self, model):
-		return all(action.is_applicable(model) for action in self.deliver_actions)
-
-	def apply(self, model):
-		for action in self.deliver_actions:
-			action.apply(model)
-
-	def as_partial(self, end_time=None, **kwargs):
-		if end_time is not None:
-			assert "duration" not in kwargs
-			assert end_time == self.end_time
-
-		if "duration" in kwargs:
-			assert kwargs["duration"] == self.duration
-
-		obj = self.copy_with(**kwargs)
-		return obj
-
-	def partially_apply(self, model, deadline):
-		raise RuntimeError
-
-	def is_effected_by_change(self, id_):
-		raise RuntimeError("expect no new knowledge in trucks domain")
-
-
-REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime, DeliverMultiple
+REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime
 
 
 def can_load_area(model, area, agent):

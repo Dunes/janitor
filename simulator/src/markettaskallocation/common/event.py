@@ -1,7 +1,6 @@
 from logging import getLogger
 from logger import StyleAdapter
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 
 from markettaskallocation.common.problem_encoder import find_object, create_predicate
 
@@ -29,7 +28,7 @@ class Event(metaclass=ABCMeta):
         self.time = time
         self.id_ = id_
         self.predicates = predicates
-        self.hidden = hidden
+        self.hidden = hidden  # AKA -- hidden_from_planning
         self.external = external
 
     @abstractmethod
@@ -49,7 +48,8 @@ class Event(metaclass=ABCMeta):
                     predicate_value = p.was
                 else:
                     obj = self.find_object(model)
-                    predicate_value = obj["known"][p.name]
+                    obj_values = obj["known"] if "known" in obj else obj
+                    predicate_value = obj_values[p.name]
                 predicate = "not", create_predicate(p.name, predicate_value, self.id_)
             else:
                 predicate = create_predicate(p.name, p.becomes, self.id_)
@@ -59,7 +59,7 @@ class Event(metaclass=ABCMeta):
 
     def apply(self, model):
         obj = self.find_object(model)
-        values = obj["known"]
+        values = obj["known"] if "known" in obj else obj
         for p in self.predicates:
             values[p.name] = p.becomes
         return self.id_

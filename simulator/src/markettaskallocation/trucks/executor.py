@@ -2,15 +2,14 @@ from logging import getLogger
 from copy import deepcopy
 from decimal import Decimal
 from typing import List
-from itertools import groupby
 
 from logger import StyleAdapter
-from accuracy import as_start_time
+from accuracy import as_start_time, as_end_time, INSTANTANEOUS_ACTION_DURATION
 from planner import Planner
 from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
 from markettaskallocation.common.event import ObjectEvent
 from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.trucks.action import Action, DeliverAction, DeliverMultiple
+from markettaskallocation.trucks.action import Action, DeliverAction, DeliverOntime, DeliverAnytime
 
 
 __all__ = ["VehicleExecutor", "EventExecutor", "TaskAllocatorExecutor"]
@@ -24,8 +23,6 @@ WON_NOTHING = "won-nothing"
 WON_EXTRA_DIRTY_MAIN = "won-extra-dirty-main"  # TODO: modify these variables for trucks
 WON_EXTRA_DIRTY_ASSIST = "won-extra-dirty-assist"
 
-MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.500')
-
 
 class VehicleExecutor(AgentExecutor):
 	ignore_internal_events = False
@@ -34,6 +31,7 @@ class VehicleExecutor(AgentExecutor):
 	def extract_events_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[ObjectEvent]:
 		events = []
 		for action_ in plan:
+			# TODO: here goes any coordination between agents
 			pass
 			# if isinstance(action_, ExtraCleanAssist):
 			# 	events.append(
@@ -60,6 +58,18 @@ class VehicleExecutor(AgentExecutor):
 			# 	)
 		return events
 
+	def extract_common_actions_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[Action]:
+		common_actions = []
+		for action_ in plan:
+			if isinstance(action_, DeliverAction):
+				# new action that occurs in the instant after the unload occurs
+				new_action = action_.copy_with(
+					start_time=as_end_time(action_.start_time),
+					duration=INSTANTANEOUS_ACTION_DURATION
+				)
+				common_actions.append(new_action)
+		return common_actions
+
 	def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
 		# if task.goal.predicate[0] not in ("cleaned", "cleaning-assisted"):
 		# 	raise NotImplementedError("don't know how to accomplish {}".format(task.goal.predicate))
@@ -76,7 +86,7 @@ class VehicleExecutor(AgentExecutor):
 		if plan is None:
 			return None
 
-		if False:  # extra_dirty and not assist:
+		if False:  # extra_dirty and not assist:  # TODO: re-add requirements for cooperation
 			action = next(a for a in plan if isinstance(a, ExtraClean) and a.room == room_id)
 			task_value = task.value / 2  # willing to share half the value with the other agent
 			spare_time = task.goal.deadline - as_start_time(plan[-1].end_time)
@@ -127,25 +137,11 @@ class VehicleExecutor(AgentExecutor):
 		return events
 
 	def resolve_effected_plan(self, time, changed_id, effected):
-		self.central_executor.notify_planning_failure(self.id, time)
+		raise RuntimeError("Not expecting trucks executor to have its plan effected by external knowledge")
 
 	def new_plan(self, plan):
-		# coalesce deliver actions that happen at the same instant
-		def key_func(action):
-			if isinstance(action, DeliverAction):
-				return action.start_time, action.duration, action.agent, action.location
-			else:
-				return None
-
-		new_plan = []
-		for key, iter_ in groupby(plan, key=key_func):
-			if key is None:
-				new_plan.extend(iter_)
-			else:
-				start_time, duration, agent, location = key
-				deliver_actions = list(iter_)
-				new_plan.append(DeliverMultiple(start_time, duration, agent, deliver_actions, location))
-
+		# filter out deliver actions (these are performed by event executor
+		new_plan = [action_ for action_ in plan if not isinstance(action_, DeliverAction)]
 		super().new_plan(new_plan)
 
 	def halt(self, time):

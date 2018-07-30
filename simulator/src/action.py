@@ -96,7 +96,7 @@ class Action(object):
         object.__setattr__(obj, "apply", partial_func(obj.partially_apply, deadline=obj.end_time))
         return obj
 
-    def is_effected_by_change(self, id_):
+    def is_effected_by_change(self, model, id_):
         return False
 
 
