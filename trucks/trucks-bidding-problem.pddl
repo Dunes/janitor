@@ -1,5 +1,5 @@
 (define (problem truck-1)
-(:domain Trucks-TimeTIL)
+(:domain Trucks-TimeTIL-Bidding)
 (:objects
 	truck1 - truck
 	boat1 - boat
@@ -20,7 +20,7 @@
 	(at boat1 sea-portA)
 	(free area1 boat1)
 	(can-load boat1 package1)
-	(= (used-helper-agent) 0)
+	(= (used-helper-agent boat1) 0)
 
 	; packages
 	(at package1 sea-portA)
@@ -68,7 +68,7 @@
 
 (:metric minimize (+
     (total-time)
-    (* (used-helper-agent) 100000)
+    (* (used-helper-agent boat1) 100000)
 ))
 
 )

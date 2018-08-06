@@ -1,7 +1,4 @@
-; IPC5 Domain: Trucks Time-TIL
-; Authors: Yannis Dimopoulos, Alfonso Gerevini and Alessandro Saetti
-
-(define (domain Trucks-TimeTIL)
+(define (domain trucks-bidding)
 (:requirements :typing :adl :durative-actions :fluents :timed-initial-literals)
 
 (:types
@@ -28,7 +25,7 @@
 
 (:functions
     (travel-time ?from ?to - location)
-    (used-helper-agent)
+    (used-helper-agent ?v - vehicle)
 )
 
 
@@ -143,7 +140,7 @@
     )
     :effect (and
         (at start (not (can-load ?v ?p)))
-        (at start (increase (used-helper-agent) 1))
+        (at start (increase (used-helper-agent ?v) 1))
         (at start (not (at ?p ?l)))
         (at start (not (free ?a1 ?v)))
         (at end (in ?p ?v ?a1))

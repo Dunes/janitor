@@ -1,7 +1,7 @@
 ; IPC5 Domain: Trucks Time-TIL
 ; Authors: Yannis Dimopoulos, Alfonso Gerevini and Alessandro Saetti
 
-(define (domain Trucks-TimeTIL)
+(define (domain trucks-modified)
 (:requirements :typing :adl :durative-actions :fluents :timed-initial-literals)
 
 (:types
