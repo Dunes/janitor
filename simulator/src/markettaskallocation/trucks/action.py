@@ -386,3 +386,14 @@ def can_unload_area(model, area, agent):
 	# we can unload this area if we can load the area in front of it
 	closer_area = DOMAIN_CONTEXT.get_vehicle_area(model, area["closer"][0])
 	return can_load_area(model, closer_area, agent)
+
+
+class HelperLoad(Load):
+	"""
+	Assist action to help with de-serialising plans from the planner. Should *NEVER* be executed.
+	"""
+	def is_applicable(self, model):
+		raise RuntimeError("should never attempt to apply a helper load action")
+
+	def apply(self, model):
+		raise RuntimeError("should never attempt to apply a helper load action")

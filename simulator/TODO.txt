@@ -2,18 +2,12 @@
 	# -- only replan on plan invalidation (because of new knowledge) ### BINGO
 		# done via changing problems so only get new knowledge when visiting extra dirty rooms
 
-# Maybe a good idea to go into debug mode when stall instead of just quiting?
-
-
 * Get planner running on big domains in cloud
 
 * get simulator working with roborescue again (is it broken, I don't know)
 * rerun problem in cloud
 
-* add third domain to decentralised planner
-* run problems in cloud
-
-
+* run trucks domain problems in cloud
 
 -- run problems on new code
 -- run problems on centralised planner code
@@ -21,12 +15,10 @@
 -- compare against centralised planner that replans on new knowledge
 -- What about when we get new knowledge (just for Extra Dirty tasks)
 
--- get new domain from Rovatos working compare and contrast (on both centralised and decentralised)
-
 -- how many problems is good enough?
 
 
-# PDDL domains to look at
+# PDDL domains to looked at:
 	* airports
 	* pipesworld
 	* satelite
@@ -43,3 +35,12 @@
 		* model vehicle as agents?
 # Airport and UMTS appear to be very hard (see ICAPS-temporal-planning.pdf)
 # see ~/pddl-instances/ipc-{2004,2006}
+# CHOSE TRUCKS IN THE END
+
+
+# Auto add package that are in an agent to its list of won bids before starting actual bidding
+	# requires dealing with requirements too!
+	# ie. should a replan occur, if an agent is currently carrying a package then it auto wins that bid that created the goal
+		# should the bid be a requirement, then the requiring agent should also auto-win said task
+
+# create problems for trucks domain

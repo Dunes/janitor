@@ -1,15 +1,22 @@
 from logging import getLogger
 from copy import deepcopy
 from decimal import Decimal
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from logger import StyleAdapter
 from accuracy import as_start_time
 from planner import Planner
-from markettaskallocation.common.executor import AgentExecutor, EventExecutor, TaskAllocatorExecutor
+from markettaskallocation.common.executor import (
+    AgentExecutor,
+    EventExecutor,
+    TaskAllocatorExecutor,
+    WON_INDEPENDENT,
+    WON_GOAL_WITH_REQUIREMENTS,
+    WON_ASSIST_GOAL,
+)
 from markettaskallocation.common.event import ObjectEvent, Predicate
 from markettaskallocation.common.goal import Goal, Task, Bid
-from markettaskallocation.janitor.action import Move, Observe, Clean, ExtraClean, ExtraCleanAssist, Action
+from markettaskallocation.janitor.action import Move, Observe, ExtraClean, ExtraCleanAssist, Action
 from markettaskallocation.common.domain_context import DomainContext
 
 
@@ -18,11 +25,6 @@ __all__ = ["JanitorExecutor", "EventExecutor", "TaskAllocatorExecutor"]
 
 __author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
-
-
-WON_NOTHING = "won-nothing"
-WON_EXTRA_DIRTY_MAIN = "won-extra-dirty-main"
-WON_EXTRA_DIRTY_ASSIST = "won-extra-dirty-assist"
 
 MIN_DURATION_EXTENSION_TO_ALLOW_PLANNER_SUCCESS = Decimal('0.500')
 
@@ -79,7 +81,6 @@ class JanitorExecutor(AgentExecutor):
 
     type_ = "agent"
     ignore_internal_events = False
-    bidding_state = WON_NOTHING
 
     def extract_events_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[ObjectEvent]:
         events = []
@@ -109,7 +110,7 @@ class JanitorExecutor(AgentExecutor):
                 )
         return events
 
-    def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Bid:
+    def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Optional[Bid]:
         if task.goal.predicate[0] not in ("cleaned", "cleaning-assisted"):
             raise NotImplementedError("don't know how to accomplish {}".format(task.goal.predicate))
 
@@ -117,9 +118,9 @@ class JanitorExecutor(AgentExecutor):
         room_id = task.goal.predicate[1]
         extra_dirty = self.is_extra_dirty(room_id, model)
         if extra_dirty:
-            if assist and self.bidding_state == WON_EXTRA_DIRTY_MAIN:
+            if assist and self.bidding_state == WON_GOAL_WITH_REQUIREMENTS:
                 return None
-            elif not assist and self.bidding_state == WON_EXTRA_DIRTY_ASSIST:
+            elif not assist and self.bidding_state == WON_ASSIST_GOAL:
                 return None
 
         plan, time_taken = planner.get_plan_and_time_taken(
@@ -129,7 +130,10 @@ class JanitorExecutor(AgentExecutor):
             goals=[task.goal] + [b.task.goal for b in self.won_bids],
             metric=None,
             time=time,
-            events=events + self.create_events_for_bid_generation(model, task.goal, extra_dirty, assist, time + self.planning_time)
+            events=events + self.create_events_for_bid_generation(
+                model, task.goal, extra_dirty, assist, time + self.planning_time
+            ),
+            use_preferences=False,
         )
         if plan is None:
             return None
@@ -159,11 +163,11 @@ class JanitorExecutor(AgentExecutor):
 
     def convert_model_for_bid_generation(self, model, extra_dirty: bool, assist: bool):
         model = deepcopy(model)
-        if self.bidding_state == WON_EXTRA_DIRTY_MAIN or (extra_dirty and not assist):
-            assert self.bidding_state != WON_EXTRA_DIRTY_ASSIST
+        if self.bidding_state == WON_GOAL_WITH_REQUIREMENTS or (extra_dirty and not assist):
+            assert self.bidding_state != WON_ASSIST_GOAL
             self._add_bid_predicates(model, {"can-finish": True, "cleaning-assist": True})
-        elif self.bidding_state == WON_EXTRA_DIRTY_ASSIST or (extra_dirty and assist):
-            assert self.bidding_state != WON_EXTRA_DIRTY_MAIN
+        elif self.bidding_state == WON_ASSIST_GOAL or (extra_dirty and assist):
+            assert self.bidding_state != WON_GOAL_WITH_REQUIREMENTS
             self._add_bid_predicates(model, {"can-finish": True})
         return model
 
@@ -174,7 +178,8 @@ class JanitorExecutor(AgentExecutor):
             if known.get("extra-dirty", False):
                 known.update(bid_predicates)
 
-    def create_events_for_bid_generation(self, model, goal: Goal, extra_dirty: bool, assist: bool, time: Decimal) -> List[ObjectEvent]:
+    def create_events_for_bid_generation(
+            self, model, goal: Goal, extra_dirty: bool, assist: bool, time: Decimal) -> List[ObjectEvent]:
         events = []
         # add events for new task
         if extra_dirty:
@@ -218,12 +223,12 @@ class JanitorExecutor(AgentExecutor):
     def events_from_goals(self, model, goals, execution_start_time):
         # TODO: This should be abstracted to the base executor
         # It relates purely to defining the time windows in which an agent can complete a goal
-        if self.bidding_state == WON_NOTHING:
+        if self.bidding_state == WON_INDEPENDENT:
             return []
 
         events = []
         rooms = model["objects"]["room"]
-        if self.bidding_state in (WON_EXTRA_DIRTY_MAIN, WON_EXTRA_DIRTY_ASSIST):
+        if self.bidding_state in (WON_GOAL_WITH_REQUIREMENTS, WON_ASSIST_GOAL):
             for goal in goals:
                 room = rooms[goal.predicate[1]]["known"]
                 if room.get("extra-dirty", False):
@@ -269,16 +274,16 @@ class JanitorExecutor(AgentExecutor):
 
     def halt(self, time):
         super().halt(time)
-        self.bidding_state = WON_NOTHING
+        self.bidding_state = WON_INDEPENDENT
 
     def notify_bid_won(self, bid: Bid, model):
         super().notify_bid_won(bid, model)
         if bid.task.goal.predicate[0] == "cleaning-assisted":
-            assert self.bidding_state in (WON_EXTRA_DIRTY_ASSIST, WON_NOTHING)
-            self.bidding_state = WON_EXTRA_DIRTY_ASSIST
+            assert self.bidding_state in (WON_ASSIST_GOAL, WON_INDEPENDENT)
+            self.bidding_state = WON_ASSIST_GOAL
         elif self.is_extra_dirty(bid.task.goal.predicate[1], model):
-            assert self.bidding_state in (WON_EXTRA_DIRTY_MAIN, WON_NOTHING)
-            self.bidding_state = WON_EXTRA_DIRTY_MAIN
+            assert self.bidding_state in (WON_GOAL_WITH_REQUIREMENTS, WON_INDEPENDENT)
+            self.bidding_state = WON_GOAL_WITH_REQUIREMENTS
 
     @staticmethod
     def is_extra_dirty(room_id, model):

@@ -14,22 +14,19 @@ class TrucksPddlGoal(PddlGoal):
 	@staticmethod
 	def is_main_goal(goal: Goal) -> bool:
 		return True
-		raise NotImplementedError
-		return goal.predicate[0] == "cleaned"
 
 	@property
 	def explicit_deadline(self):
 		return False
-		raise NotImplementedError
 
 	def as_sub_goal(self, goal: Goal, required_symbol: str):
-		raise NotImplementedError
-		return goal.predicate
+		raise RuntimeError
 
 
 problem_encoder = ProblemEncoder(TrucksPddlGoal, ("truck", "boat"))
 
 
 plan_decoder = PlanDecoder(create_action_map(
-	action.Load, action.Unload, action.Drive, action.Sail, action.DeliverOntime, action.DeliverAnytime
+	action.Load, action.Unload, action.Drive, action.Sail, action.DeliverOntime, action.DeliverAnytime,
+	action.HelperLoad,
 ))

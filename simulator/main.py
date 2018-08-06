@@ -260,15 +260,15 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
     # create planner
     planner = Planner(decoder=decoder,
                       problem_encoder=problem_encoder,
-                      domain_file=domain_template.format(model["domain"]))
+                      domain_template=domain_template)
 
     # create and setup executors
     truck_executors = [
-        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
+        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time, type_="truck")
         for agent_name in model["objects"]["truck"]
     ]
     boat_executors = [
-        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time)
+        VehicleExecutor(agent=agent_name, planning_time=args.heuristic_planning_time, type_="boat")
         for agent_name in model["objects"]["boat"]
     ]
     agent_executors = truck_executors + boat_executors

@@ -20,11 +20,19 @@ from markettaskallocation.common.goal import Task, Bid, Goal
 from markettaskallocation.common.domain_context import DomainContext
 
 
-__all__ = ["Executor", "AgentExecutor", "EventExecutor", "TaskAllocatorExecutor"]
+__all__ = [
+    "Executor", "AgentExecutor", "EventExecutor", "TaskAllocatorExecutor", "WON_INDEPENDENT", "WON_ASSIST_GOAL",
+    "WON_GOAL_WITH_REQUIREMENTS",
+]
 
 
 __author__ = 'jack'
 log = StyleAdapter(getLogger(__name__))
+
+
+WON_INDEPENDENT = "won-independent"
+WON_GOAL_WITH_REQUIREMENTS = "won-goal-with-requirements"
+WON_ASSIST_GOAL = "won-assist-goal"
 
 
 class Executor(metaclass=ABCMeta):
@@ -177,6 +185,7 @@ class AgentExecutor(Executor):
 
     type_ = None
     ignore_internal_events = None
+    bidding_state = WON_INDEPENDENT
 
     def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), central_executor_id=None,
                  halted=False):
@@ -218,8 +227,7 @@ class AgentExecutor(Executor):
             # NORMAL CASE:
             # An agent has to wait for planning to finish before we can act
             effective_start_time = action_state.time + action_.duration
-            if self.bidding_state == "won-extra-dirty-assist":
-                # TODO: remove this hack (only works for janitor domain currently) (might passively work for roborescue though)
+            if self.bidding_state == WON_ASSIST_GOAL:
                 # SPECIAL CASE:
                 # Some agents have to wait until other agents have planned to be able to plan their-self
                 # But all agents have to wait for all agents to finish planning before acting.
@@ -235,6 +243,7 @@ class AgentExecutor(Executor):
                     as_start_time(action_.end_time),
                 ),
                 effective_start_time=effective_start_time,
+                use_preferences=True,
             )
             if new_plan is not None:
                 plan_action = action_.copy_with(plan=new_plan, duration=time_taken)

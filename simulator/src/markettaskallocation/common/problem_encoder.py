@@ -104,13 +104,12 @@ class ProblemEncoder:
         self.pddl_goal_type = pddl_goal_type
         self.agent_type_names = agent_type_names
 
-    def encode_problem_to_file(self, filename, model, agent, goals, metric, time, events):
+    def encode_problem_to_file(self, filename, model, agent, goals, metric, time, events, *, use_preferences: bool):
         with get_text_file_handle(filename) as fh:
-            self.encode_problem(fh, model, agent, goals, metric, time, events)
+            self.encode_problem(fh, model, agent, goals, metric, time, events, use_preferences=use_preferences)
 
-    def encode_problem(self, out, model, agent, goals, metric, time, events):
+    def encode_problem(self, out, model, agent, goals, metric, time, events, *, use_preferences: bool):
         # convert data
-        use_preferences = metric is not None
         goals = self.convert_goals(goals, use_preferences)
         objects = self.collate_object_types(model["objects"], goals)
         object_values = self.collate_objects(model["objects"], agent=agent)
@@ -123,7 +122,7 @@ class ProblemEncoder:
             "predicate" in objects)
         self.encode_goal(out, goals)
         if metric is not None:
-            self.encode_metric(out, metric, goals)
+            self.encode_metric(out, metric, goals, use_preferences)
         # post-amble
         out.write(")")
 
@@ -237,18 +236,23 @@ class ProblemEncoder:
             self.encode_predicate(out, goal.goal_tuple, indent="    ")
         out.write("))\n")
 
-    def encode_metric(self, out, metric, goals):
+    def encode_metric(self, out, metric, goals, use_preferences):
         out.write("(:metric ")
         out.write(metric["type"])
-        out.write(" (+ ")
-        weights = metric["weights"]
-        violations = weights["soft-goal-violations"]
-        if "total-time" in weights:
-            self.encode_predicate(out, ["*", str(weights["total-time"]), ["total-time"]])
-        for goal in goals:
-            weight = violations.get(goal.key) or violations[goal.key.predicate[0]]
-            self.encode_predicate(out, ["*", weight, ["is-violated", goal.preference_name]])
-        out.write(") ) \n")
+        if use_preferences:
+            out.write(" (+ ")
+            weights = metric["weights"]
+            violations = weights["soft-goal-violations"]
+            if "total-time" in weights:
+                self.encode_predicate(out, ["*", str(weights["total-time"]), ["total-time"]])
+            for goal in goals:
+                weight = violations.get(goal.key) or violations[goal.key.predicate[0]]
+                self.encode_predicate(out, ["*", weight, ["is-violated", goal.preference_name]])
+            out.write(")")
+        else:
+            out.write(" ")
+            self.encode_predicate(out, metric["predicate"])
+        out.write(" ) \n")
 
     def collate_objects(self, objects, agent):
         collated = {}

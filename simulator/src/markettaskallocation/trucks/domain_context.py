@@ -47,3 +47,12 @@ class TrucksDomainContext(DomainContext):
 
     def task_key_for_allocation(self, task):
         return task.goal.deadline, task.goal.predicate
+
+    @staticmethod
+    def opposite_agent_type(type_):
+        if type_ == "boat":
+            return "truck"
+        elif type_ == "truck":
+            return "boat"
+        else:
+            raise ValueError("unrecognised agent type: {!r}".format(type_))
