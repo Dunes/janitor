@@ -38,10 +38,13 @@ def synchronized(lock):
 
 class Planner(object):
 
-    def __init__(self, decoder, problem_encoder, domain_file, planner_location="../optic-cplex",
-                 working_directory=".", encoding="UTF-8"):
+    def __init__(self, decoder, problem_encoder, domain_file=None, planner_location="../optic-cplex",
+                 working_directory=".", encoding="UTF-8", domain_template=None):
         self.planner_location = planner_location
         self.domain_file = domain_file
+        self.domain_template = domain_template
+        if (domain_file and domain_template) or (not domain_file and not domain_template):
+            raise ValueError("must specify exactly one of (domain_file, domain_template)")
         self.working_directory = working_directory
         self.encoding = encoding
         self.decoder = decoder
@@ -50,13 +53,21 @@ class Planner(object):
         tempfile.tempdir = path_join(working_directory, "temp_problems")
 
     @synchronized(_lock)
-    def get_plan(self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None):
-        log.debug("Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration, agent,
+    def get_plan(
+            self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None,
+            use_preferences: bool, agent_problem_name: str=None
+    ):
+        log.debug(
+            "Planner.get_plan() duration={}, agent={!r}, goals={}, metric={}, time={}, events={}", duration,
+            (agent, agent_problem_name),
             goals, metric, time, events)
-        problem_file = self.create_problem_file(model, agent, goals, metric, time + duration, events)
+        problem_file = self.create_problem_file(
+            model, agent, goals, metric, time + duration, events, use_preferences=use_preferences,
+            agent_problem_name=agent_problem_name,
+        )
         # problem_file = "/dev/stdin"
         report = True
-        args = [self.planner_location, self.domain_file, problem_file]
+        args = [self.planner_location, self.get_domain_file(model), problem_file]
         single_pass = False
         if duration == 0:
             duration += 2
@@ -92,19 +103,31 @@ class Planner(object):
                 f.write(repr(plan))
         return plan
 
-    def get_plan_and_time_taken(self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None):
+    def get_plan_and_time_taken(
+            self, model, *, duration, agent, goals, metric, time, events, effective_start_time=None,
+            use_preferences: bool, agent_problem_name: str=None):
         start = _time()
         plan = self.get_plan(
             model, duration=duration, agent=agent, goals=goals, metric=metric, time=time, events=events,
             effective_start_time=effective_start_time,
+            use_preferences=use_preferences, agent_problem_name=agent_problem_name,
         )
         end = _time()
         return plan, min(Decimal(end - start).quantize(_precision, rounding=ROUND_DOWN), duration)
 
-    def create_problem_file(self, model, agent, goals, metric, time, events):
+    def create_problem_file(
+            self, model, agent, goals, metric, time, events, *, use_preferences: bool, agent_problem_name: str=None):
         import datetime
         now = datetime.datetime.utcnow().time().isoformat()
-        prefix = "{}-{}-{}-{}-".format(model["domain"], agent, time, now)
+        prefix = "{}-{}-{}-{}-".format(model["domain"], agent_problem_name or agent, time, now)
         fh = tempfile.NamedTemporaryFile(mode="w", prefix=prefix, suffix=".pddl", delete=False)
-        self.problem_encoder.encode_problem_to_file(fh, model, agent, goals, metric, time, events)
+        self.problem_encoder.encode_problem_to_file(
+            fh, model, agent, goals, metric, time, events, use_preferences=use_preferences
+        )
         return fh.name
+
+    def get_domain_file(self, model):
+        if self.domain_file:
+            return self.domain_file
+        else:
+            return self.domain_template.format(model["domain"])
