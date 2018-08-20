@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta charset="UTF-8">
+        <script type="text/javascript" src="jquery/1.10.2/jquery.min.js"></script>
+        <!--<script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization',
+            'version':'1','packages':['timeline']}]}"></script>-->
+        <script type="text/javascript" src="layout-truck.js"></script>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+		<div id="canvas-container" class="input">
+			<svg id="canvas" width="25cm" height="25cm" viewBox="0 0 1200 1200"
+		 xmlns="http://www.w3.org/2000/svg" version="1.1">
+			</svg>
+		</div>
+    	<div class="input">
+    		<h1>Object Data</h1>
+    		<form id="object-data-form">
+			    <table>
+			    	<thead>
+			    		<tr><th>attribute</th><th>value</th></tr>
+			    	</thead>
+			    	<tbody id="object-data">
+			    		<tr><td>id</td><td><select name="id"><option value="none">---</option></select></td></tr>
+			    	</tbody>
+			    </table>
+			    <button onclick="saveObject(); return false;">Save</button>
+			    <button onclick="exportModel(); return false;">Export</button>
+	        </form>
+        </div>
+		<div class="input">
+	        <h1>Model Input</h1>
+	        <list>
+	            <li>
+	                <textarea id="input-model"></textarea>
+	            </li>
+	            <li><button onclick="displayModel();">Display</button></li>
+	        </list>
+	        <div id="error-log"></div>
+	    </div>
+    </body>
+</html>
