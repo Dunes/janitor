@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABCMeta
-from typing import List, Dict
+from typing import List, Dict, Optional
 from decimal import Decimal
 
 
@@ -43,3 +43,6 @@ class DomainContext(metaclass=ABCMeta):
 			except KeyError:
 				pass
 		raise KeyError(key)
+
+	def disallowed_requirements(self, goal: Goal) -> Optional[set]:
+		return None

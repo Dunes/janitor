@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from decimal import Decimal
 from copy import deepcopy
 
@@ -47,6 +47,13 @@ class TrucksDomainContext(DomainContext):
 
     def task_key_for_allocation(self, task):
         return task.goal.deadline, task.goal.predicate
+
+    def disallowed_requirements(self, goal: Goal) -> Optional[set]:
+        if goal.predicate[0] in ('delivered', 'at-destination'):
+            # to deliver a package you cannot have a requirement that the package be at the destination...
+            return {('at', goal.predicate[1], goal.predicate[2])}
+        else:
+            return None
 
     @staticmethod
     def opposite_agent_type(type_):

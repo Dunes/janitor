@@ -550,11 +550,19 @@ class TaskAllocatorExecutor(Executor):
                 log.debug("no bids for {}", task)
                 continue
 
+            # remove silly bids
+            disallowed = self.domain_context.disallowed_requirements(task.goal)
+            if disallowed:
+                allowed_bids = [bid for bid in bids if disallowed.isdisjoint(task.goal.predicate for task in bid.requirements)]
+            else:
+                allowed_bids = bids
+
             # parallel computation -- only take longest
             computation_time += max(b.computation_time for b in bids)
-            winning_bid = min(bids, key=attrgetter("estimated_endtime"))
+            winning_bid = min(allowed_bids, key=attrgetter("estimated_endtime"))
 
             # notify winner of winning bid
+            log.info("{bid.agent} won goal of {bid.task.goal} with requirements {bid.requirements}", bid=winning_bid)
             allocation[winning_bid.task.goal] = winning_bid
             self.executor_by_name(winning_bid.agent).notify_bid_won(winning_bid, model)
 
