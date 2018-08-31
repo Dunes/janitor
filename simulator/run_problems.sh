@@ -17,6 +17,10 @@ function usage {
 	echo "                       (default \`unsolved-problems.txt')"
 	echo "  -l LOG_DIR         The logging directory to log output and failed runs to."
 	echo "                       (default \`logs')"
+	echo "  -s SIMULATOR       The simulator arg to pass to main.sh"
+	echo "  -x                 Shutdown the computer when done. Useful for auto-stopping"
+	echo "                       AWS instances. requires password-less sudo. (default"
+	echo "                       behaviour is to no do this)"
 	echo "  -h                 Print this usage instructions."
 
 	exit 1
@@ -27,8 +31,9 @@ time_opt="10"
 heuristic_opt="1"
 log_dir="logs"
 error_log_file="unsolved-problems.txt"
+SHUTDOWN=nope
 
-args=`getopt t:e:l:d:q: $*`
+args=`getopt t:e:l:d:q:s:x $*`
 if [[ $? -ne 0 ]]
 then
 	usage
@@ -57,6 +62,13 @@ do
 		shift
 		heuristic_opt="$1"
 		;;
+	-s)
+	    shift
+	    simulator="$1"
+	    ;;
+	-x)
+	    SHUTDOWN=shutdown
+	    ;;
 	--)
 		shift
 		break
@@ -85,7 +97,7 @@ function process_file {
     file_name="$1"
 	base_file_name="`basename ${file_name}`"
 	echo "starting $file_name"
-	./main.sh "$file_name" -t "$time_opt" -q "$heuristic_opt" -l "$log_dir" 2>&1 | tee "$log_dir/output/$base_file_name"
+	./main.sh "$file_name" -t "$time_opt" -q "$heuristic_opt" -l "$log_dir" -s "$simulator" 2>&1 | tee "$log_dir/output/$base_file_name"
 	exit_val="${PIPESTATUS[0]}"
 	if [[ "$exit_val" != 0 ]]
 	then
@@ -106,4 +118,10 @@ else
 	do
 		process_file "$file_name"
 	done
+fi
+
+
+if [ ${SHUTDOWN} = shutdown ]
+then
+    sudo shutdown now
 fi

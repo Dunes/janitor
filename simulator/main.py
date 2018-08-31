@@ -24,6 +24,7 @@ log = logger.StyleAdapter(logging.getLogger())
 
 def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
+    p.add_argument("--simulator", "-s", choices=list(SIMULATORS), required=True)
     p.add_argument("--domain-file", "-d")
     p.add_argument("problem_file")
     p.add_argument("--planning-time", "-t", type=decimal.Decimal, required=True,
@@ -34,11 +35,10 @@ def parser():
     return p
 
 
-def run_old_simulator(domain_template="../janitor/{}-domain.pddl"):
+def run_old_simulator(args, domain_template="../janitor/{}-domain.pddl"):
     from new_simulator import Simulator
     import executor
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
     log.info("log: {}", log_file_name)
@@ -59,11 +59,10 @@ def run_old_simulator(domain_template="../janitor/{}-domain.pddl"):
         exit(1)
 
 
-def run_single_agent_replan_simulator(domain_template="../janitor/{}-domain.pddl"):
+def run_single_agent_replan_simulator(args, domain_template="../janitor/{}-domain.pddl"):
     from singleagent.simulator import Simulator
     from singleagent.executor import AgentExecutor, CentralPlannerExecutor
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
     log.info("log: {}", log_file_name)
@@ -108,7 +107,7 @@ def run_single_agent_replan_simulator(domain_template="../janitor/{}-domain.pddl
         exit(1)
 
 
-def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
+def run_roborescue_simulator(args, domain_template="../roborescue/{}-domain.pddl"):
     from markettaskallocation.roborescue import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.roborescue.executor import (
@@ -116,7 +115,6 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
     )
     from markettaskallocation.roborescue.action import REAL_ACTIONS
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time,
                                                     args.heuristic_planning_time)
@@ -170,7 +168,7 @@ def run_roborescue_simulator(domain_template="../roborescue/{}-domain.pddl"):
         exit(1)
 
 
-def run_decentralised_janitor_simulator(domain_template="../janitor/{}-decentralised-planner-domain.pddl"):
+def run_decentralised_janitor_simulator(args, domain_template="../janitor/{}-decentralised-planner-domain.pddl"):
     from markettaskallocation.janitor import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.janitor.executor import (
@@ -178,7 +176,6 @@ def run_decentralised_janitor_simulator(domain_template="../janitor/{}-decentral
     )
     from markettaskallocation.janitor.action import REAL_ACTIONS
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time,
                                                     args.heuristic_planning_time)
@@ -230,7 +227,7 @@ def run_decentralised_janitor_simulator(domain_template="../janitor/{}-decentral
         exit(1)
 
 
-def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
+def run_modified_trucks_simulator(args, domain_template="../trucks/{}-domain.pddl"):
     from markettaskallocation.trucks import plan_decoder, problem_encoder
     from markettaskallocation.common.simulator import Simulator
     from markettaskallocation.trucks.executor import (
@@ -240,7 +237,6 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
     from markettaskallocation.trucks.domain_context import TrucksDomainContext
     from markettaskallocation.trucks.action import REAL_ACTIONS
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time,
                                                     args.heuristic_planning_time)
@@ -299,7 +295,13 @@ def run_modified_trucks_simulator(domain_template="../trucks/{}-domain.pddl"):
         exit(1)
 
 
+SIMULATORS = {
+    "roborescue": run_roborescue_simulator,
+    "trucks": run_modified_trucks_simulator,
+    "janitor-decentralised": run_decentralised_janitor_simulator,
+}
+
+
 if __name__ == "__main__":
-    # run_roborescue_simulator()
-    # run_decentralised_janitor_simulator()
-    run_modified_trucks_simulator()
+    args = parser().parse_args()
+    SIMULATORS[args.simulator](args)
