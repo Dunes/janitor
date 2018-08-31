@@ -108,7 +108,21 @@ class JanitorExecutor(AgentExecutor):
                         external=False,
                     )
                 )
+                events.append(
+                    ObjectEvent(
+                        time=action_.end_time + 1,
+                        id_=action_.room,
+                        predicates=[
+                            Predicate(name="can-finish", becomes=False, was=True),
+                        ],
+                        hidden=False,
+                        external=False,
+                    )
+                )
         return events
+
+    def extract_common_actions_from_plan(self, plan: List[Action], goals: List[Goal]) -> List[Action]:
+        return []
 
     def generate_bid(self, task: Task, planner: Planner, model, time, events) -> Optional[Bid]:
         if task.goal.predicate[0] not in ("cleaned", "cleaning-assisted"):
@@ -216,13 +230,32 @@ class JanitorExecutor(AgentExecutor):
         return planning_model
 
     def transform_events_for_planning(self, events, model, goals, execution_start_time):
-        events = super().transform_events_for_planning(events, model, goals, execution_start_time)
-        events += self.events_from_goals(model, goals, execution_start_time)
+        global_events = super().transform_events_for_planning(events, model, goals, execution_start_time)
+
+        # bleh, very domain specific
+        goal_room_ids = tuple(g.predicate[1] for g in goals)
+        # fix so that only one place emits predicates like (at 123 (not (can-finish rm1)))
+        # causes a seg-fault in optic otherwise
+        # and that we only emit events related to goals we are interested in
+        events = []
+        can_finish_excluded = []
+        for ev in global_events:
+            if ev.id_ in goal_room_ids:
+                events.append(ev)
+                if (
+                    any(pred.name == "can-finish" and pred.becomes is False for pred in ev.predicates)
+                ):
+                    can_finish_excluded.append(ev.id_)
+
+        events += self.events_from_goals(
+            model,
+            goals,
+            execution_start_time,
+            can_finish_excluded=can_finish_excluded
+        )
         return events
 
-    def events_from_goals(self, model, goals, execution_start_time):
-        # TODO: This should be abstracted to the base executor
-        # It relates purely to defining the time windows in which an agent can complete a goal
+    def events_from_goals(self, model, goals, execution_start_time, can_finish_excluded=()):
         if self.bidding_state == WON_INDEPENDENT:
             return []
 
@@ -242,7 +275,7 @@ class JanitorExecutor(AgentExecutor):
                         external=True,
                     ))
 
-                    if goal.deadline.is_finite():
+                    if goal.predicate[1] not in can_finish_excluded and goal.deadline.is_finite():
                         events.append(ObjectEvent(
                             time=goal.deadline,
                             id_=goal.predicate[1],

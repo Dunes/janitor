@@ -128,7 +128,7 @@ class Move(Action):
 			raise NotImplementedError
 		raise ExecutionError("Could not find {!r}".format(edge_key))
 
-	def is_effected_by_change(self, id_):
+	def is_effected_by_change(self, model, id_):
 		return self.start_node in id_ and self.end_node in id_
 
 
@@ -176,7 +176,7 @@ class Clean(Action):
 		room["dirtiness"] -= self.duration
 		assert room["dirtiness"] > 0
 
-	def is_effected_by_change(self, id_):
+	def is_effected_by_change(self, model, id_):
 		return self.room == id_
 
 
