@@ -120,6 +120,8 @@ else
 	done
 fi
 
+# zip results up
+tar -c temp_problems logs | gzip -c > results.tar.gz
 
 if [ ${SHUTDOWN} = shutdown ]
 then
