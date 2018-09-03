@@ -39,7 +39,8 @@ class PlanDecoder:
     def decode_plan(self, data_input, time, report_incomplete_plan=True):
         line = None
         for line in data_input:
-            if line == "\n":
+            match = line_start_pattern.match(line)
+            if not match:
                 break
             if line[-1] != "\n":
                 raise IncompletePlanException("action not terminated properly")
