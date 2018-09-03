@@ -30,10 +30,10 @@ do
         simulator=
         problems_file=
 
-        #branch="janitor-centralised"
-        #simulator=janitor-centralised
-        #problems_file="problems/no-stock/part-${i}.txt"
-        #let i=i+1
+        branch="janitor-centralised"
+        simulator=janitor-centralised
+        problems_file="problems/no-stock/part-${i}.txt"
+        let i=i+1
 
         if [ -z "${branch}" -o -z "${problems_file}" -o -z "${simulator}" ]
         then
