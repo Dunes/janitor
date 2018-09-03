@@ -21,8 +21,8 @@ while read url
 do
     ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem"
     ssh_user=ubuntu
-    #ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-    #ssh_user=jackh
+    ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
+    ssh_user=jackh
     ssh_login="${ssh_user}@${url}"
     case "${action}" in
     run)
@@ -59,7 +59,13 @@ EOF
         ;;
     collect)
         mkdir -p "results/unclassified"
-        scp ${ssh_opt} "${ssh_login}:${repo_dir}/results.tar.gz" "results/unclassified/${url}"
+        local_file="results/unclassified/${url}.tar.gz"
+        if [ -f "${local_file}" ]
+        then
+            echo file "${local_file}" already exists
+            exit 1
+        fi
+        scp ${ssh_opt} "${ssh_login}:${repo_dir}/results.tar.gz" "${local_file}"
         ;;
     *)
         echo "unrecognised action: ${action}"
