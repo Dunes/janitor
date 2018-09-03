@@ -40,12 +40,18 @@ do
             echo "failed sanity check"
             exit 1
         fi
-        run_cmd="./run_problems.sh -s ${simulator} -t 2 -e ${url}-unsolved-problems.txt ${problems_file}" # -x
+        run_cmd="./run_problems.sh -s ${simulator} -t 10 -e ${url}-unsolved-problems.txt ${problems_file} -x"
         echo ${run_cmd}
         ssh ${ssh_opt} "${ssh_user}@${url}" /bin/bash <<EOF
 set -ex
 cd "${repo_dir}"
 git checkout "${branch}"
+if [ -f results.tar.gz ]
+then
+    mkdir -p  ~/results-backup
+    backup_file=\$(mktemp -p ~/results-backup --suffix=.tar.gz)
+    mv results.tar.gz "\${backup_file}"
+fi
 rm -rf temp_problems logs
 mkdir -p temp_problems logs/output logs/plans/roborescue
 screen -d -m sh -c "${run_cmd} 2>&1 1>screen_cmd_output.txt"
