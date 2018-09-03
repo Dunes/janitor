@@ -3,7 +3,7 @@
 action=$1
 url_file=$2
 
-repo_dir=/home/jackh/thesis/janitor/simulator
+repo_dir=/home/ubuntu/janitor/simulator
 
 if [ -z "${action}" -o -z "${url_file}" ]
 then
@@ -45,6 +45,7 @@ do
         ssh ${ssh_opt} "${ssh_user}@${url}" /bin/bash <<EOF
 set -ex
 cd "${repo_dir}"
+git fetch origin
 git checkout "${branch}"
 if [ -f results.tar.gz ]
 then
