@@ -43,8 +43,8 @@ do
         ssh ${ssh_opt} "${ssh_user}@${url}" /bin/bash <<EOF
 set -ex
 cd "${repo_dir}"
-git fetch origin
 git checkout "${branch}"
+git pull origin
 if [ -f results.tar.gz ]
 then
     mkdir -p  ~/results-backup
@@ -52,7 +52,7 @@ then
     mv results.tar.gz "\${backup_file}"
 fi
 rm -rf temp_problems logs
-mkdir -p temp_problems logs/output logs/plans/roborescue
+mkdir -p temp_problems logs/output logs/roborescue/plans
 screen -d -m sh -c "${run_cmd} 2>&1 1>screen_cmd_output.txt"
 EOF
         ;;
