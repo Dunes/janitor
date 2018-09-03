@@ -1,0 +1,1933 @@
+{
+    "assumed-values": {},
+    "domain": "trucks-modified",
+    "goal": {
+        "hard-goals": [
+            [
+                "delivered",
+                "package8",
+                "sea-4-8"
+            ],
+            [
+                "delivered",
+                "package27",
+                "sea-0-5"
+            ],
+            [
+                "delivered",
+                "package12",
+                "sea-5-5"
+            ],
+            [
+                "delivered",
+                "package6",
+                "sea-8-8"
+            ],
+            [
+                "delivered",
+                "package14",
+                "land-8-0"
+            ],
+            [
+                "delivered",
+                "package17",
+                "land-8-0"
+            ],
+            [
+                "delivered",
+                "package36",
+                "sea-8-8"
+            ],
+            [
+                "delivered",
+                "package39",
+                "sea-4-4"
+            ],
+            [
+                "delivered",
+                "package5",
+                "land-3-0"
+            ],
+            [
+                "delivered",
+                "package38",
+                "sea-1-7"
+            ],
+            [
+                "delivered",
+                "package19",
+                "land-0-2"
+            ],
+            [
+                "delivered",
+                "package30",
+                "land-8-2"
+            ],
+            [
+                "delivered",
+                "package31",
+                "land-8-1"
+            ],
+            [
+                "delivered",
+                "package35",
+                "land-6-3"
+            ],
+            [
+                "delivered",
+                "package22",
+                "land-7-3"
+            ],
+            [
+                "delivered",
+                "package0",
+                "land-4-0"
+            ],
+            [
+                "delivered",
+                "package33",
+                "sea-6-5"
+            ],
+            [
+                "delivered",
+                "package24",
+                "land-5-2"
+            ],
+            [
+                "delivered",
+                "package29",
+                "land-8-0"
+            ],
+            [
+                "delivered",
+                "package4",
+                "sea-3-8"
+            ],
+            [
+                "delivered",
+                "package15",
+                "sea-7-6"
+            ],
+            [
+                "delivered",
+                "package28",
+                "land-8-1"
+            ],
+            [
+                "delivered",
+                "package34",
+                "land-1-3"
+            ],
+            [
+                "delivered",
+                "package9",
+                "sea-2-6"
+            ],
+            [
+                "delivered",
+                "package7",
+                "sea-2-5"
+            ],
+            [
+                "delivered",
+                "package25",
+                "land-7-3"
+            ],
+            [
+                "delivered",
+                "package1",
+                "sea-8-6"
+            ],
+            [
+                "delivered",
+                "package3",
+                "land-3-1"
+            ],
+            [
+                "delivered",
+                "package20",
+                "land-1-3"
+            ],
+            [
+                "delivered",
+                "package18",
+                "land-8-3"
+            ],
+            [
+                "delivered",
+                "package37",
+                "land-5-1"
+            ],
+            [
+                "delivered",
+                "package32",
+                "land-1-3"
+            ],
+            [
+                "delivered",
+                "package16",
+                "land-8-1"
+            ],
+            [
+                "delivered",
+                "package23",
+                "sea-4-5"
+            ],
+            [
+                "delivered",
+                "package13",
+                "land-3-0"
+            ],
+            [
+                "delivered",
+                "package2",
+                "land-3-2"
+            ],
+            [
+                "delivered",
+                "package26",
+                "land-7-2"
+            ],
+            [
+                "delivered",
+                "package11",
+                "land-1-2"
+            ],
+            [
+                "delivered",
+                "package21",
+                "sea-6-5"
+            ],
+            [
+                "delivered",
+                "package10",
+                "land-4-3"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": {
+            "land-0-0 land-0-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-0 land-1-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-1 land-0-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-1 land-0-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-1 land-1-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-2 land-0-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-2 land-0-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-2 land-1-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-3 land-0-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-3 land-1-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-0-3 port-0-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-0 land-0-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-0 land-1-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-0 land-2-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-1 land-0-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-1 land-1-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-1 land-1-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-1 land-2-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-2 land-0-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-2 land-1-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-2 land-1-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-2 land-2-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-3 land-0-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-3 land-1-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-3 land-2-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-1-3 port-1-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-0 land-1-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-0 land-2-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-0 land-3-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-1 land-1-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-1 land-2-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-1 land-2-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-1 land-3-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-2 land-1-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-2 land-2-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-2 land-2-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-2 land-3-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-3 land-1-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-3 land-2-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-3 land-2-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-3 land-3-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-4 land-2-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-4 land-3-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-2-4 port-1-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-0 land-2-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-0 land-3-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-0 land-4-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-1 land-2-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-1 land-3-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-1 land-3-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-1 land-4-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-2 land-2-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-2 land-3-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-2 land-3-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-2 land-4-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-3 land-2-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-3 land-3-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-3 land-3-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-3 land-4-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-4 land-2-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-3-4 land-3-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-0 land-3-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-0 land-4-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-0 land-5-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-1 land-3-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-1 land-4-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-1 land-4-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-1 land-5-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-2 land-3-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-2 land-4-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-2 land-4-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-2 land-5-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-3 land-3-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-3 land-4-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-4-3 land-5-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-0 land-4-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-0 land-5-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-0 land-6-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-1 land-4-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-1 land-5-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-1 land-5-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-1 land-6-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-2 land-4-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-2 land-5-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-2 land-5-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-2 land-6-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-3 land-4-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-3 land-5-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-5-3 land-6-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-0 land-5-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-0 land-6-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-0 land-7-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-1 land-5-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-1 land-6-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-1 land-6-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-1 land-7-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-2 land-5-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-2 land-6-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-2 land-6-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-2 land-7-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-3 land-5-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-3 land-6-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-6-3 land-7-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-0 land-6-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-0 land-7-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-0 land-8-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-1 land-6-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-1 land-7-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-1 land-7-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-1 land-8-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-2 land-6-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-2 land-7-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-2 land-7-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-2 land-8-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-3 land-6-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-3 land-7-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-3 land-8-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-7-3 port-7-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-0 land-7-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-0 land-8-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-1 land-7-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-1 land-8-0": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-1 land-8-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-2 land-7-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-2 land-8-1": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-2 land-8-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-3 land-7-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-3 land-8-2": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "land-8-3 port-8-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-0-4 land-0-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-0-4 sea-0-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "port-1-4 land-1-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-1-4 land-2-4": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-1-4 sea-1-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "port-7-4 land-7-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-7-4 sea-6-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "port-7-4 sea-7-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "port-8-4 land-8-3": {
+                "connected-by-land": true,
+                "travel-time": 60
+            },
+            "port-8-4 sea-8-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-5 port-0-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-5 sea-0-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-5 sea-1-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-6 sea-0-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-6 sea-0-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-6 sea-1-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-7 sea-0-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-7 sea-0-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-7 sea-1-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-8 sea-0-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-0-8 sea-1-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-5 port-1-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-5 sea-0-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-5 sea-1-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-5 sea-2-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-6 sea-0-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-6 sea-1-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-6 sea-1-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-6 sea-2-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-7 sea-0-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-7 sea-1-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-7 sea-1-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-7 sea-2-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-8 sea-0-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-8 sea-1-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-1-8 sea-2-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-5 sea-1-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-5 sea-2-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-5 sea-3-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-6 sea-1-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-6 sea-2-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-6 sea-2-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-6 sea-3-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-7 sea-1-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-7 sea-2-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-7 sea-2-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-7 sea-3-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-8 sea-1-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-8 sea-2-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-2-8 sea-3-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-5 sea-2-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-5 sea-3-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-5 sea-4-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-6 sea-2-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-6 sea-3-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-6 sea-3-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-6 sea-4-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-7 sea-2-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-7 sea-3-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-7 sea-3-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-7 sea-4-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-8 sea-2-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-8 sea-3-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-3-8 sea-4-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-4 sea-4-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-4 sea-5-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-5 sea-3-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-5 sea-4-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-5 sea-4-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-5 sea-5-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-6 sea-3-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-6 sea-4-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-6 sea-4-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-6 sea-5-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-7 sea-3-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-7 sea-4-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-7 sea-4-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-7 sea-5-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-8 sea-3-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-8 sea-4-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-4-8 sea-5-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-4 sea-4-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-4 sea-5-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-4 sea-6-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-5 sea-4-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-5 sea-5-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-5 sea-5-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-5 sea-6-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-6 sea-4-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-6 sea-5-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-6 sea-5-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-6 sea-6-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-7 sea-4-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-7 sea-5-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-7 sea-5-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-7 sea-6-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-8 sea-4-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-8 sea-5-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-5-8 sea-6-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-4 port-7-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-4 sea-5-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-4 sea-6-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-5 sea-5-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-5 sea-6-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-5 sea-6-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-5 sea-7-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-6 sea-5-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-6 sea-6-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-6 sea-6-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-6 sea-7-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-7 sea-5-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-7 sea-6-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-7 sea-6-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-7 sea-7-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-8 sea-5-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-8 sea-6-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-6-8 sea-7-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-5 port-7-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-5 sea-6-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-5 sea-7-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-5 sea-8-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-6 sea-6-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-6 sea-7-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-6 sea-7-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-6 sea-8-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-7 sea-6-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-7 sea-7-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-7 sea-7-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-7 sea-8-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-8 sea-6-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-8 sea-7-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-7-8 sea-8-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-5 port-8-4": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-5 sea-7-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-5 sea-8-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-6 sea-7-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-6 sea-8-5": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-6 sea-8-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-7 sea-7-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-7 sea-8-6": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-7 sea-8-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-8 sea-7-8": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            },
+            "sea-8-8 sea-8-7": {
+                "connected-by-sea": true,
+                "travel-time": 30
+            }
+        }
+    },
+    "metric": {
+        "predicate": [
+            "total-time"
+        ],
+        "type": "minimize"
+    },
+    "objects": {
+        "boat": {
+            "boat0": {
+                "at": [
+                    true,
+                    "port-0-4"
+                ]
+            },
+            "boat1": {
+                "at": [
+                    true,
+                    "sea-0-8"
+                ]
+            },
+            "boat2": {
+                "at": [
+                    true,
+                    "sea-6-5"
+                ]
+            }
+        },
+        "location": {
+            "land-0-0": {},
+            "land-0-1": {},
+            "land-0-2": {},
+            "land-0-3": {},
+            "land-1-0": {},
+            "land-1-1": {},
+            "land-1-2": {},
+            "land-1-3": {},
+            "land-2-0": {},
+            "land-2-1": {},
+            "land-2-2": {},
+            "land-2-3": {},
+            "land-2-4": {},
+            "land-3-0": {},
+            "land-3-1": {},
+            "land-3-2": {},
+            "land-3-3": {},
+            "land-3-4": {},
+            "land-4-0": {},
+            "land-4-1": {},
+            "land-4-2": {},
+            "land-4-3": {},
+            "land-5-0": {},
+            "land-5-1": {},
+            "land-5-2": {},
+            "land-5-3": {},
+            "land-6-0": {},
+            "land-6-1": {},
+            "land-6-2": {},
+            "land-6-3": {},
+            "land-7-0": {},
+            "land-7-1": {},
+            "land-7-2": {},
+            "land-7-3": {},
+            "land-8-0": {},
+            "land-8-1": {},
+            "land-8-2": {},
+            "land-8-3": {},
+            "port-0-4": {},
+            "port-1-4": {},
+            "port-7-4": {},
+            "port-8-4": {},
+            "sea-0-5": {},
+            "sea-0-6": {},
+            "sea-0-7": {},
+            "sea-0-8": {},
+            "sea-1-5": {},
+            "sea-1-6": {},
+            "sea-1-7": {},
+            "sea-1-8": {},
+            "sea-2-5": {},
+            "sea-2-6": {},
+            "sea-2-7": {},
+            "sea-2-8": {},
+            "sea-3-5": {},
+            "sea-3-6": {},
+            "sea-3-7": {},
+            "sea-3-8": {},
+            "sea-4-4": {},
+            "sea-4-5": {},
+            "sea-4-6": {},
+            "sea-4-7": {},
+            "sea-4-8": {},
+            "sea-5-4": {},
+            "sea-5-5": {},
+            "sea-5-6": {},
+            "sea-5-7": {},
+            "sea-5-8": {},
+            "sea-6-4": {},
+            "sea-6-5": {},
+            "sea-6-6": {},
+            "sea-6-7": {},
+            "sea-6-8": {},
+            "sea-7-5": {},
+            "sea-7-6": {},
+            "sea-7-7": {},
+            "sea-7-8": {},
+            "sea-8-5": {},
+            "sea-8-6": {},
+            "sea-8-7": {},
+            "sea-8-8": {}
+        },
+        "package": {
+            "package0": {
+                "at": [
+                    true,
+                    "land-6-2"
+                ],
+                "deliverable": [
+                    true,
+                    "land-4-0"
+                ]
+            },
+            "package1": {
+                "at": [
+                    true,
+                    "sea-4-6"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-8-6"
+                ]
+            },
+            "package10": {
+                "at": [
+                    true,
+                    "land-1-1"
+                ],
+                "deliverable": [
+                    true,
+                    "land-4-3"
+                ]
+            },
+            "package11": {
+                "at": [
+                    true,
+                    "land-3-4"
+                ],
+                "deliverable": [
+                    true,
+                    "land-1-2"
+                ]
+            },
+            "package12": {
+                "at": [
+                    true,
+                    "port-7-4"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-5-5"
+                ]
+            },
+            "package13": {
+                "at": [
+                    true,
+                    "land-7-3"
+                ],
+                "deliverable": [
+                    true,
+                    "land-3-0"
+                ]
+            },
+            "package14": {
+                "at": [
+                    true,
+                    "land-8-1"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-0"
+                ]
+            },
+            "package15": {
+                "at": [
+                    true,
+                    "sea-8-8"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-7-6"
+                ]
+            },
+            "package16": {
+                "at": [
+                    true,
+                    "land-0-1"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-1"
+                ]
+            },
+            "package17": {
+                "at": [
+                    true,
+                    "land-1-3"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-0"
+                ]
+            },
+            "package18": {
+                "at": [
+                    true,
+                    "land-6-0"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-3"
+                ]
+            },
+            "package19": {
+                "at": [
+                    true,
+                    "land-2-0"
+                ],
+                "deliverable": [
+                    true,
+                    "land-0-2"
+                ]
+            },
+            "package2": {
+                "at": [
+                    true,
+                    "land-4-1"
+                ],
+                "deliverable": [
+                    true,
+                    "land-3-2"
+                ]
+            },
+            "package20": {
+                "at": [
+                    true,
+                    "sea-5-6"
+                ],
+                "deliverable": [
+                    true,
+                    "land-1-3"
+                ]
+            },
+            "package21": {
+                "at": [
+                    true,
+                    "land-7-0"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-6-5"
+                ]
+            },
+            "package22": {
+                "at": [
+                    true,
+                    "sea-3-6"
+                ],
+                "deliverable": [
+                    true,
+                    "land-7-3"
+                ]
+            },
+            "package23": {
+                "at": [
+                    true,
+                    "land-8-3"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-4-5"
+                ]
+            },
+            "package24": {
+                "at": [
+                    true,
+                    "sea-8-8"
+                ],
+                "deliverable": [
+                    true,
+                    "land-5-2"
+                ]
+            },
+            "package25": {
+                "at": [
+                    true,
+                    "sea-2-6"
+                ],
+                "deliverable": [
+                    true,
+                    "land-7-3"
+                ]
+            },
+            "package26": {
+                "at": [
+                    true,
+                    "sea-2-8"
+                ],
+                "deliverable": [
+                    true,
+                    "land-7-2"
+                ]
+            },
+            "package27": {
+                "at": [
+                    true,
+                    "land-4-1"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-0-5"
+                ]
+            },
+            "package28": {
+                "at": [
+                    true,
+                    "sea-1-7"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-1"
+                ]
+            },
+            "package29": {
+                "at": [
+                    true,
+                    "sea-1-6"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-0"
+                ]
+            },
+            "package3": {
+                "at": [
+                    true,
+                    "land-5-3"
+                ],
+                "deliverable": [
+                    true,
+                    "land-3-1"
+                ]
+            },
+            "package30": {
+                "at": [
+                    true,
+                    "sea-1-8"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-2"
+                ]
+            },
+            "package31": {
+                "at": [
+                    true,
+                    "sea-4-5"
+                ],
+                "deliverable": [
+                    true,
+                    "land-8-1"
+                ]
+            },
+            "package32": {
+                "at": [
+                    true,
+                    "sea-3-8"
+                ],
+                "deliverable": [
+                    true,
+                    "land-1-3"
+                ]
+            },
+            "package33": {
+                "at": [
+                    true,
+                    "land-1-1"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-6-5"
+                ]
+            },
+            "package34": {
+                "at": [
+                    true,
+                    "sea-8-5"
+                ],
+                "deliverable": [
+                    true,
+                    "land-1-3"
+                ]
+            },
+            "package35": {
+                "at": [
+                    true,
+                    "sea-3-6"
+                ],
+                "deliverable": [
+                    true,
+                    "land-6-3"
+                ]
+            },
+            "package36": {
+                "at": [
+                    true,
+                    "land-7-0"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-8-8"
+                ]
+            },
+            "package37": {
+                "at": [
+                    true,
+                    "sea-3-8"
+                ],
+                "deliverable": [
+                    true,
+                    "land-5-1"
+                ]
+            },
+            "package38": {
+                "at": [
+                    true,
+                    "land-1-1"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-1-7"
+                ]
+            },
+            "package39": {
+                "at": [
+                    true,
+                    "land-4-0"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-4-4"
+                ]
+            },
+            "package4": {
+                "at": [
+                    true,
+                    "sea-0-7"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-3-8"
+                ]
+            },
+            "package5": {
+                "at": [
+                    true,
+                    "land-4-1"
+                ],
+                "deliverable": [
+                    true,
+                    "land-3-0"
+                ]
+            },
+            "package6": {
+                "at": [
+                    true,
+                    "sea-4-6"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-8-8"
+                ]
+            },
+            "package7": {
+                "at": [
+                    true,
+                    "sea-6-6"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-2-5"
+                ]
+            },
+            "package8": {
+                "at": [
+                    true,
+                    "sea-4-8"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-4-8"
+                ]
+            },
+            "package9": {
+                "at": [
+                    true,
+                    "sea-6-7"
+                ],
+                "deliverable": [
+                    true,
+                    "sea-2-6"
+                ]
+            }
+        },
+        "truck": {
+            "truck0": {
+                "at": [
+                    true,
+                    "port-8-4"
+                ]
+            },
+            "truck1": {
+                "at": [
+                    true,
+                    "land-6-1"
+                ]
+            },
+            "truck2": {
+                "at": [
+                    true,
+                    "land-3-3"
+                ]
+            }
+        },
+        "vehiclearea": {
+            "vehiclearea-furthest-boat0": {
+                "closer": [
+                    "vehiclearea-nearest-boat0",
+                    true
+                ],
+                "free": [
+                    true,
+                    "boat0"
+                ]
+            },
+            "vehiclearea-furthest-boat1": {
+                "closer": [
+                    "vehiclearea-nearest-boat1",
+                    true
+                ],
+                "free": [
+                    true,
+                    "boat1"
+                ]
+            },
+            "vehiclearea-furthest-boat2": {
+                "closer": [
+                    "vehiclearea-nearest-boat2",
+                    true
+                ],
+                "free": [
+                    true,
+                    "boat2"
+                ]
+            },
+            "vehiclearea-furthest-truck0": {
+                "closer": [
+                    "vehiclearea-nearest-truck0",
+                    true
+                ],
+                "free": [
+                    true,
+                    "truck0"
+                ]
+            },
+            "vehiclearea-furthest-truck1": {
+                "closer": [
+                    "vehiclearea-nearest-truck1",
+                    true
+                ],
+                "free": [
+                    true,
+                    "truck1"
+                ]
+            },
+            "vehiclearea-furthest-truck2": {
+                "closer": [
+                    "vehiclearea-nearest-truck2",
+                    true
+                ],
+                "free": [
+                    true,
+                    "truck2"
+                ]
+            },
+            "vehiclearea-nearest-boat0": {
+                "free": [
+                    true,
+                    "boat0"
+                ]
+            },
+            "vehiclearea-nearest-boat1": {
+                "free": [
+                    true,
+                    "boat1"
+                ]
+            },
+            "vehiclearea-nearest-boat2": {
+                "free": [
+                    true,
+                    "boat2"
+                ]
+            },
+            "vehiclearea-nearest-truck0": {
+                "free": [
+                    true,
+                    "truck0"
+                ]
+            },
+            "vehiclearea-nearest-truck1": {
+                "free": [
+                    true,
+                    "truck1"
+                ]
+            },
+            "vehiclearea-nearest-truck2": {
+                "free": [
+                    true,
+                    "truck2"
+                ]
+            }
+        }
+    },
+    "problem": "trucks-split-width(9)-height(9)-trucks(3)-boats(3)-id(4)"
+}
