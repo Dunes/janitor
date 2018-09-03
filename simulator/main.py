@@ -96,10 +96,8 @@ def run_single_agent_replan_simulator(args):
     # run simulator
     with logger.Logger(log_file_name, args.log_directory) as result_logger:
         try:
-            import pdb; pdb.set_trace()
             result = simulator.run()
         finally:
-            pdb.set_trace()
             simulator.print_results(result_logger)
             problem_parser.encode("temp_problems/final_model.json", simulator.model)
 
