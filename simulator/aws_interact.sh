@@ -21,8 +21,8 @@ while read url
 do
     ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem"
     ssh_user=ubuntu
-    ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
-    ssh_user=jackh
+    #ssh_opt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa"
+    #ssh_user=jackh
     ssh_login="${ssh_user}@${url}"
     case "${action}" in
     run)
