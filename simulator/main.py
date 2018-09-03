@@ -26,9 +26,12 @@ def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
     p.add_argument("--domain-file", "-d")
     p.add_argument("problem_file")
-    p.add_argument("--planning-time", "-t", type=decimal.Decimal, default="nan",
+    p.add_argument(
+        "--planning-time", "-t", type=decimal.Decimal, default="nan",
         help="The amount of time to spend planning")
     p.add_argument("--log-directory", "-l", default="logs")
+    p.add_argument("--simulator", "-s", required=True, choices=list(SIMULATORS))
+    p.add_argument("-q", help="ignored")
     return p
 
 
@@ -52,16 +55,16 @@ def run_old_simulator():
             result = simulator.run()
         finally:
             simulator.print_results(result_logger)
+            problem_parser.encode("temp_problems/final_model.json", simulator.model)
 
     if not result:
         exit(1)
 
 
-def run_single_agent_replan_simulator():
+def run_single_agent_replan_simulator(args):
     from singleagent.simulator import Simulator
     from singleagent.executor import AgentExecutor, CentralPlannerExecutor
 
-    args = parser().parse_args()
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
     log.info("log: {}", log_file_name)
@@ -93,12 +96,22 @@ def run_single_agent_replan_simulator():
     # run simulator
     with logger.Logger(log_file_name, args.log_directory) as result_logger:
         try:
+            import pdb; pdb.set_trace()
             result = simulator.run()
         finally:
+            pdb.set_trace()
             simulator.print_results(result_logger)
+            problem_parser.encode("temp_problems/final_model.json", simulator.model)
 
     if not result:
         exit(1)
 
+
+SIMULATORS = {
+    "janitor-centralised": run_single_agent_replan_simulator,
+}
+
+
 if __name__ == "__main__":
-    run_single_agent_replan_simulator()
+    args_ = parser().parse_args()
+    SIMULATORS[args_.simulator](args_)

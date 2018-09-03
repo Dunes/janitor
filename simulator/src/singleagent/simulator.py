@@ -7,13 +7,14 @@ from action import Plan, Observe, Move, Clean, ExtraClean, ExtraCleanPart, Stall
 from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
+from jsonencoder import ActionEncoder
 
-from collections import namedtuple, Iterable
+from collections import namedtuple, Iterable, OrderedDict
 from priority_queue import MultiActionStateQueue
 from itertools import chain, count
 from decimal import Decimal
 from logging import getLogger
-from jsonencoder import json_dumps
+from json import dump
 
 log = StyleAdapter(getLogger(__name__))
 
@@ -178,14 +179,19 @@ class Simulator:
         log.info("time_waiting_for_actions_to_finish {}", time_waiting_for_actions_to_finish)
         log.info("time_waiting_for_planner_to_finish {}", time_waiting_for_planner_to_finish)
 
-        logger.log_property("goal_achieved", goal_achieved)
-        logger.log_property("planner_called", planner_called)
-        logger.log_property("end_simulation_time", self.time)
-        logger.log_property("total_time_planning", time_planning)
-        logger.log_property("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish)
-        logger.log_property("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish)
-        logger.log_property("execution", [action for action in (self.executed + stalled_actions)
-                                          if type(action) is not Observe], stringify=json_dumps)
+        data = OrderedDict([
+            ("goal_achieved", goal_achieved),
+            ("planner_called", planner_called),
+            ("end_simulation_time", self.time),
+            ("total_time_planning", time_planning),
+            ("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish),
+            ("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish),
+            ("execution", [action for action in (self.executed + stalled_actions)
+                                          if type(action) is not Observe])
+        ])
+
+        with open(logger.log_file_name, "w") as f:
+            dump(data, f, cls=ActionEncoder)
 
         log.info("remaining temp nodes: {}",
             [(name, node) for name, node in self.model["nodes"].items() if name.startswith("temp")])

@@ -1,8 +1,10 @@
 __author__ = 'jack'
 
-from simplejson import JSONEncoder, dumps
-from action import Action
 from functools import partial
+from json import JSONEncoder, dumps
+from decimal import Decimal
+
+from action import Action
 
 __all__ = ["json_dumps", "ActionEncoder"]
 
@@ -15,7 +17,13 @@ class ActionEncoder(JSONEncoder):
             d.pop("tils", None)  # remove extraneaous information associated with planning
             d.pop("goals", None)
             d.pop("plan", None)
+            d.pop("metric", None)
             return d
+        elif isinstance(o, Decimal):
+            if o.is_finite():
+                return float(o)
+            else:
+                return str(0)
         return super().default(o)
 
 
