@@ -1,0 +1,74 @@
+{
+	"domain": "trucks-modified",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["delivered", "package1", "land-b"],
+			["delivered", "package2", "land-b"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+	},
+	"objects": {
+		"truck": {
+			"truck1": {
+				"at": [true, "port-b"]
+			}
+		},
+		"boat": {
+			"boat1": {
+				"at": [true, "port-b"]
+			}
+		},
+		"location": {
+			"port-A": {},
+			"port-B": {},
+			"land-B": {}
+		},
+		"package": {
+			"package1": {
+				"at": [true, "port-a"],
+				"deliverable": [true, "land-b"]
+			},
+			"package2": {
+				"at": [true, "port-a"],
+				"deliverable": [true, "land-b"]
+			}
+		},
+		"vehiclearea": {
+			"vehiclearea-truck1": {
+				"free": [true, "truck1"]
+			},
+			"vehiclearea-boat1": {
+				"free": [true, "boat1"]
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"port-a port-b": {
+				"connected-by-sea": true,
+				"travel-time": 30
+			},
+			"port-b port-a": {
+				"connected-by-sea": true,
+				"travel-time": 30
+			},
+			"port-b land-b": {
+				"connected-by-land": true,
+				"travel-time": 30
+			},
+			"land-b port-b": {
+				"connected-by-land": true,
+				"travel-time": 30
+			}
+		}
+	}
+}

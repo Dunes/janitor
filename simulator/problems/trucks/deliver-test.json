@@ -1,0 +1,62 @@
+{
+	"domain": "trucks-modified",
+	"problem": "test",
+	"goal": {
+		"hard-goals": [
+			["delivered", "package-ontime", "destination"],
+			["at-destination", "package-anytime", "destination"]
+		]
+	},
+	"metric": {
+		"type": "minimize",
+		"predicate": [
+			"total-time"
+		]
+	},
+	"assumed-values": {
+	},
+	"objects": {
+		"truck": {
+			"truck1": {
+				"at": [true, "port"]
+			}
+		},
+		"boat": {
+		},
+		"location": {
+			"port": {},
+			"destination": {}
+		},
+		"package": {
+			"package-anytime": {
+				"at": [true, "port"]
+			},
+			"package-ontime": {
+				"at": [true, "port"],
+				"deliverable": [true, "destination"]
+			}
+		},
+		"vehiclearea": {
+			"vehiclearea-nearest-truck1": {
+				"free": [true, "truck1"]
+			},
+			"vehiclearea-furthest-truck1": {
+				"free": [true, "truck1"],
+				"closer": ["vehiclearea-nearest-truck1", true]
+			}
+		}
+	},
+	"graph": {
+		"bidirectional": false,
+		"edges": {
+			"port destination": {
+				"connected-by-land": true,
+				"travel-time": 30
+			},
+			"destination port": {
+				"connected-by-land": true,
+				"travel-time": 30
+			}
+		}
+	}
+}
