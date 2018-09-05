@@ -19,9 +19,6 @@ import logger
 log = logger.StyleAdapter(logging.getLogger())
 
 
-domain_template = "../janitor/{}-domain.pddl"
-
-
 def parser():
     p = argparse.ArgumentParser(description="Simulator to run planner and carry out plan")
     p.add_argument("--domain-file", "-d")
@@ -35,7 +32,7 @@ def parser():
     return p
 
 
-def run_old_simulator():
+def run_old_simulator(domain_template="../janitor/{}-domain.pddl"):
     from new_simulator import Simulator
     import executor
 
@@ -61,9 +58,10 @@ def run_old_simulator():
         exit(1)
 
 
-def run_single_agent_replan_simulator(args):
+def run_single_agent_replan_simulator(args, domain_template="../trucks/{}-domain.pddl"):
     from singleagent.simulator import Simulator
     from singleagent.executor import AgentExecutor, CentralPlannerExecutor
+    from trucks_encoder import plan_decoder, problem_encoder
 
     log.info(args)
     log_file_name = logger.Logger.get_log_file_name(args.problem_file, args.planning_time)
@@ -73,12 +71,23 @@ def run_single_agent_replan_simulator(args):
     model = problem_parser.decode(args.problem_file)
 
     # create planners
-    central_planner = Planner(args.planning_time, domain_file=domain_template.format(model["domain"]))
-    local_planner = Planner(args.planning_time, domain_file=domain_template.format("janitor-single"))
+    # decoder, problem_encoder, domain_file=None, planner_location="../optic-cplex",
+    #             working_directory=".", encoding="UTF-8", domain_template=None)
+    # TODO: args.planning_time goes where?
+    central_planner = Planner(
+        decoder=plan_decoder,
+        problem_encoder=problem_encoder,
+        domain_file=domain_template.format(model["domain"]),
+    )
+    local_planner = None
 
     # create and setup executors
-    agent_executors = [AgentExecutor(agent=agent_name, planning_time=args.planning_time)
-                       for agent_name in model["agents"]]
+    agent_executors = []
+    for agent_type in ("truck", "boat"):
+        agent_executors += [
+            AgentExecutor(agent=agent_name, planning_time=args.planning_time, agent_type=agent_type)
+            for agent_name in model["objects"][agent_type]
+        ]
     planning_executor = CentralPlannerExecutor(agent="planner",
                                                planning_time=args.planning_time,
                                                executor_ids=[e.id for e in agent_executors],
@@ -106,7 +115,7 @@ def run_single_agent_replan_simulator(args):
 
 
 SIMULATORS = {
-    "janitor-centralised": run_single_agent_replan_simulator,
+    "trucks-centralised": run_single_agent_replan_simulator,
 }
 
 

@@ -3,14 +3,15 @@ __author__ = 'jack'
 from logging import getLogger
 from operator import attrgetter
 from decimal import Decimal
-from action import Plan, LocalPlan, Observe, Move, GetExecutionHeuristic, Clean, ExtraClean, ExtraCleanPart
+from action import Plan, LocalPlan, GetExecutionHeuristic, DeliverAction, DeliverOntime, Unload
 from action_state import ActionState, ExecutionState
 from logger import StyleAdapter
 from planning_exceptions import ExecutionError, NoPlanException
 from itertools import count, groupby
 from weakref import WeakValueDictionary
 from abc import abstractmethod, ABCMeta
-from pddl_parser import CleaningWindowTil
+from goal import Goal
+# from pddl_parser import CleaningWindowTile
 from accuracy import as_start_time, as_next_end_time, zero
 
 log = StyleAdapter(getLogger(__name__))
@@ -70,18 +71,17 @@ class Executor(metaclass=ABCMeta):
             # adjust for OPTIC starting at t = 0
             action = action.copy_with(start_time=action.start_time + start_time)
             yield action
-            if type(action) is Move:
-                yield Observe(action.end_time, action.agent, action.end_node)
 
 
 class AgentExecutor(Executor):
 
     def __init__(self, *, agent, planning_time, plan=None, deadline=Decimal("Infinity"), planner_id=None,
-                 halted=False):
+                 halted=False, agent_type: str):
         super().__init__(agent=agent, planning_time=planning_time, deadline=deadline)
         self.plan = plan or []
         self.planner_id = planner_id
         self.halted = halted
+        self.agent_type = agent_type
 
     def copy(self):
         raise NotImplementedError
@@ -131,15 +131,16 @@ class AgentExecutor(Executor):
         del self.plan[0]
 
         if isinstance(action_state.action, LocalPlan):
-            planner = self.EXECUTORS[self.planner_id].local_planner
-            action_ = action_state.action
-            try:
-                new_plan, time_taken = planner.get_plan_and_time_taken(
-                    model, agent=self.agent, goals=action_.goals, tils=action_.tils)
-                plan_action = action_.copy_with(plan=new_plan, duration=zero)
-                self.executing = ActionState(plan_action, plan_action.start_time).start()
-            except NoPlanException:
-                self.EXECUTORS[self.planner_id].notify_planning_failure(self.id, action_state.time)
+            raise RuntimeError
+            # planner = self.EXECUTORS[self.planner_id].local_planner
+            # action_ = action_state.action
+            # try:
+            #     new_plan, time_taken = planner.get_plan_and_time_taken(
+            #         model, agent=self.agent, goals=action_.goals, tils=action_.tils)
+            #     plan_action = action_.copy_with(plan=new_plan, duration=zero)
+            #     self.executing = ActionState(plan_action, plan_action.start_time).start()
+            # except NoPlanException:
+            #     self.EXECUTORS[self.planner_id].notify_planning_failure(self.id, action_state.time)
         else:
             self.executing = action_state.start()
 
@@ -159,40 +160,41 @@ class AgentExecutor(Executor):
             self.EXECUTORS[self.planner_id].notify_new_knowledge(action_state.time, action_state.action.node)
 
     def notify_new_knowledge(self, time, node):
-        for action_ in self.plan:
-            if isinstance(action_, (Clean, ExtraCleanPart)) and action_.room == node:
-                goals = self.extract_goals(self.plan)
-                tils = self.extract_tils(self.plan, as_start_time(time))
-                assert goals
-                self.halt(time)
-                self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
-                                       tils=tils)])
-                break
+        pass
+        # for action_ in self.plan:
+        #     if isinstance(action_, (Clean, ExtraCleanPart)) and action_.room == node:
+        #         goals = self.extract_goals(self.plan)
+        #         tils = self.extract_tils(self.plan, as_start_time(time))
+        #         assert goals
+        #         self.halt(time)
+        #         self.new_plan([LocalPlan(as_start_time(time), self.planning_time, self.agent, goals=goals,
+        #                                tils=tils)])
+        #         break
 
     def new_plan(self, plan):
         self.plan = plan
         self.halted = False
 
-    @staticmethod
-    def extract_goals(plan):
-        return [["cleaned", action_.room]
-                for action_ in plan if isinstance(action_, (Clean, ExtraCleanPart))]
+    # @staticmethod
+    # def extract_goals(plan):
+    #     return [["cleaned", action_.room]
+    #             for action_ in plan if isinstance(action_, (Clean, ExtraCleanPart))]
 
-    @staticmethod
-    def extract_tils(plan, time):
-        tils = []
-        for action_ in plan:
-            if isinstance(action_, ExtraCleanPart):
-                tils.append(CleaningWindowTil(action_.start_time - time, action_.room, True))
-                tils.append(CleaningWindowTil(as_next_end_time(action_.end_time - time), action_.room, False))
-        return tils
+    # @staticmethod
+    # def extract_tils(plan, time):
+    #     tils = []
+    #     for action_ in plan:
+    #         if isinstance(action_, ExtraCleanPart):
+    #             tils.append(CleaningWindowTil(action_.start_time - time, action_.room, True))
+    #             tils.append(CleaningWindowTil(as_next_end_time(action_.end_time - time), action_.room, False))
+    #     return tils
 
     def halt(self, time):
         """halt all actions are current time"""
         log.debug("halting {}", self.agent)
         self.halted = True
         self.plan = []
-        if self.executing and not isinstance(self.executing.action, Observe):
+        if self.executing:
             log.debug("halting {} at {}", self.executing.action, time)
             if self.executing.action.start_time == time:
                 # action never started
@@ -245,7 +247,16 @@ class CentralPlannerExecutor(Executor):
         if not isinstance(action_state.action, Plan):
             raise ExecutionError("Have a non-plan action: " + str(action_state.action))
 
-        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(model)
+        new_plan, time_taken = self.central_planner.get_plan_and_time_taken(
+            model=model,
+            duration=self.planning_time,
+            agent="all",
+            goals=[Goal(g, Decimal("inf"), Decimal(0)) for g in model["goal"]["hard-goals"]],
+            metric=model["metric"],
+            time=action_state.time,
+            events=[],
+            use_preferences=False,
+        )
         new_plan = self.adjust_plan(new_plan, action_state.time + time_taken)
         plan_action = action_state.action.copy_with(plan=new_plan, duration=time_taken)
         self.executing = ActionState(plan_action, plan_action.start_time).start()
@@ -275,14 +286,26 @@ class CentralPlannerExecutor(Executor):
 
     @classmethod
     def disseminate_plan(cls, plan):
-        plan = sorted(cls.replace_extra_clean_actions(plan), key=attrgetter("agent", "start_time"))
-        return groupby(plan, key=attrgetter("agent"))
+        new_plan = []
+        for action in plan:
+            if isinstance(action, DeliverAction):
+                i = cls.get_related_unload_index(action, new_plan)
+                unload = new_plan[i]
+                new_plan[i] = unload.copy_with(deliver_action=action)
+            else:
+                new_plan.append(action)
+
+        sorted_plan = sorted(new_plan, key=attrgetter("agent", "start_time"))
+        return groupby(sorted_plan, key=attrgetter("agent"))
 
     @staticmethod
-    def replace_extra_clean_actions(plan):
-        for action_ in plan:
-            if isinstance(action_, ExtraClean):
-                for agent in action_.agents():
-                    yield ExtraCleanPart(action_.start_time, action_.duration, agent, action_.room)
-            else:
-                yield action_
+    def get_related_unload_index(deliver_action, plan) -> int:
+        i = len(plan)
+        for unload in reversed(plan):
+            i -= 1
+            if not isinstance(unload, Unload):
+                continue
+            if deliver_action.package == unload.package and deliver_action.location == unload.location:
+                return i
+        import pdb; pdb.set_trace()
+        raise RuntimeError

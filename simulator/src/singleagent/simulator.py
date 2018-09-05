@@ -3,7 +3,7 @@ __author__ = 'jack'
 from enum import Enum
 from copy import copy, deepcopy
 from accuracy import quantize, as_end_time, as_start_time
-from action import Plan, Observe, Move, Clean, ExtraClean, ExtraCleanPart, Stalled, GetExecutionHeuristic
+from action import Plan, Stalled, GetExecutionHeuristic, Drive, Sail, Load, Unload, DeliverOntime
 from action_state import ExecutionState
 from planning_exceptions import ExecutionError
 from logger import StyleAdapter, DummyLogger
@@ -15,6 +15,7 @@ from itertools import chain, count
 from decimal import Decimal
 from logging import getLogger
 from json import dump
+from fractions import Fraction
 
 log = StyleAdapter(getLogger(__name__))
 
@@ -76,7 +77,7 @@ class Simulator:
         assert not any(e.has_goals for e in self.executors.values())
 
         log.info("Simulator({}).run() finished", self.id)
-        return self.is_goal_in_model()
+        return self.is_goal_in_model() != 1
 
     def process_action_states(self, action_states):
         first = action_states[0]
@@ -108,12 +109,6 @@ class Simulator:
                 # agents should never stall when they are in charge of replanning locally.
                 raise ExecutionError("agent has stalled")
             else:
-                if isinstance(action_state.action, ExtraCleanPart):
-                    room = self.model["nodes"][action_state.action.room]["known"]
-                    effort = action_state.action.duration
-                    if room["dirtiness"] != effort:
-                        assert getattr(action_state.action, "partial", False)
-
                 for agent in action_state.action.agents():
                     self.executors[agent].notify_action_starting(action_state, self.model)
 
@@ -138,16 +133,17 @@ class Simulator:
     def is_goal_in_model(self):
         hard_goals = self.model["goal"]["hard-goals"]
         hard_goals = list(tuple(g) for g in hard_goals)
-        goal = hard_goals
-        it = ((obj_name, value.get("known", value))
-              for obj_name, value in chain(self.model["agents"].items(), self.model["nodes"].items()))
-        for obj_name, values in it:
-            for pred_name, args in values.items():
-                g = self.cons_goal(pred_name, obj_name, args)
-                if g in goal:
-                    goal.remove(g)
+        goals = hard_goals
+        achieved = 0
+        for pred, package_id, node_id in goals:
+            assert pred in ("delivered", "at-destination")
+            package = self.model["objects"]["package"].get(package_id)
+            if package is None:
+                continue
+            if package.get("at", None) == [True, node_id]:
+                achieved += 1
 
-        return not goal
+        return Fraction(achieved, len(goals))
 
     def cons_goal(self, pred_name, obj_name, args):
         return (pred_name,) + self.substitute_obj_name(obj_name, args)
@@ -180,27 +176,28 @@ class Simulator:
         log.info("time_waiting_for_planner_to_finish {}", time_waiting_for_planner_to_finish)
 
         data = OrderedDict([
-            ("goal_achieved", goal_achieved),
+            ("goal_achieved", str(goal_achieved)),
             ("planner_called", planner_called),
             ("end_simulation_time", self.time),
             ("total_time_planning", time_planning),
             ("time_waiting_for_actions_to_finish", time_waiting_for_actions_to_finish),
             ("time_waiting_for_planner_to_finish", time_waiting_for_planner_to_finish),
-            ("execution", [action for action in (self.executed + stalled_actions)
-                                          if type(action) is not Observe])
+            ("execution", [action for action in (self.executed + stalled_actions)])
         ])
 
         with open(logger.log_file_name, "w") as f:
             dump(data, f, cls=ActionEncoder)
 
-        log.info("remaining temp nodes: {}",
-            [(name, node) for name, node in self.model["nodes"].items() if name.startswith("temp")])
+        log.info(
+            "remaining temp nodes: {}",
+            [(name, node) for name, node in self.model["graph"]["edges"].items() if name.startswith("temp")]
+        )
 
         return goal_achieved
 
     def get_time_waiting_for_actions_to_finish(self):
         plan_actions = [a for a in self.executed if type(a) is Plan]
-        real_actions = [a for a in self.executed if type(a) in (Move, Clean, ExtraClean)]
+        real_actions = [a for a in self.executed if type(a) in (Drive, Sail, Load, Unload, DeliverOntime)]
 
         total_time = 0
         for p in plan_actions:
@@ -213,7 +210,7 @@ class Simulator:
 
     def get_time_waiting_for_planner_to_finish(self):
         plan_actions = [a for a in self.executed if type(a) is Plan]
-        real_actions = [a for a in self.executed if type(a) in (Move, Clean, ExtraClean)]
+        real_actions = [a for a in self.executed if type(a) in (Drive, Sail, Load, Unload, DeliverOntime)]
 
         total_time = 0
         for p in plan_actions:

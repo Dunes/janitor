@@ -260,7 +260,6 @@ class Simulator:
                     # if no observations inconsistent with plan then this is an error
                     # however, may be processing actions starting at deadline, so allow these to stall and not
                     # report error
-                    #import pdb; pdb.set_trace()
                     raise ExecutionError("action expects model to be in different state -- {}".format(action))
                 log.debug("{} has stalled", self.agents(action))
                 stalled.update((agent, action.start_time) for agent in self.agents(action))

@@ -45,6 +45,7 @@ do
         ssh ${ssh_opt} "${ssh_user}@${url}" /bin/bash <<EOF
 set -ex
 cd "${repo_dir}"
+git fetch origin
 git checkout "${branch}"
 git pull origin
 if [ -f results.tar.gz ]

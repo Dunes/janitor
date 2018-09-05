@@ -1,11 +1,25 @@
-from decimal import Decimal
-from functools import total_ordering, partial as partial_func
 from accuracy import as_end_time, INSTANTANEOUS_ACTION_DURATION
-from logger import StyleAdapter
+from domain_context import TrucksDomainContext
+from problem_encoder import find_object
 from planning_exceptions import ExecutionError
+
+from functools import total_ordering, partial as partial_func
+from logger import StyleAdapter
 from logging import getLogger
+from decimal import Decimal
+from typing import Optional, List
+from abc import ABCMeta, abstractmethod
 
 log = StyleAdapter(getLogger(__name__))
+
+__all__ = [
+    "Action", "Plan", "LocalPlan", "GetExecutionHeuristic",
+    "Drive", "Sail", "Load", "Unload", "DeliverOntime", "DeliverAnytime",
+    "REAL_ACTIONS", "DeliverAction"
+]
+
+ZERO = Decimal(0)
+DOMAIN_CONTEXT = TrucksDomainContext()
 
 
 @total_ordering
@@ -131,268 +145,6 @@ class Stalled(Action):
         object.__setattr__(self, "agent", agent)
 
 
-class Move(Action):
-
-    _format_attrs = ("start_time", "duration", "agent", "start_node", "end_node", "partial")
-
-    def __init__(self, start_time, duration, agent, start_node, end_node, partial=None):
-        super(Move, self).__init__(start_time, duration, partial)
-        object.__setattr__(self, "agent", agent)
-        object.__setattr__(self, "start_node", start_node)
-        object.__setattr__(self, "end_node", end_node)
-
-    def is_applicable(self, model):
-        return model["agents"][self.agent]["at"][1] == self.start_node
-
-    def apply(self, model):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        model["agents"][self.agent]["at"][1] = self.end_node
-        if self.start_node.startswith("temp"):
-            del model["nodes"][self.start_node]
-            model["graph"]["edges"] = [edge for edge in model["graph"]["edges"] if self.start_node not in edge]
-        return False
-
-    def partially_apply(self, model, deadline):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        # create temp node
-        continued_partial_move = self.start_node.startswith("temp")
-        if continued_partial_move:
-            self.modify_temp_node(model, deadline)
-        else:
-            self.create_temp_node(model, deadline)
-        return False
-
-    def modify_temp_node(self, model, deadline):
-        temp_node_name = self.start_node
-
-        back_edge, forward_edge = (edge for edge in model["graph"]["edges"] if edge[0] == temp_node_name)
-
-        if forward_edge[1] == self.end_node:
-            distance_moved = deadline - self.start_time
-        elif back_edge[1] == self.end_node:
-            distance_moved = self.start_time - deadline
-        else:
-            raise ExecutionError("Neither temp node edge links to end_node: edges: {}, action: {}"
-                .format([back_edge, forward_edge], self))
-
-        back_edge[2] += distance_moved
-        forward_edge[2] -= distance_moved
-
-        assert back_edge[2] > 0
-        assert forward_edge[2] > 0
-
-        # create partial action representing move
-        action = Move(self.start_time, distance_moved, self.agent, temp_node_name, self.end_node, partial=True)
-        return action
-
-    def create_temp_node(self, model, deadline):
-        temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
-        if temp_node_name in model["nodes"] or \
-                any(edge for edge in model["graph"]["edges"] if edge[0] == temp_node_name):
-            log.error("tried to insert {}, but already initialised", temp_node_name)
-            assert False
-        model["nodes"][temp_node_name] = {"node": True}
-        # set up edges -- only allow movement out of node
-        distance_moved = deadline - self.start_time
-        distance_remaining = self.get_edge_length(model, self.start_node, self.end_node) - distance_moved
-        model["graph"]["edges"].append([temp_node_name, self.start_node, distance_moved])
-        model["graph"]["edges"].append([temp_node_name, self.end_node, distance_remaining])
-        # move agent to temp node
-        model["agents"][self.agent]["at"][1] = temp_node_name
-        # create partial action representing move
-        action = Move(self.start_time, distance_moved, self.agent, self.start_node, temp_node_name, partial=True)
-        return action
-
-    def get_edge_length(self, model, start_node, end_node):
-        edge_key = [start_node, end_node]
-        for edge in model["graph"]["edges"]:
-            if edge_key == edge[:2]:
-                return edge[-1]
-        if model["graph"]["bidirectional"]:
-            raise NotImplementedError()
-        raise ExecutionError("Could not find {} in {}".format(edge_key, model["graph"]["edges"]))
-
-
-class Observe(Action):
-
-    _ordinal = 2
-
-    _format_attrs = ("start_time", "agent", "node")
-
-    def __init__(self, observation_time, agent, node):
-        super(Observe, self).__init__(as_end_time(observation_time), INSTANTANEOUS_ACTION_DURATION)
-        object.__setattr__(self, "agent", agent)
-        object.__setattr__(self, "node", node)
-
-    def is_applicable(self, model):
-        return model["agents"][self.agent]["at"][1] == self.node
-
-    def apply(self, model):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        # check if new knowledge
-        rm_obj = model["nodes"][self.node]
-        unknown = rm_obj.get("unknown")
-
-        if unknown:
-            rm_obj["known"].update((k, self._get_actual_value(v)) for k, v in unknown.items())
-            result = self._check_new_knowledge(unknown, model["assumed-values"])
-            unknown.clear()
-            return result
-
-        return False
-
-    @staticmethod
-    def _get_actual_value(value):
-        actual = value["actual"]  # sometimes procduces a key refering to another value in `value'
-        return actual if actual not in value else value[actual]
-
-    @staticmethod
-    def _check_new_knowledge(unknown_values, assumed_values):
-        no_match = object()
-        for key, unknown_value in unknown_values.items():
-            assumed_value = assumed_values[key]
-            if unknown_value["actual"] not in (assumed_value, unknown_value.get(assumed_value, no_match)):
-                return True
-        return False
-
-    def as_partial(self, **kwargs):
-        return None
-
-
-class Clean(Action):
-
-    _format_attrs = ("start_time", "duration", "agent", "room", "partial")
-
-    def __init__(self, start_time, duration, agent, room, partial=None):
-        super(Clean, self).__init__(start_time, duration, partial)
-        object.__setattr__(self, "agent", agent)
-        object.__setattr__(self, "room", room)
-
-    def is_applicable(self, model):
-        known = model["nodes"][self.room]["known"]
-        return (
-            model["agents"][self.agent]["at"][1] == self.room
-            and known.get("dirty", False)
-            and not known.get("extra-dirty", True)
-        )
-
-    def apply(self, model):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        rm_obj = model["nodes"][self.room]["known"]
-        del rm_obj["dirtiness"]
-        del rm_obj["dirty"]
-        rm_obj["cleaned"] = True
-        return False
-
-    def partially_apply(self, model, deadline):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-
-        max_duration = deadline - self.start_time
-        node_state = model["nodes"][self.room]["known"]
-        partial = node_state["dirtiness"] > max_duration
-
-        if partial:
-            node_state["dirtiness"] -= max_duration
-        else:
-            duration = node_state["dirtiness"]
-            log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            type(self).apply(self, model)
-
-        return False
-
-
-class ExtraClean(Action):
-
-    _format_attrs = ("start_time", "duration", "agent0", "agent1", "room", "partial")
-
-    def __init__(self, start_time, duration, agent0, agent1, room, partial=None):
-        super(ExtraClean, self).__init__(start_time, duration, partial)
-        object.__setattr__(self, "room", room)
-        object.__setattr__(self, "agent0", agent0)
-        object.__setattr__(self, "agent1", agent1)
-
-    def is_applicable(self, model):
-        known = model["nodes"][self.room]["known"]
-        return (
-            model["agents"][self.agent0]["at"][1] == self.room
-            and model["agents"][self.agent1]["at"][1] == self.room
-            and known.get("extra-dirty", False)
-            and not known.get("dirty", True)
-        )
-
-    def apply(self, model):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        rm_obj = model["nodes"][self.room]["known"]
-        del rm_obj["extra-dirty"]
-        del rm_obj["dirtiness"]
-        rm_obj["cleaned"] = True
-        return False
-
-    def partially_apply(self, model, deadline):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-
-        max_duration = deadline - self.start_time
-        node_state = model["nodes"][self.room]["known"]
-        partial = node_state["dirtiness"] > max_duration
-
-        if partial:
-            node_state["dirtiness"] -= max_duration
-        else:
-            duration = node_state["dirtiness"]
-            log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            type(self).apply(self, model)
-
-        return False
-
-    def agents(self) -> set:
-        return {self.agent0, self.agent1}
-
-
-class ExtraCleanPart(Action):
-
-    _format_attrs = ("start_time", "duration", "agent", "room", "partial")
-
-    def __init__(self, start_time, duration, agent, room, partial=None):
-        super().__init__(start_time, duration, partial)
-        object.__setattr__(self, "agent", agent)
-        object.__setattr__(self, "room", room)
-
-    def is_applicable(self, model):
-        known = model["nodes"][self.room]["known"]
-        return (
-            model["agents"][self.agent]["at"][1] == self.room
-            and not known.get("dirty", True)
-            and known.get("extra-dirty", False)
-        )
-
-    def apply(self, model):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-        rm_obj = model["nodes"][self.room]["known"]
-        rm_obj["dirtiness"] -= self.duration / 2
-        assert not rm_obj["dirtiness"] < 0
-        if not rm_obj["dirtiness"]:
-            del rm_obj["dirtiness"]
-            del rm_obj["dirty"]
-            rm_obj["cleaned"] = True
-        return False
-
-    def partially_apply(self, model, deadline):
-        assert self.is_applicable(model), "tried to apply action in an invalid state"
-
-        max_duration = deadline - self.start_time
-        node_state = model["nodes"][self.room]["known"]
-        partial = node_state["dirtiness"] > max_duration
-
-        if partial:
-            node_state["dirtiness"] -= max_duration
-            assert not node_state["dirtiness"] < 0
-        else:
-            duration = node_state["dirtiness"]
-            log.info("{} applied partially, but able to fully complete in {}", self, duration)
-            type(self).apply(self, model)
-
-        return False
-
 class GetExecutionHeuristic(Action):
 
     _format_attrs = ("start_time", "duration", "agent")
@@ -407,3 +159,371 @@ class GetExecutionHeuristic(Action):
 
     def apply(self, model):
         return self.plan
+
+
+class Move(Action, metaclass=ABCMeta):
+    """
+    :type agent: str
+    :type start_node: str
+    :type end_node: str
+    """
+    agent = None
+    start_node = None
+    end_node = None
+
+    _format_attrs = ("start_time", "duration", "agent", "start_node", "end_node", "partial")
+
+    def __init__(self, start_time, duration, agent, start_node, end_node, partial=None):
+        super().__init__(start_time, duration, partial)
+        object.__setattr__(self, "agent", agent)
+        object.__setattr__(self, "start_node", start_node)
+        object.__setattr__(self, "end_node", end_node)
+
+    @property
+    def edge(self):
+        return " ".join((self.start_node, self.end_node))
+
+    @property
+    @abstractmethod
+    def agent_type(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def edge_type(self) -> str:
+        raise NotImplementedError
+
+    def is_applicable(self, model):
+        agents_of_type = model["objects"][self.agent_type]
+        try:
+            agent = agents_of_type[self.agent]
+        except KeyError:
+            raise AssertionError("agent of type {!r} attempted a {} action".format(self.agent_type, type(self).__name__))
+        return agent["at"][1] == self.start_node \
+            and (
+                model["graph"]["edges"][self.edge].get(self.edge_type)
+                or getattr(self, "partial", False)
+            )
+
+    def apply(self, model) -> Optional[List[str]]:
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        model["objects"][self.agent_type][self.agent]["at"][1] = self.end_node
+        if self.start_node.startswith("temp"):
+            del model["objects"]["node"][self.start_node]
+            edge_ids = [edge_id for edge_id in model["graph"]["edges"] if edge_id.startswith(self.start_node)]
+            for edge_id in edge_ids:
+                del model["graph"]["edges"][edge_id]
+        return None
+
+    def partially_apply(self, model, deadline):
+        # create temp node
+        continued_partial_move = self.start_node.startswith("temp")
+        if continued_partial_move:
+            self.modify_temp_node(model, deadline)
+        else:
+            self.create_temp_node(model, deadline)
+        return None
+
+    def modify_temp_node(self, model, deadline):
+        temp_node_name = self.start_node
+
+        edges = model["graph"]["edges"]
+        edge_id = self.edge
+        other_edge_id = next(e_id for e_id in edges if e_id.startswith(temp_node_name) and e_id != edge_id)
+
+        distance_moved = deadline - self.start_time
+
+        edges[edge_id]["distance"] -= distance_moved
+        edges[other_edge_id]["distance"] += distance_moved
+
+        assert edges[edge_id]["distance"] > 0
+        assert edges[other_edge_id]["distance"] > 0
+
+    def create_temp_node(self, model, deadline):
+        temp_node_name = "-".join(("temp", self.agent, self.start_node, self.end_node))
+        if temp_node_name in model["objects"]["node"] \
+                or temp_node_name in model["graph"]["edges"]:
+            log.error("tried to insert {}, but already initialised", temp_node_name)
+            raise ValueError("tried to insert {}, but already initialised".format(temp_node_name))
+        model["objects"]["node"][temp_node_name] = {}
+        # set up edges -- only allow movement out of node
+        edge = self.get_edge(model, self.start_node, self.end_node)
+        distance_moved = deadline - self.start_time
+        distance_remaining = edge["distance"] - distance_moved
+        blocked = not edge.get(self.edge_type, False)
+        model["graph"]["edges"].update(self._create_temp_edge_pair(
+            temp_node_name, self.start_node, self.end_node, distance_moved, distance_remaining, blocked
+        ))
+        # move agent to temp node
+        find_object(self.agent, model["objects"])["at"][1] = temp_node_name
+
+    def _create_temp_edge_pair(self, temp_node, start_node, end_node, moved, remaining, blocked):
+        if not blocked or remaining < moved:
+            yield (" ".join((temp_node, end_node)), {
+                "travel-time": remaining,
+                self.edge_type: True,
+
+            })
+            if remaining < moved:
+                return
+        yield (" ".join((temp_node, start_node)), {
+            "travel-time": moved,
+            self.edge_type: True,
+        })
+
+    def get_edge(self, model, start_node, end_node):
+        edge_key = " ".join((start_node, end_node))
+        try:
+            return model["graph"]["edges"][edge_key]
+        except KeyError:
+            pass
+        if model["graph"]["bidirectional"]:
+            raise RuntimeError
+        raise ExecutionError("Could not find {!r}".format(edge_key))
+
+    def is_effected_by_change(self, model, id_):
+        return False
+
+
+class Drive(Move):
+
+    @property
+    def agent_type(self):
+        return "truck"
+
+    @property
+    def edge_type(self):
+        return "connected-by-land"
+
+
+class Sail(Move):
+
+    @property
+    def agent_type(self):
+        return "boat"
+
+    @property
+    def edge_type(self):
+        return "connected-by-sea"
+
+
+class Load(Action):
+    """
+    :type package: str
+    :type agent: str
+    :type area: str
+    :type location: str
+    """
+    package = None
+    agent = None
+    area = None
+    location = None
+
+    _format_attrs = ("start_time", "duration", "package", "agent", "area", "location", "partial")
+
+    def __init__(self, start_time, duration, package, agent, area, location, partial=None):
+        super().__init__(start_time, duration, partial)
+        object.__setattr__(self, "package", package)
+        object.__setattr__(self, "agent", agent)
+        object.__setattr__(self, "area", area)
+        object.__setattr__(self, "location", location)
+
+    def is_applicable(self, model):
+        agent = DOMAIN_CONTEXT.get_agent(model, self.agent)
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        if not (self.location == agent["at"][1] == package["at"][1]):
+            return False
+        area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+        return can_load_area(model, area, self.agent)
+
+    def apply(self, model):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+        del area["free"]
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        del package["at"]
+        package["in"] = [True, self.agent, self.area]
+
+    def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time == self.end_time
+
+        if "duration" in kwargs:
+            assert kwargs["duration"] == self.duration
+
+        obj = self.copy_with(**kwargs)
+        return obj
+
+    def partially_apply(self, model, deadline):
+        raise RuntimeError
+
+    def is_effected_by_change(self, model, id_):
+        return False
+
+
+class Unload(Action):
+    """
+    :type package: str
+    :type agent: str
+    :type area: str
+    :type location: str
+    :type deliver_action: DeliverAction
+    """
+    package = None
+    agent = None
+    area = None
+    location = None
+    deliver_action = None
+
+    _format_attrs = ("start_time", "duration", "package", "agent", "area", "location", "partial")
+
+    def __init__(self, start_time, duration, package, agent, area, location, partial=None, deliver_action=None):
+        super().__init__(start_time, duration, partial)
+        object.__setattr__(self, "package", package)
+        object.__setattr__(self, "agent", agent)
+        object.__setattr__(self, "area", area)
+        object.__setattr__(self, "location", location)
+        object.__setattr__(self, "deliver_action", deliver_action)
+
+    def is_applicable(self, model):
+        agent = DOMAIN_CONTEXT.get_agent(model, self.agent)
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        if not self.location == agent["at"][1]:
+            return False
+        if not [True, self.agent, self.area] == package["in"]:
+            return False
+        area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+        return can_unload_area(model, area, self.agent)
+
+    def apply(self, model):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        area = DOMAIN_CONTEXT.get_vehicle_area(model, self.area)
+        area["free"] = [True, self.agent]
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        package["at"] = [True, self.location]
+        del package["in"]
+
+    def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time == self.end_time
+
+        if "duration" in kwargs:
+            assert kwargs["duration"] == self.duration
+
+        obj = self.copy_with(**kwargs)
+        return obj
+
+    def partially_apply(self, model, deadline):
+        raise NotImplementedError
+
+    def is_effected_by_change(self, model, id_):
+        return False
+
+
+class DeliverAction(Action):  # abstract base class
+    """
+    :type agent: str
+    :type package: str
+    :type location: str
+    """
+    agent = None
+    package = None
+    location = None
+
+    _ordinal = 1.5
+
+    _format_attrs = ("start_time", "duration", "package", "location", "partial")
+
+    def __init__(self, start_time, duration, package, location, partial=None, *, agent=None):
+        super().__init__(start_time, duration, partial)
+        object.__setattr__(self, "agent", agent)
+        object.__setattr__(self, "package", package)
+        object.__setattr__(self, "location", location)
+
+    def is_applicable(self, model):
+        raise NotImplementedError
+
+    def apply(self, model):
+        raise NotImplementedError
+
+    def as_partial(self, end_time=None, **kwargs):
+        if end_time is not None:
+            assert "duration" not in kwargs
+            assert end_time == self.end_time
+
+        if "duration" in kwargs:
+            assert kwargs["duration"] == self.duration
+
+        obj = self.copy_with(**kwargs)
+        return obj
+
+    def partially_apply(self, model, deadline):
+        raise RuntimeError
+
+
+class DeliverOntime(DeliverAction):
+
+    def is_applicable(self, model):
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        return (
+            "delivered" in package
+            or (
+                package["at"][1] == self.location
+                and "deliverable" in package
+            )
+        )
+
+    def apply(self, model):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        package["at-destination"] = [True, self.location]
+        package["delivered"] = [True, self.location]
+
+    def is_effected_by_change(self, model, id_):
+        if id_ != self.package:
+            return False
+        package = DOMAIN_CONTEXT.get_package(model, id_)
+        return "delivered" not in package or "deliverable" not in package
+
+
+class DeliverAnytime(DeliverAction):
+
+    def is_applicable(self, model):
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        return "at-destination" in package or package["at"][1] == self.location
+
+    def apply(self, model):
+        assert self.is_applicable(model), "tried to apply action in an invalid state"
+        package = DOMAIN_CONTEXT.get_package(model, self.package)
+        package["at-destination"] = [True, self.location]
+
+
+REAL_ACTIONS = Drive, Sail, Load, Unload, DeliverOntime, DeliverAnytime
+
+
+def can_load_area(model, area, agent):
+    while True:
+        try:
+            free_pred = area["free"]
+        except KeyError:
+            return False
+        if free_pred[1] != agent:
+            return False
+        try:
+            closer_pred = area["closer"]
+        except KeyError:
+            # this area is the closest and the path from this area to the given area was all free
+            return True
+        area = DOMAIN_CONTEXT.get_vehicle_area(model, closer_pred[0])
+
+
+def can_unload_area(model, area, agent):
+    if "free" in area:
+        return False
+    if "closer" not in area:
+        return True
+    # we can unload this area if we can load the area in front of it
+    closer_area = DOMAIN_CONTEXT.get_vehicle_area(model, area["closer"][0])
+    return can_load_area(model, closer_area, agent)
