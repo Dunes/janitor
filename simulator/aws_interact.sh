@@ -26,13 +26,11 @@ do
     ssh_login="${ssh_user}@${url}"
     case "${action}" in
     run)
-        branch=
-        simulator=
+        branch=trucks-centralised
+        simulator=trucks
         problems_file=
 
-        branch="janitor-centralised"
-        simulator=janitor-centralised
-        problems_file="problems/no-stock/part-${i}.txt"
+        problems_file="problems/trucks/split-part-${i}.txt"
         let i=i+1
 
         if [ -z "${branch}" -o -z "${problems_file}" -o -z "${simulator}" ]
