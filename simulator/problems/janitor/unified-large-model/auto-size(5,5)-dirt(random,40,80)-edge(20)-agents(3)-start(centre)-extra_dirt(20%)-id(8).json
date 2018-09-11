@@ -1,0 +1,970 @@
+{
+    "assumed-values": {
+        "cleaned": false,
+        "dirtiness": "max",
+        "dirty": true,
+        "extra-dirty": false
+    },
+    "domain": "janitor",
+    "goal": {
+        "hard-goals": [
+            [
+                "cleaned",
+                "rm11"
+            ],
+            [
+                "cleaned",
+                "rm-ed3"
+            ],
+            [
+                "cleaned",
+                "rm0"
+            ],
+            [
+                "cleaned",
+                "rm7"
+            ],
+            [
+                "cleaned",
+                "rm-ed0"
+            ],
+            [
+                "cleaned",
+                "rm5"
+            ],
+            [
+                "cleaned",
+                "rm14"
+            ],
+            [
+                "cleaned",
+                "rm2"
+            ],
+            [
+                "cleaned",
+                "rm19"
+            ],
+            [
+                "cleaned",
+                "rm13"
+            ],
+            [
+                "cleaned",
+                "rm16"
+            ],
+            [
+                "cleaned",
+                "rm6"
+            ],
+            [
+                "cleaned",
+                "rm9"
+            ],
+            [
+                "cleaned",
+                "rm-ed1"
+            ],
+            [
+                "cleaned",
+                "rm18"
+            ],
+            [
+                "cleaned",
+                "rm15"
+            ],
+            [
+                "cleaned",
+                "rm8"
+            ],
+            [
+                "cleaned",
+                "rm-ed2"
+            ],
+            [
+                "cleaned",
+                "rm10"
+            ],
+            [
+                "cleaned",
+                "rm4"
+            ],
+            [
+                "cleaned",
+                "rm12"
+            ],
+            [
+                "cleaned",
+                "rm3"
+            ],
+            [
+                "cleaned",
+                "rm1"
+            ],
+            [
+                "cleaned",
+                "rm17"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": {
+            "empty-rm1 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm10 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm10 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm10": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm10": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "metric": {
+        "predicate": [
+            "total-time"
+        ],
+        "type": "minimize"
+    },
+    "objects": {
+        "agent": {
+            "agent0": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent1": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent2": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            }
+        },
+        "node": {
+            "empty-rm1": {
+                "known": {},
+                "unknown": {}
+            }
+        },
+        "room": {
+            "rm-ed0": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 57,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed1": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 61,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed2": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 56,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed3": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 48,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm0": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 49,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm1": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 77,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm10": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 75,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm11": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 56,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm12": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 62,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm13": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 66,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm14": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 69,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm15": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 77,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm16": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 52,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm17": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 67,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm18": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 61,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm19": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 63,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm2": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 53,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm3": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 61,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm4": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 48,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm5": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 80,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm6": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 44,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm7": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 65,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm8": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 48,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm9": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 49,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "problem": "auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(8)"
+}

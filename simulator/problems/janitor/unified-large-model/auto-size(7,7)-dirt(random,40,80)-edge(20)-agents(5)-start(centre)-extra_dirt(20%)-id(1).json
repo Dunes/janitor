@@ -1,0 +1,1962 @@
+{
+    "assumed-values": {
+        "cleaned": false,
+        "dirtiness": "max",
+        "dirty": true,
+        "extra-dirty": false
+    },
+    "domain": "janitor",
+    "goal": {
+        "hard-goals": [
+            [
+                "cleaned",
+                "rm23"
+            ],
+            [
+                "cleaned",
+                "rm-ed6"
+            ],
+            [
+                "cleaned",
+                "rm11"
+            ],
+            [
+                "cleaned",
+                "rm-ed3"
+            ],
+            [
+                "cleaned",
+                "rm30"
+            ],
+            [
+                "cleaned",
+                "rm7"
+            ],
+            [
+                "cleaned",
+                "rm22"
+            ],
+            [
+                "cleaned",
+                "rm29"
+            ],
+            [
+                "cleaned",
+                "rm31"
+            ],
+            [
+                "cleaned",
+                "rm20"
+            ],
+            [
+                "cleaned",
+                "rm24"
+            ],
+            [
+                "cleaned",
+                "rm19"
+            ],
+            [
+                "cleaned",
+                "rm-ed4"
+            ],
+            [
+                "cleaned",
+                "rm16"
+            ],
+            [
+                "cleaned",
+                "rm6"
+            ],
+            [
+                "cleaned",
+                "rm37"
+            ],
+            [
+                "cleaned",
+                "rm-ed1"
+            ],
+            [
+                "cleaned",
+                "rm5"
+            ],
+            [
+                "cleaned",
+                "rm4"
+            ],
+            [
+                "cleaned",
+                "rm1"
+            ],
+            [
+                "cleaned",
+                "rm10"
+            ],
+            [
+                "cleaned",
+                "rm27"
+            ],
+            [
+                "cleaned",
+                "rm3"
+            ],
+            [
+                "cleaned",
+                "rm21"
+            ],
+            [
+                "cleaned",
+                "rm-ed8"
+            ],
+            [
+                "cleaned",
+                "rm28"
+            ],
+            [
+                "cleaned",
+                "rm33"
+            ],
+            [
+                "cleaned",
+                "rm-ed0"
+            ],
+            [
+                "cleaned",
+                "rm-ed7"
+            ],
+            [
+                "cleaned",
+                "rm0"
+            ],
+            [
+                "cleaned",
+                "rm2"
+            ],
+            [
+                "cleaned",
+                "rm36"
+            ],
+            [
+                "cleaned",
+                "rm13"
+            ],
+            [
+                "cleaned",
+                "rm14"
+            ],
+            [
+                "cleaned",
+                "rm9"
+            ],
+            [
+                "cleaned",
+                "rm35"
+            ],
+            [
+                "cleaned",
+                "rm38"
+            ],
+            [
+                "cleaned",
+                "rm-ed5"
+            ],
+            [
+                "cleaned",
+                "rm18"
+            ],
+            [
+                "cleaned",
+                "rm15"
+            ],
+            [
+                "cleaned",
+                "rm8"
+            ],
+            [
+                "cleaned",
+                "rm-ed2"
+            ],
+            [
+                "cleaned",
+                "rm12"
+            ],
+            [
+                "cleaned",
+                "rm25"
+            ],
+            [
+                "cleaned",
+                "rm34"
+            ],
+            [
+                "cleaned",
+                "rm26"
+            ],
+            [
+                "cleaned",
+                "rm32"
+            ],
+            [
+                "cleaned",
+                "rm17"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": {
+            "empty-rm1 rm-ed8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm24": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "empty-rm1 rm32": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm31": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed0 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm25": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm28": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed1 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm23": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm37": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed2 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm27": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed3 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed4 rm20": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed4 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed4 rm34": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed5 rm-ed7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed5 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed5 rm35": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed6 rm27": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed6 rm34": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed7 rm-ed5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed7 rm21": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed7 rm33": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed8 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed8 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed8 rm28": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm-ed8 rm38": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm-ed5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm33": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm0 rm38": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm21": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm30": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm1 rm33": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm10 rm23": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm10 rm37": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm20": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm27": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm11 rm34": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm12 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm32": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm13 rm35": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm22": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm14 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm23": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm15 rm35": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm22": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm16 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm20": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm17 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm25": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm26": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm18 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm-ed8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm19 rm24": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm2 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm20 rm-ed4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm20 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm20 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm20 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm21 rm-ed7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm21 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm22 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm22 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm22 rm24": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm22 rm7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm23 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm23 rm10": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm23 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm24 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm24 rm19": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm24 rm22": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm24 rm4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm25 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm25 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm25 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm26 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm26 rm31": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm27 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm27 rm-ed6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm27 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm28 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm28 rm-ed8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm28 rm36": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm28 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm29 rm3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm29 rm37": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm29 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm-ed4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm3 rm29": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm30 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm30 rm36": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm30 rm6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm31 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm31 rm26": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm31 rm9": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm32 empty-rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm32 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm32 rm38": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm32 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm33 rm-ed7": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm33 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm33 rm1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm33 rm36": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm34 rm-ed4": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm34 rm-ed6": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm34 rm11": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm35 rm-ed5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm35 rm13": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm35 rm15": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm36 rm28": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm36 rm30": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm36 rm33": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm36 rm38": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm37 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm37 rm10": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm37 rm29": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm38 rm-ed8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm38 rm0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm38 rm32": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm38 rm36": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm14": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm20": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm4 rm24": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm12": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm32": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm5 rm8": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm25": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm28": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm6 rm30": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm-ed0": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm-ed3": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm7 rm22": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm-ed2": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm17": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm29": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm8 rm5": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm-ed1": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm16": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm18": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            },
+            "rm9 rm31": {
+                "known": {
+                    "distance": 20,
+                    "edge": true
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "metric": {
+        "predicate": [
+            "total-time"
+        ],
+        "type": "minimize"
+    },
+    "objects": {
+        "agent": {
+            "agent0": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent1": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent2": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent3": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            },
+            "agent4": {
+                "at": [
+                    true,
+                    "empty-rm1"
+                ],
+                "available": true
+            }
+        },
+        "node": {
+            "empty-rm1": {
+                "known": {},
+                "unknown": {}
+            }
+        },
+        "room": {
+            "rm-ed0": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 62,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed1": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 47,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed2": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 77,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed3": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 66,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed4": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 70,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed5": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 53,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed6": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 72,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed7": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 65,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm-ed8": {
+                "known": {},
+                "unknown": {
+                    "cleaned": {
+                        "actual": false
+                    },
+                    "dirtiness": {
+                        "actual": 71,
+                        "max": 80,
+                        "min": 40
+                    },
+                    "dirty": {
+                        "actual": false
+                    },
+                    "extra-dirty": {
+                        "actual": true
+                    }
+                }
+            },
+            "rm0": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 53,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm1": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 67,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm10": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 72,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm11": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 49,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm12": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 41,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm13": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 53,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm14": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 67,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm15": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 66,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm16": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 74,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm17": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 77,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm18": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 44,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm19": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 45,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm2": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 77,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm20": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 72,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm21": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 47,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm22": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 52,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm23": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 66,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm24": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 62,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm25": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 58,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm26": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 47,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm27": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 42,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm28": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 76,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm29": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 61,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm3": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 59,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm30": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 80,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm31": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 78,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm32": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 65,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm33": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 44,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm34": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 59,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm35": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 48,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm36": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 65,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm37": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 44,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm38": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 61,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm4": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 65,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm5": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 61,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm6": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 52,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm7": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 80,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm8": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 53,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            },
+            "rm9": {
+                "known": {
+                    "cleaned": false,
+                    "dirtiness": 80,
+                    "dirty": true,
+                    "extra-dirty": false
+                },
+                "unknown": {}
+            }
+        }
+    },
+    "problem": "auto-size(7,7)-dirt(random,40,80)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(1)"
+}
