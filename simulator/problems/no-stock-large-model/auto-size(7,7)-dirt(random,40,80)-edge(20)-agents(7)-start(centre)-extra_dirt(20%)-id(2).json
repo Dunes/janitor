@@ -1,0 +1,1747 @@
+{
+    "agents": {
+        "agent0": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent1": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent2": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent3": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent4": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent5": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        },
+        "agent6": {
+            "agent": true,
+            "at": [
+                true,
+                "empty-rm1"
+            ],
+            "available": true
+        }
+    },
+    "assumed-values": {
+        "cleaned": false,
+        "dirtiness": "max",
+        "dirty": true,
+        "extra-dirty": false
+    },
+    "domain": "janitor",
+    "goal": {
+        "hard-goals": [
+            [
+                "cleaned",
+                "rm23"
+            ],
+            [
+                "cleaned",
+                "rm-ed6"
+            ],
+            [
+                "cleaned",
+                "rm11"
+            ],
+            [
+                "cleaned",
+                "rm-ed3"
+            ],
+            [
+                "cleaned",
+                "rm30"
+            ],
+            [
+                "cleaned",
+                "rm7"
+            ],
+            [
+                "cleaned",
+                "rm22"
+            ],
+            [
+                "cleaned",
+                "rm29"
+            ],
+            [
+                "cleaned",
+                "rm31"
+            ],
+            [
+                "cleaned",
+                "rm20"
+            ],
+            [
+                "cleaned",
+                "rm24"
+            ],
+            [
+                "cleaned",
+                "rm19"
+            ],
+            [
+                "cleaned",
+                "rm-ed4"
+            ],
+            [
+                "cleaned",
+                "rm16"
+            ],
+            [
+                "cleaned",
+                "rm6"
+            ],
+            [
+                "cleaned",
+                "rm37"
+            ],
+            [
+                "cleaned",
+                "rm-ed1"
+            ],
+            [
+                "cleaned",
+                "rm5"
+            ],
+            [
+                "cleaned",
+                "rm4"
+            ],
+            [
+                "cleaned",
+                "rm1"
+            ],
+            [
+                "cleaned",
+                "rm10"
+            ],
+            [
+                "cleaned",
+                "rm27"
+            ],
+            [
+                "cleaned",
+                "rm3"
+            ],
+            [
+                "cleaned",
+                "rm21"
+            ],
+            [
+                "cleaned",
+                "rm-ed8"
+            ],
+            [
+                "cleaned",
+                "rm28"
+            ],
+            [
+                "cleaned",
+                "rm33"
+            ],
+            [
+                "cleaned",
+                "rm-ed0"
+            ],
+            [
+                "cleaned",
+                "rm-ed7"
+            ],
+            [
+                "cleaned",
+                "rm0"
+            ],
+            [
+                "cleaned",
+                "rm2"
+            ],
+            [
+                "cleaned",
+                "rm36"
+            ],
+            [
+                "cleaned",
+                "rm13"
+            ],
+            [
+                "cleaned",
+                "rm14"
+            ],
+            [
+                "cleaned",
+                "rm9"
+            ],
+            [
+                "cleaned",
+                "rm35"
+            ],
+            [
+                "cleaned",
+                "rm38"
+            ],
+            [
+                "cleaned",
+                "rm-ed5"
+            ],
+            [
+                "cleaned",
+                "rm18"
+            ],
+            [
+                "cleaned",
+                "rm15"
+            ],
+            [
+                "cleaned",
+                "rm8"
+            ],
+            [
+                "cleaned",
+                "rm-ed2"
+            ],
+            [
+                "cleaned",
+                "rm12"
+            ],
+            [
+                "cleaned",
+                "rm25"
+            ],
+            [
+                "cleaned",
+                "rm34"
+            ],
+            [
+                "cleaned",
+                "rm26"
+            ],
+            [
+                "cleaned",
+                "rm32"
+            ],
+            [
+                "cleaned",
+                "rm17"
+            ]
+        ]
+    },
+    "graph": {
+        "bidirectional": false,
+        "edges": [
+            [
+                "rm-ed3",
+                "rm28",
+                20
+            ],
+            [
+                "rm32",
+                "rm12",
+                20
+            ],
+            [
+                "rm7",
+                "empty-rm1",
+                20
+            ],
+            [
+                "rm3",
+                "rm27",
+                20
+            ],
+            [
+                "rm9",
+                "rm12",
+                20
+            ],
+            [
+                "rm17",
+                "rm38",
+                20
+            ],
+            [
+                "rm-ed6",
+                "rm20",
+                20
+            ],
+            [
+                "rm33",
+                "rm26",
+                20
+            ],
+            [
+                "rm6",
+                "rm26",
+                20
+            ],
+            [
+                "rm26",
+                "rm20",
+                20
+            ],
+            [
+                "rm-ed5",
+                "rm5",
+                20
+            ],
+            [
+                "rm-ed7",
+                "rm3",
+                20
+            ],
+            [
+                "empty-rm1",
+                "rm14",
+                20
+            ],
+            [
+                "rm12",
+                "rm32",
+                20
+            ],
+            [
+                "rm8",
+                "rm5",
+                20
+            ],
+            [
+                "rm-ed1",
+                "rm7",
+                20
+            ],
+            [
+                "rm12",
+                "rm9",
+                20
+            ],
+            [
+                "rm13",
+                "rm-ed0",
+                20
+            ],
+            [
+                "rm38",
+                "rm-ed5",
+                20
+            ],
+            [
+                "rm17",
+                "rm20",
+                20
+            ],
+            [
+                "rm32",
+                "rm30",
+                20
+            ],
+            [
+                "rm28",
+                "rm23",
+                20
+            ],
+            [
+                "rm35",
+                "rm38",
+                20
+            ],
+            [
+                "rm5",
+                "rm8",
+                20
+            ],
+            [
+                "rm-ed4",
+                "empty-rm1",
+                20
+            ],
+            [
+                "rm8",
+                "rm20",
+                20
+            ],
+            [
+                "rm11",
+                "rm-ed7",
+                20
+            ],
+            [
+                "rm24",
+                "rm18",
+                20
+            ],
+            [
+                "rm19",
+                "rm7",
+                20
+            ],
+            [
+                "rm30",
+                "rm1",
+                20
+            ],
+            [
+                "rm5",
+                "rm17",
+                20
+            ],
+            [
+                "rm-ed4",
+                "rm9",
+                20
+            ],
+            [
+                "rm13",
+                "rm25",
+                20
+            ],
+            [
+                "rm12",
+                "rm11",
+                20
+            ],
+            [
+                "rm12",
+                "rm1",
+                20
+            ],
+            [
+                "rm33",
+                "rm-ed2",
+                20
+            ],
+            [
+                "rm-ed8",
+                "rm2",
+                20
+            ],
+            [
+                "rm28",
+                "rm26",
+                20
+            ],
+            [
+                "rm21",
+                "rm23",
+                20
+            ],
+            [
+                "rm-ed7",
+                "rm11",
+                20
+            ],
+            [
+                "rm37",
+                "rm10",
+                20
+            ],
+            [
+                "rm4",
+                "rm31",
+                20
+            ],
+            [
+                "rm5",
+                "rm-ed5",
+                20
+            ],
+            [
+                "rm20",
+                "rm17",
+                20
+            ],
+            [
+                "rm28",
+                "rm-ed3",
+                20
+            ],
+            [
+                "rm-ed6",
+                "rm-ed1",
+                20
+            ],
+            [
+                "rm-ed7",
+                "rm9",
+                20
+            ],
+            [
+                "rm18",
+                "rm15",
+                20
+            ],
+            [
+                "rm20",
+                "rm26",
+                20
+            ],
+            [
+                "rm16",
+                "rm29",
+                20
+            ],
+            [
+                "rm15",
+                "rm0",
+                20
+            ],
+            [
+                "rm17",
+                "rm5",
+                20
+            ],
+            [
+                "rm9",
+                "rm-ed7",
+                20
+            ],
+            [
+                "rm32",
+                "rm14",
+                20
+            ],
+            [
+                "rm-ed0",
+                "rm34",
+                20
+            ],
+            [
+                "rm18",
+                "rm24",
+                20
+            ],
+            [
+                "rm26",
+                "rm6",
+                20
+            ],
+            [
+                "rm-ed3",
+                "rm22",
+                20
+            ],
+            [
+                "rm25",
+                "rm-ed8",
+                20
+            ],
+            [
+                "rm14",
+                "rm9",
+                20
+            ],
+            [
+                "rm-ed7",
+                "rm0",
+                20
+            ],
+            [
+                "rm8",
+                "rm6",
+                20
+            ],
+            [
+                "rm11",
+                "rm12",
+                20
+            ],
+            [
+                "rm-ed4",
+                "rm-ed8",
+                20
+            ],
+            [
+                "rm-ed2",
+                "rm28",
+                20
+            ],
+            [
+                "rm31",
+                "rm-ed5",
+                20
+            ],
+            [
+                "rm1",
+                "rm24",
+                20
+            ],
+            [
+                "rm30",
+                "rm22",
+                20
+            ],
+            [
+                "rm14",
+                "rm32",
+                20
+            ],
+            [
+                "rm-ed3",
+                "rm21",
+                20
+            ],
+            [
+                "rm38",
+                "rm17",
+                20
+            ],
+            [
+                "rm-ed8",
+                "rm25",
+                20
+            ],
+            [
+                "rm35",
+                "rm19",
+                20
+            ],
+            [
+                "empty-rm1",
+                "rm-ed6",
+                20
+            ],
+            [
+                "rm23",
+                "rm28",
+                20
+            ],
+            [
+                "rm38",
+                "rm4",
+                20
+            ],
+            [
+                "rm-ed8",
+                "rm-ed4",
+                20
+            ],
+            [
+                "rm9",
+                "rm14",
+                20
+            ],
+            [
+                "rm19",
+                "rm35",
+                20
+            ],
+            [
+                "rm13",
+                "rm27",
+                20
+            ],
+            [
+                "rm24",
+                "rm11",
+                20
+            ],
+            [
+                "rm-ed2",
+                "rm32",
+                20
+            ],
+            [
+                "rm20",
+                "rm-ed6",
+                20
+            ],
+            [
+                "rm26",
+                "rm28",
+                20
+            ],
+            [
+                "rm-ed1",
+                "rm17",
+                20
+            ],
+            [
+                "rm10",
+                "rm36",
+                20
+            ],
+            [
+                "rm27",
+                "rm13",
+                20
+            ],
+            [
+                "rm2",
+                "rm37",
+                20
+            ],
+            [
+                "rm15",
+                "rm18",
+                20
+            ],
+            [
+                "rm34",
+                "rm-ed0",
+                20
+            ],
+            [
+                "rm-ed5",
+                "rm31",
+                20
+            ],
+            [
+                "rm17",
+                "rm-ed1",
+                20
+            ],
+            [
+                "rm-ed6",
+                "rm33",
+                20
+            ],
+            [
+                "rm35",
+                "rm36",
+                20
+            ],
+            [
+                "rm19",
+                "rm2",
+                20
+            ],
+            [
+                "rm-ed0",
+                "rm13",
+                20
+            ],
+            [
+                "rm35",
+                "rm-ed1",
+                20
+            ],
+            [
+                "rm-ed4",
+                "rm3",
+                20
+            ],
+            [
+                "rm37",
+                "rm16",
+                20
+            ],
+            [
+                "rm-ed0",
+                "rm29",
+                20
+            ],
+            [
+                "rm22",
+                "rm-ed3",
+                20
+            ],
+            [
+                "rm16",
+                "rm34",
+                20
+            ],
+            [
+                "rm20",
+                "rm8",
+                20
+            ],
+            [
+                "rm1",
+                "rm12",
+                20
+            ],
+            [
+                "rm29",
+                "rm16",
+                20
+            ],
+            [
+                "empty-rm1",
+                "rm-ed4",
+                20
+            ],
+            [
+                "rm7",
+                "rm-ed1",
+                20
+            ],
+            [
+                "rm28",
+                "rm-ed2",
+                20
+            ],
+            [
+                "rm9",
+                "rm-ed4",
+                20
+            ],
+            [
+                "rm26",
+                "rm33",
+                20
+            ],
+            [
+                "rm0",
+                "rm15",
+                20
+            ],
+            [
+                "rm15",
+                "rm11",
+                20
+            ],
+            [
+                "rm29",
+                "rm2",
+                20
+            ],
+            [
+                "rm23",
+                "rm21",
+                20
+            ],
+            [
+                "rm-ed8",
+                "rm7",
+                20
+            ],
+            [
+                "rm36",
+                "rm35",
+                20
+            ],
+            [
+                "rm0",
+                "rm-ed7",
+                20
+            ],
+            [
+                "rm36",
+                "rm10",
+                20
+            ],
+            [
+                "rm6",
+                "rm23",
+                20
+            ],
+            [
+                "rm7",
+                "rm19",
+                20
+            ],
+            [
+                "rm1",
+                "rm30",
+                20
+            ],
+            [
+                "rm27",
+                "rm0",
+                20
+            ],
+            [
+                "rm34",
+                "rm16",
+                20
+            ],
+            [
+                "rm19",
+                "rm10",
+                20
+            ],
+            [
+                "rm3",
+                "rm-ed4",
+                20
+            ],
+            [
+                "rm33",
+                "rm-ed6",
+                20
+            ],
+            [
+                "rm2",
+                "rm19",
+                20
+            ],
+            [
+                "rm-ed6",
+                "empty-rm1",
+                20
+            ],
+            [
+                "rm24",
+                "rm1",
+                20
+            ],
+            [
+                "rm30",
+                "rm32",
+                20
+            ],
+            [
+                "rm25",
+                "rm3",
+                20
+            ],
+            [
+                "rm27",
+                "rm3",
+                20
+            ],
+            [
+                "rm11",
+                "rm24",
+                20
+            ],
+            [
+                "rm-ed1",
+                "rm-ed6",
+                20
+            ],
+            [
+                "rm22",
+                "rm-ed2",
+                20
+            ],
+            [
+                "rm7",
+                "rm-ed8",
+                20
+            ],
+            [
+                "rm11",
+                "rm15",
+                20
+            ],
+            [
+                "rm33",
+                "rm14",
+                20
+            ],
+            [
+                "rm6",
+                "rm8",
+                20
+            ],
+            [
+                "rm16",
+                "rm37",
+                20
+            ],
+            [
+                "rm3",
+                "rm25",
+                20
+            ],
+            [
+                "rm10",
+                "rm19",
+                20
+            ],
+            [
+                "rm2",
+                "rm29",
+                20
+            ],
+            [
+                "rm37",
+                "rm2",
+                20
+            ],
+            [
+                "rm23",
+                "rm6",
+                20
+            ],
+            [
+                "rm29",
+                "rm-ed0",
+                20
+            ],
+            [
+                "rm21",
+                "rm-ed3",
+                20
+            ],
+            [
+                "rm32",
+                "rm-ed2",
+                20
+            ],
+            [
+                "empty-rm1",
+                "rm7",
+                20
+            ],
+            [
+                "rm10",
+                "rm37",
+                20
+            ],
+            [
+                "rm3",
+                "rm-ed7",
+                20
+            ],
+            [
+                "rm25",
+                "rm13",
+                20
+            ],
+            [
+                "rm0",
+                "rm27",
+                20
+            ],
+            [
+                "rm-ed2",
+                "rm33",
+                20
+            ],
+            [
+                "rm4",
+                "rm38",
+                20
+            ],
+            [
+                "rm2",
+                "rm-ed8",
+                20
+            ],
+            [
+                "rm38",
+                "rm35",
+                20
+            ],
+            [
+                "rm4",
+                "rm36",
+                20
+            ],
+            [
+                "rm-ed5",
+                "rm38",
+                20
+            ],
+            [
+                "rm29",
+                "rm25",
+                20
+            ],
+            [
+                "rm36",
+                "rm4",
+                20
+            ],
+            [
+                "rm-ed1",
+                "rm35",
+                20
+            ],
+            [
+                "rm-ed2",
+                "rm22",
+                20
+            ],
+            [
+                "rm22",
+                "rm30",
+                20
+            ],
+            [
+                "rm31",
+                "rm4",
+                20
+            ],
+            [
+                "rm25",
+                "rm29",
+                20
+            ],
+            [
+                "rm14",
+                "rm33",
+                20
+            ],
+            [
+                "rm14",
+                "empty-rm1",
+                20
+            ]
+        ]
+    },
+    "metric": {
+        "predicate": [
+            "total-time"
+        ],
+        "type": "minimize"
+    },
+    "nodes": {
+        "empty-rm1": {
+            "node": true
+        },
+        "rm-ed0": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 47,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed1": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 50,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed2": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 65,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed3": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 52,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed4": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 46,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed5": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 41,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed6": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 52,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed7": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 53,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm-ed8": {
+            "known": {
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {
+                "cleaned": {
+                    "actual": false
+                },
+                "dirtiness": {
+                    "actual": 48,
+                    "max": 80,
+                    "min": 40
+                },
+                "dirty": {
+                    "actual": false
+                },
+                "extra-dirty": {
+                    "actual": true
+                }
+            }
+        },
+        "rm0": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 80,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm1": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 55,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm10": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 69,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm11": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 42,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm12": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 51,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm13": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 73,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm14": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 76,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm15": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 78,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm16": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 72,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm17": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 53,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm18": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 65,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm19": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 71,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm2": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 42,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm20": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 47,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm21": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 72,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm22": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 46,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm23": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 64,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm24": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 61,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm25": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 68,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm26": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 48,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm27": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 51,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm28": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 57,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm29": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 74,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm3": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 45,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm30": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 64,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm31": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 46,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm32": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 71,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm33": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 59,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm34": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 58,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm35": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 80,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm36": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 45,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm37": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 42,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm38": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 74,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm4": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 53,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm5": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 48,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm6": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 43,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm7": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 50,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm8": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 45,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        },
+        "rm9": {
+            "known": {
+                "cleaned": false,
+                "dirtiness": 55,
+                "dirty": true,
+                "extra-dirty": false,
+                "is-room": true,
+                "node": true
+            },
+            "unknown": {}
+        }
+    },
+    "problem": "auto-size(7,7)-dirt(random,40,80)-edge(20)-agents(7)-start(centre)-extra_dirt(20%)-id(2)"
+}
