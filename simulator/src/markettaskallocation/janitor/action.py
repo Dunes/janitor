@@ -207,8 +207,8 @@ class ExtraClean(Action):
 		room = model["objects"]["room"][self.room]["known"]
 		if not room.get("extra-dirty", False):
 			return False
-		if not room.get(CLEANING_ASSIST, False):
-			return False
+		# if not room.get(CLEANING_ASSIST, False):
+		# 	return False
 		return True
 
 	def apply(self, model):
@@ -256,14 +256,14 @@ class ExtraCleanAssist(Action):
 	def start(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		room = model["objects"]["room"][self.room]["known"]
-		assert CLEANING_ASSIST not in room
-		room[CLEANING_ASSIST] = True
+		# assert CLEANING_ASSIST not in room
+		# room[CLEANING_ASSIST] = True
 
 	def _apply(self, model):
 		assert self.is_applicable(model), "tried to apply action in an invalid state"
 		room = model["objects"]["room"][self.room]["known"]
-		assert CLEANING_ASSIST in room
-		del room[CLEANING_ASSIST]
+		# assert CLEANING_ASSIST in room
+		# del room[CLEANING_ASSIST]
 
 	def apply(self, model):
 		self._apply(model)
