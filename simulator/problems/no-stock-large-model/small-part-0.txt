@@ -1,0 +1,12 @@
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(5).json
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(5).json
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(7)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(5,5)-dirt(random,40,80)-edge(20)-agents(7)-start(centre)-extra_dirt(20%)-id(5).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(3)-start(centre)-extra_dirt(20%)-id(5).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(5)-start(centre)-extra_dirt(20%)-id(5).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(7)-start(centre)-extra_dirt(20%)-id(0).json
+problems/janitor/unified-large-model/auto-size(6,6)-dirt(random,40,80)-edge(20)-agents(7)-start(centre)-extra_dirt(20%)-id(5).json
